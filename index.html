@@ -484,16 +484,17 @@
   <!-- ======================= FLASHER ======================= -->
   <section id="view-flash" role="tabpanel" hidden>
     <div class="panel">
-      <div class="warn"><strong>Both firmwares are ALPHA.</strong> They are works in progress and may have bugs.
+      <div class="warn"><strong>lector.c 0.0.1 is ALPHA and not yet tested on a device.</strong> It is a fresh re-base and may have bugs.
         Your books live on the SD card and are never touched, but settings stored in the device flash can be lost.
         Use a test device if you can.</div>
 
       <h3>Lector</h3>
-      <p>The everyday Lector firmware for your Xteink X3 / X4 — the C++ / CrossPoint reader, with some internals
-        hardened in memory-safe Rust for stability. This is the one to run on your daily reader.</p>
+      <p>Lector firmware for your Xteink X3 / X4, now re-based onto the upstream CrossPoint reader with a thin
+        layer of reading niceties on top. This build (lector.c 0.0.1) is an early alpha — test it before trusting
+        it on your daily reader.</p>
 
       <div class="verline">Current build on this site</div>
-      <div class="verval"><span class="dim">v</span><span id="flashVersion">…</span></div>
+      <div class="verval"><span id="flashVersion">…</span></div>
 
       <div class="actions">
         <button class="btn btn-red" id="btnUpdate" type="button">Update my reader</button>
@@ -503,12 +504,14 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — v0.64.0:</strong>
+        <br><strong>What's new — lector.c 0.0.1:</strong>
         <ul>
-          <li><strong>A full file manager in your browser.</strong> Connect over Wi-Fi and manage the SD card: upload and download books, make folders, and rename, move, or delete files and whole folders.</li>
-          <li><strong>Access-code lock.</strong> The reader shows a 4-digit code on its screen; type it once in the browser to unlock. The same code mounts the SD as a network drive (WebDAV).</li>
-          <li><strong>OPDS in the browser.</strong> Add a catalog, browse it, and download books straight onto the SD.</li>
-          <li>A clean black-and-white look across every page. Reports version <strong>0.64.0</strong> on device.</li>
+          <li><strong>Fresh re-base onto upstream CrossPoint.</strong> Lector now sits on the upstream reader, so it can follow future upstream improvements.</li>
+          <li><strong>Vollkorn is the built-in reading font.</strong> A warmer serif for the page; more fonts can be added later from the SD card.</li>
+          <li><strong>First-line paragraph indent.</strong> An optional indent for the first line of each paragraph, set in Text settings.</li>
+          <li><strong>Grab Quote.</strong> Highlight a run of words in a book and save the passage to a quotes text file on the SD card.</li>
+          <li><strong>Reading progress for .txt books.</strong> Plain text files now show a reading percentage.</li>
+          <li><strong>Cozette menu font.</strong> A crisp pixel font for the menus; Arabic and Hebrew fall back to a full-coverage font. Reports version <strong>lector.c 0.0.1</strong> on device.</li>
         </ul>
       </div>
 
@@ -567,13 +570,14 @@
     </details>
 
     <div class="panel whatsnew">
-      <h3>What's new in v0.64.0</h3>
+      <h3>What's new in lector.c 0.0.1</h3>
       <ul>
-        <li><strong>Browser file manager, over Wi-Fi.</strong> Browse the SD card, upload and download books, create folders, and rename / move / delete files and whole folders — recursive folder delete shows the file count first.</li>
-        <li><strong>Per-session access code.</strong> A 4-digit code shown on the reader unlocks the browser; the same code gates WebDAV drive mounts. The file server is no longer open on the network.</li>
-        <li><strong>OPDS built in.</strong> Add and browse OPDS catalogs and download books to the SD, straight from the browser.</li>
-        <li><strong>New "Ledger" look.</strong> Every web page — and this site — is now a compact black-and-white theme with a dark mode.</li>
-        <li>Path-safety hardening across all upload routes; dropped the old in-browser EPUB re-zip (the Converter tab covers it) to slim the firmware.</li>
+        <li><strong>Re-based onto upstream CrossPoint.</strong> A clean restart on top of the upstream reader, with a thin layer of Lector niceties, so the firmware can track upstream from here on.</li>
+        <li><strong>Vollkorn reading font.</strong> The built-in book font is now Vollkorn; the old bundled reading fonts were dropped to save space, with more available from the SD card later.</li>
+        <li><strong>First-line indent.</strong> Optional per-paragraph first-line indent, adjustable in Text settings.</li>
+        <li><strong>Grab Quote.</strong> Select a run of words in a book and append the passage to a quotes file on the SD card.</li>
+        <li><strong>.txt reading progress.</strong> Plain-text books now track and show a reading percentage.</li>
+        <li><strong>Cozette menus.</strong> Menus use the Cozette pixel font, with Ubuntu as the fallback for Arabic and Hebrew.</li>
       </ul>
     </div>
   </section>
