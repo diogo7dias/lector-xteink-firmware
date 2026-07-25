@@ -1,1 +1,1 @@
-lector.c 0.0.9
+lector.c 0.0.10
