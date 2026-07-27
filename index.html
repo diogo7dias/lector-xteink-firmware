@@ -504,7 +504,11 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector.c 0.5.0:</strong> twelve changes merged from CrossPoint upstream, each checked against this firmware's own source before being applied. Reports version <strong>lector.c 0.5.0</strong> on device. Your books re-read their details once on first open after this update, which makes that one open slower; reading positions and per-book settings are kept.
+        <br><strong>What's new — lector.c 0.5.1:</strong> one fix on top of 0.5.0, released the same day. Reports version <strong>lector.c 0.5.1</strong> on device.
+        <ul>
+          <li><strong>Text Settings opens on the tab bar again.</strong> Since 0.5.0 the screen opened with a font already highlighted, so reaching the Layout or Style tab meant scrolling back up past the font list every time.</li>
+        </ul>
+        <strong>Also in 0.5.0:</strong> twelve changes merged from CrossPoint upstream, each checked against this firmware's own source before being applied. Your books re-read their details once on first open after updating from 0.4.0 or earlier, which makes that one open slower; reading positions and per-book settings are kept.
         <ul>
           <li><strong>Font size is now a real point size.</strong> Settings &rarr; Reader &rarr; Font Size offered Small, Medium, Large and X Large. It now lists the actual sizes — 12 pt, 14 pt, 16 pt, 18 pt — and a font family installed on the SD card offers exactly the sizes you installed for it instead of four fixed slots. Your existing choice carries over: Small becomes 12 pt, Medium 14 pt, Large 16 pt, X Large 18 pt — in the global settings, in every book you had customised, and in every saved Reading Theme.</li>
           <li><strong>Changing font family no longer leaves you on a size that does not exist.</strong> Move to a family that does not ship your current size and it snaps to the nearest size that family does ship.</li>
@@ -595,6 +599,10 @@
     </details>
 
     <div class="panel whatsnew">
+      <h3>What's new in lector.c 0.5.1</h3>
+      <ul>
+        <li><strong>The Text Settings screen opens with the tab bar focused, not a font.</strong> 0.5.0 made the Family and Size tabs open on whatever is currently selected, which is right — but the same code also ran for the tab you actually opened the screen on, so a font row came up highlighted and any trip to Layout or Style started by scrolling back out of the list. Reported against upstream's release candidate and fixed in one line; taken here because 0.5.0 shipped the change that caused it.</li>
+      </ul>
       <h3>What's new in lector.c 0.5.0</h3>
       <p>This release is a merge rather than a hand-picked set: twelve commits that had already landed on CrossPoint's development branch were taken in one go. Eleven files collided, and every one of them collided over the same upstream change — the reader's font size stopped being an abstract Small/Medium/Large/X&nbsp;Large slot and became a real point size. Half of that change touched files this fork had barely modified and merged itself automatically, so declining the other half was never actually an option; the choice was between adopting it properly and leaving the firmware in two minds about what a font size is. It was adopted properly. The rule used to settle every collision is the one this fork has used since its first upstream merge: our feature stays, their mechanism is folded around it. The light-sleep work that would roughly triple reading time per charge is still open upstream, still unreviewed, and still not taken here for the same reason as last time — it changes when the device is awake and listening, and that can only be proven on real hardware over several days.</p>
       <ul>
