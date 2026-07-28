@@ -109,3 +109,49 @@ test("a completed flash tells the user to reboot by hand", () => {
   assert.match(html, /press Reset, then Power/i);
   assert.doesNotMatch(html, /is rebooting into the new build/);
 });
+
+// --- Experimental build ---------------------------------------------------
+// The experimental build is a SEPARATE payload from the stable one. It must never
+// erase, never touch the bootloader or partition table, and never read from
+// firmware/latest/ — otherwise flashing it would overwrite the user's way back.
+const experimental = readJson("./manifest-experimental.json");
+
+test("experimental manifest keeps user data and is fully separate from the stable build", () => {
+  assert.equal(experimental.erase, false);
+  assert.equal(experimental.builds[0].chipFamily, "ESP32-C3");
+  const parts = experimental.builds[0].parts;
+  const byPath = Object.fromEntries(parts.map((p) => [p.path, p.offset]));
+  assert.deepEqual(Object.keys(byPath).sort(), [
+    "firmware/experimental/boot_app0.bin",
+    "firmware/experimental/firmware.bin",
+  ]);
+  assert.equal(byPath["firmware/experimental/boot_app0.bin"], OFFSET.boot_app0);
+  assert.equal(byPath["firmware/experimental/firmware.bin"], OFFSET.app);
+  // The stable payload must stay reachable so "Update my reader" is a real way back.
+  for (const p of parts) assert.ok(!p.path.includes("firmware/latest/"), p.path);
+});
+
+test("the experimental button is wired, confirmed, and warns it is untested", () => {
+  assert.match(html, /id="btnExperimental"/);
+  assert.match(html, /runFlash\("experimental"\)/);
+  assert.match(html, /manifest-experimental\.json/);
+  // It must sit behind a confirm(), like the erase flash does.
+  const at = html.indexOf('getElementById("btnExperimental").addEventListener');
+  assert.notEqual(at, -1, "experimental click handler not found");
+  assert.match(html.slice(at, at + 600), /confirm\(/);
+  // The page must say plainly that it is untested and that going back is possible.
+  assert.match(html, /never been tested on a device/i);
+  assert.match(html, /refuse to power off/i);
+});
+
+test("a busy flash disables the experimental button too", () => {
+  const fn = html.slice(html.indexOf("function setButtonsDisabled"));
+  assert.match(fn.slice(0, 400), /btnExperimental/);
+});
+
+test("experimental-version.txt is an experimental lector.c version string", () => {
+  const v = read("./experimental-version.txt").trim();
+  assert.match(v, /^lector\.c \d+\.\d+\.\d+-exp$/);
+  // It must not claim to be the stable build.
+  assert.notEqual(v, read("./version.txt").trim());
+});
