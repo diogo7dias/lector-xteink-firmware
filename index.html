@@ -555,18 +555,20 @@
         <p>This is a separate, untested build. It makes the reader sleep between your button presses instead of
            spinning, so the battery lasts <strong>about three times longer while you read</strong>. Measured on an
            X3 with a power meter by the author of the upstream change.</p>
-        <div class="warn"><strong>Warning: this build has never run on a device.</strong> It changes the code that
-          powers the reader off. If it is wrong, your reader may <strong>refuse to power off</strong> and will drain
-          the battery flat. Test it only if you can plug the reader in and re-flash it. Your books on the SD card are
+        <div class="warn"><strong>Warning: experimental. Expect rough edges.</strong> It changes the code that powers
+          the reader off. Test it only if you can plug the reader in and re-flash it. Your books on the SD card are
           never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
-        <p>Please check, in this order, on battery and not on USB power:</p>
+        <p><strong>Known and being worked on.</strong> The first experimental build, 1.0.0-exp, dropped some presses
+          when you tapped quickly — about two of every three registered. The current build, 1.0.1-exp, removes the
+          suspected cause: the reader no longer sleeps <em>during</em> a screen refresh, only between them. It keeps
+          the idle battery saving. Whether fast taps are now clean is exactly what this build is testing.</p>
+        <p>Please check, on battery and not on USB power:</p>
         <ol>
-          <li>Power off from the menu. The reader must actually shut down and stay down.</li>
-          <li>Power off by holding the power button. Same.</li>
-          <li>Leave it idle for ten seconds, then press a button. It must respond.</li>
-          <li>Tap buttons quickly and briefly. No taps should be missed.</li>
-          <li>Turn a page and press a button during the refresh. It must still respond.</li>
+          <li>Tap a button quickly several times in a row, in a book and in a menu. Every tap should count.</li>
+          <li>Hold the power button until it goes off. It must stay off and not wake by itself.</li>
+          <li>Leave it until the auto-sleep timeout fires. Same.</li>
+          <li>Leave it idle ten seconds, then press a button. It must respond at once.</li>
           <li>Read for a while and watch the battery.</li>
         </ol>
         <div class="verline">Experimental build on this site</div>
@@ -1093,7 +1095,7 @@ function initFlasher(){
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This experimental build has NEVER been tested on a device. It changes the code that powers the "+
+    if(confirm("This experimental build has not been tested on a device. It changes the code that powers the "+
                "reader off, so it may leave your reader unable to power off and drain the battery flat. "+
                "You can go back at any time with the Update button. Continue?")) runFlash("experimental");
   });

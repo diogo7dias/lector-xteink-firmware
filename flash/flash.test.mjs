@@ -139,9 +139,13 @@ test("the experimental button is wired, confirmed, and warns it is untested", ()
   const at = html.indexOf('getElementById("btnExperimental").addEventListener');
   assert.notEqual(at, -1, "experimental click handler not found");
   assert.match(html.slice(at, at + 600), /confirm\(/);
-  // The page must say plainly that it is untested and that going back is possible.
-  assert.match(html, /never been tested on a device/i);
-  assert.match(html, /refuse to power off/i);
+  // Durable safety claims, checked by meaning rather than one exact sentence so
+  // rewording the section does not quietly drop the warning:
+  // the confirm must say the build is untested AND that it can leave the reader
+  // unable to power off, and the page must offer a way back.
+  assert.match(html, /not been tested on a device/i);
+  assert.match(html, /unable to power off/i);
+  assert.match(html, /To go back, press <strong>Update my reader<\/strong>/);
 });
 
 test("a busy flash disables the experimental button too", () => {
