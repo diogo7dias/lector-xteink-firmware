@@ -551,26 +551,16 @@
       </div>
 
       <div class="rescue">
-        <h3>Experimental build — much longer battery</h3>
-        <p>This is a separate, untested build. It makes the reader sleep between your button presses instead of
-           spinning, so the battery lasts <strong>about three times longer while you read</strong>. Measured on an
-           X3 with a power meter by the author of the upstream change.</p>
-        <div class="warn"><strong>Warning: experimental. Expect rough edges.</strong> It changes the code that powers
-          the reader off. Test it only if you can plug the reader in and re-flash it. Your books on the SD card are
-          never touched.
+        <h3>Experimental build</h3>
+        <p><strong>Nothing here is ahead of the stable build right now.</strong> The longer-battery work that sat in
+           this channel for three days passed testing on both an X3 and an X4, and it is now in <strong>0.7.0</strong>,
+           which the Update button above installs. The build still parked on this button, 1.0.2-exp, is that same code
+           under its old test name, so there is no reason to flash it.</p>
+        <p>This button will hold the next unproven change when there is one. When it does, this section will say what
+           the change is and what to check.</p>
+        <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
+          reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
-        <p><strong>Known and being worked on.</strong> The first experimental build, 1.0.0-exp, dropped some presses
-          when you tapped quickly — about two of every three registered. The current build, 1.0.1-exp, removes the
-          suspected cause: the reader no longer sleeps <em>during</em> a screen refresh, only between them. It keeps
-          the idle battery saving. Whether fast taps are now clean is exactly what this build is testing.</p>
-        <p>Please check, on battery and not on USB power:</p>
-        <ol>
-          <li>Tap a button quickly several times in a row, in a book and in a menu. Every tap should count.</li>
-          <li>Hold the power button until it goes off. It must stay off and not wake by itself.</li>
-          <li>Leave it until the auto-sleep timeout fires. Same.</li>
-          <li>Leave it idle ten seconds, then press a button. It must respond at once.</li>
-          <li>Read for a while and watch the battery.</li>
-        </ol>
         <div class="verline">Experimental build on this site</div>
         <div class="verval"><span id="flashExperimentalVersion">…</span></div>
         <div class="actions">
@@ -635,6 +625,17 @@
     </details>
 
     <div class="panel whatsnew">
+      <h3>What's new in lector.c 0.7.0</h3>
+      <p>The reader used to stay fully awake between your button presses, spinning through a loop that did nothing but ask "has a button been pressed yet?" thousands of times a second. It now sleeps in that gap and wakes on the press. The change comes from upstream CrossPoint, where its author measured it on an X3 with a power meter: about <strong>three times longer active reading</strong>, an idle draw of roughly 2.93 mA on a page, and about 30.24 mC per page turn.</p>
+      <p>This build spent three days in the experimental channel and did not survive the first one intact. What follows is the whole of it, including the part that went wrong.</p>
+      <ul>
+        <li><strong>The first attempt dropped roughly one press in three.</strong> Sleeping between presses is safe. This also slept <em>during</em> a screen refresh, in 20 ms slices — and the front and side buttons are not simple on/off pins the chip can wake on. They are resistor-ladder inputs on a single analogue pin, which can only be read by asking. A tap that began and ended inside one sleeping slice was never asked about, so it never happened. Every screen update is a refresh, so menus dropped presses exactly like books did.</li>
+        <li><strong>It was reported upstream with the mechanism, and fixed there.</strong> Three builds were flashed to an X4 to isolate it — the full change, the change with in-refresh sleeping removed, and the stable build as a control — and the result went to the change's author as a comparison table. He reproduced it, disagreed with the first guess at the cause, found two deeper reasons, and fixed both. Sleeping halts the operating system's clock without telling it, so a pause written as "wait 10 ms" was really lasting about 210 ms; and the reader was handed back too little time to finish even one pass of its own loop between slices. Both are corrected upstream, and he reports no measurable energy cost for the correction.</li>
+        <li><strong>Tested on both readers before it came here.</strong> Eight rapid taps give eight page turns in a book and eight moves in a menu, on an X4 and on an X3. Powering off from the menu and by holding the power button both work on battery with nothing plugged in — that last one matters more than it sounds, because sleeping holds a pin high that the battery latch also uses, and getting it wrong means a reader that will not switch off.</li>
+        <li><strong>Tilt page turn is gone.</strong> The X3 has a motion sensor and could turn pages by tilting; the X4 has none, so the setting was invisible there. It went unused, and its driver, its setting, and its text in all 31 languages are removed. Your other settings are untouched.</li>
+        <li><strong>Five more fixes merged from upstream.</strong> Wi-Fi file transfer picks its second port from the first rather than assuming one; ruby text (the small pronunciation glosses above Japanese and Chinese characters) stops reserving memory for glosses that are not there; the reading-position extension is offered only to the official sync server instead of to every server; the motion sensor is powered down properly on readers that have one; and the unbricking instructions are written down.</li>
+        <li><strong>The hardware kit underneath moved up.</strong> Detecting whether a reader is an X3 or an X4 was done here with a hand-written probe; that job now belongs to the shared kit upstream, and 134 lines of ours came out. This is why the X3 was tested separately before release rather than trusted to be fine.</li>
+      </ul>
       <h3>What's new in lector.c 0.6.1</h3>
       <p>0.6.0's tabbed menu went onto a device and came back with two faults, both of which were mine. The five tab labels measured 531 pixels against the 460 the bar has, so "Device" was painted past the right edge and shown as "De"; and holding Up or Down walked into the tab's rows rather than moving between tabs, which is the natural thing to try when a bar of tabs is in front of you.</p>
       <ul>
