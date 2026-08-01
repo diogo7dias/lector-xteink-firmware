@@ -552,7 +552,7 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>0.7.0-wire13: a one-off test build. It is not a new version, and there is nothing in it for you.</strong> It exists to answer one hardware question before the next release. Upstream's kit says pin GPIO13 on the X3 switches the SD card's power; this firmware has always used that same pin to switch the reader off. Both cannot be true. This build simply stops touching that pin on an X3, so that trying to switch the reader off answers the question: if it still switches off, the pin was never the off switch and upstream is right. Unless you are helping test that, use the Update button above.</p>
+        <p><strong>0.7.2-exp: the hardware kit underneath moves up fourteen versions.</strong> That kit had been held back over one disagreement: it says pin GPIO13 on the X3 switches the SD card's power, while this firmware had always used that pin to hold the battery on. A probe build settled it on a device. The X3 still switched off with our handling removed, so the pin was never the off switch there; and the sleep picture came back half drawn, because that picture is read from the SD card and our handling was the only thing keeping the card powered. The pin now belongs to the kit on the X3, and stays ours on the X4. The kit also brings a ghosting fix, partial-refresh support, revised greyscale, and an on-demand memory reclaim. Untested on a device.</p>
         <ul>
           <li><strong>The Recent Books button is gone, and so is the screen behind it.</strong> The home screen already
             lists every book you have in progress, with its author and its percentage. The button opened a second view

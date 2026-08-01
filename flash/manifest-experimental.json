@@ -1,6 +1,6 @@
 {
   "name": "Lector (experimental)",
-  "version": "lector.c 0.7.0-wire13",
+  "version": "lector.c 0.7.2-exp",
   "erase": false,
   "builds": [
     {
