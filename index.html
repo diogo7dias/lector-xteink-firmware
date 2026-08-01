@@ -552,7 +552,7 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>0.7.2-exp: the hardware kit underneath moves up fourteen versions.</strong> That kit had been held back over one disagreement: it says pin GPIO13 on the X3 switches the SD card's power, while this firmware had always used that pin to hold the battery on. A probe build settled it on a device. The X3 still switched off with our handling removed, so the pin was never the off switch there; and the sleep picture came back half drawn, because that picture is read from the SD card and our handling was the only thing keeping the card powered. The pin now belongs to the kit on the X3, and stays ours on the X4. The kit also brings a ghosting fix, partial-refresh support, revised greyscale, and an on-demand memory reclaim. Untested on a device.</p>
+        <p><strong>Nothing here is ahead of the stable build right now.</strong> 0.7.2-exp tried to move the hardware kit underneath forward by fourteen versions. On an X3 it painted the sleep picture almost blank: the kit replaces the greyscale waveform tables, and the sleep picture is the one screen that uses them. It has been withdrawn. The battery saving it was wanted for turns out to be in the stable build already — 0.7.1 cuts the SD card's power when the reader switches off, which is exactly what that kit change was for. The build still parked on this button, 0.7.3-exp, is the same code as stable 0.7.1 under its old test name, so there is no reason to flash it.</p>
         <ul>
           <li><strong>The Recent Books button is gone, and so is the screen behind it.</strong> The home screen already
             lists every book you have in progress, with its author and its percentage. The button opened a second view
