@@ -552,7 +552,7 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>0.7.4-exp: two upstream fixes that had to be applied by hand.</strong> Spaces between Korean words were being swallowed: any two words meeting where the layout engine is allowed to break a line had the gap between them dropped, which is right for Chinese and Japanese and wrong for Hangul. Gaps are now only closed for words genuinely joined together in the book's own markup. And an image page drawn immediately after returning from a KOReader sync could appear with the old screen still mixed into it, because image pages skip the normal refresh cycle; they now clear to a clean base first. <strong>Every book re-reads its layout once</strong> after this update, so the first open of each book is slower. Reading positions and per-book settings are kept. Untested on a device.</p>
+        <p><strong>Nothing here is ahead of the stable build right now.</strong> The two upstream fixes that sat in this channel were tested and are now in 0.7.3, which the Update button above installs. The build still parked on this button, 0.7.4-exp, is that same code under its test name, so there is no reason to flash it.<strong>Every book re-reads its layout once</strong> after this update, so the first open of each book is slower. Reading positions and per-book settings are kept. Untested on a device.</p>
         <ul>
           <li><strong>The Recent Books button is gone, and so is the screen behind it.</strong> The home screen already
             lists every book you have in progress, with its author and its percentage. The button opened a second view
@@ -637,6 +637,13 @@
     </details>
 
     <div class="panel whatsnew">
+      <h3>What's new in lector.c 0.7.3</h3>
+      <p>Two fixes from upstream, both of which had to be applied by hand because this firmware had already changed the same code.</p>
+      <ul>
+        <li><strong>Spaces between Korean words are back.</strong> The layout engine is allowed to break a line between almost any two Chinese or Japanese characters, and it was treating that permission as a sign the two words were joined, so it closed the gap between them. That is correct for Chinese and Japanese, which are written without spaces, and wrong for Korean, which is not. A gap is now only closed when the book's own markup genuinely runs the two words together.</li>
+        <li><strong>An image page after a sync is clean.</strong> Pages with an image on them skip the normal screen-refresh cycle and paint in two quick passes instead. Coming back from a KOReader sync the reader restarts quietly, and those two quick passes then ran over whatever the screen was still holding, leaving the old view mixed into the picture. Image pages now clear to a proper base first.</li>
+      </ul>
+      <p><strong>Every book re-reads its layout once</strong> after this update, so the first time you open each book it is slower than usual. Your place in every book, and any settings you set per book, are kept.</p>
       <h3>What's new in lector.c 0.7.2</h3>
       <p>The hardware kit this firmware sits on had been left fourteen versions behind since 0.7.0, held there by a single disagreement about one pin. That is now settled and the kit is current.</p>
       <ul>

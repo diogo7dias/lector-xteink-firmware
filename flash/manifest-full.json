@@ -1,6 +1,6 @@
 {
   "name": "Lector (full rescue)",
-  "version": "lector.c 0.7.2",
+  "version": "lector.c 0.7.3",
   "erase": true,
   "builds": [
     {
