@@ -155,7 +155,11 @@ test("a busy flash disables the experimental button too", () => {
 
 test("experimental-version.txt is an experimental lector.c version string", () => {
   const v = read("./experimental-version.txt").trim();
-  assert.match(v, /^lector\.c \d+\.\d+\.\d+-exp$/);
+  // Any suffix is allowed, not just "-exp": this channel also carries one-off probe
+  // builds named for what they test (e.g. "0.7.0-wire13"). What the guard is for is
+  // unchanged -- a bare "lector.c 0.7.1" must never appear on the experimental button,
+  // because that button is where untested firmware lives.
+  assert.match(v, /^lector\.c \d+\.\d+\.\d+-[a-z0-9]+$/);
   // It must not claim to be the stable build.
   assert.notEqual(v, read("./version.txt").trim());
 });

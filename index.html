@@ -552,7 +552,7 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>0.7.3-exp: a bigger book list, a smaller home screen, and six fixes from upstream.</strong> Removing the Recent Books button freed a band of screen, and the in-progress list now grows into it instead of leaving it blank. Two faults the X4 found earlier are fixed: the menu no longer leaves a hole above the button hints, and the font family and size save the moment they change rather than when Text Settings is left. One known gap: a size or font changed from inside a book is still only written to that book when the settings screen is closed normally.</p>
+        <p><strong>0.7.0-wire13: a one-off test build. It is not a new version, and there is nothing in it for you.</strong> It exists to answer one hardware question before the next release. Upstream's kit says pin GPIO13 on the X3 switches the SD card's power; this firmware has always used that same pin to switch the reader off. Both cannot be true. This build simply stops touching that pin on an X3, so that trying to switch the reader off answers the question: if it still switches off, the pin was never the off switch and upstream is right. Unless you are helping test that, use the Update button above.</p>
         <ul>
           <li><strong>The Recent Books button is gone, and so is the screen behind it.</strong> The home screen already
             lists every book you have in progress, with its author and its percentage. The button opened a second view
@@ -637,6 +637,17 @@
     </details>
 
     <div class="panel whatsnew">
+      <h3>What's new in lector.c 0.7.1</h3>
+      <p>The home screen had a Recent Books button sitting between Browse Files and OPDS Browser. It opened a list of the books you have in progress — which is what the home screen was already showing above it, with the same titles, the same authors and the same percentages. It is gone, and the space it was using now belongs to the list that was doing its job.</p>
+      <ul>
+        <li><strong>The book list fills the screen.</strong> It was drawn into a fixed-height tile with the menu pinned below it, so a shorter menu simply left a blank band. The menu is now anchored to the bottom, the list runs from the header down to it, and the list will draw as many books as fit — up to the thirteen the reader remembers, rather than the eight it was silently capped at.</li>
+        <li><strong>The Back button on the home screen.</strong> It could be set to open Recent Books. That option is gone with the screen. If you had it set that way, Back now resumes your last book instead. Nothing else you have set changes.</li>
+        <li><strong>Settings &rarr; Display &rarr; Author On Home.</strong> Titles are followed by the author's initials — "by GW". Set this to Full Name and you get "by Gene Wolfe". Initials stays the default.</li>
+        <li><strong>A dictionary lookup no longer runs out of memory.</strong> Compressed dictionaries (the <code>.dict.dz</code> kind) had their whole definition block read into memory at once. Index files are also opened once per lookup now instead of repeatedly, which makes every lookup quicker.</li>
+        <li><strong>Text settings save the moment you change them.</strong> They were written when you left the screen, so a reader that ran out of battery on that screen lost the change. One gap remains, and it is worth knowing: a font or size changed from <em>inside a book</em> belongs to that book alone, and is still only written when you close the settings screen normally. Changed from the Settings menu, it saves immediately.</li>
+        <li><strong>Book text no longer needs one unbroken block of memory.</strong> It was held in a structure that must sit in a single run; on a reader whose memory has been chopped into small pieces by a long session, a large chapter could fail to find one. It now uses many small blocks instead.</li>
+        <li><strong>Smaller things.</strong> The language list is ordered by each language's own name rather than by its internal code, so it reads in a sensible order. The update screen printed "Cancel" and "Update" twice — once as touch targets, which no Xteink has.</li>
+      </ul>
       <h3>What's new in lector.c 0.7.0</h3>
       <p>The reader used to stay fully awake between your button presses, spinning through a loop that did nothing but ask "has a button been pressed yet?" thousands of times a second. It now sleeps in that gap and wakes on the press. The change comes from upstream CrossPoint, where its author measured it on an X3 with a power meter: about <strong>three times longer active reading</strong>, an idle draw of roughly 2.93 mA on a page, and about 30.24 mC per page turn.</p>
       <p>This build spent three days in the experimental channel and did not survive the first one intact. What follows is the whole of it, including the part that went wrong.</p>
