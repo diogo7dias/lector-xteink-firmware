@@ -504,11 +504,11 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector.c 0.6.1:</strong> the tab bar fits on screen, and holding Up or Down switches tab. Reports version <strong>lector.c 0.6.1</strong> on device.
+        <br><strong>What's new — lector.c 0.7.4:</strong> a book keeps the text settings you give it the moment you give them. Reports version <strong>lector.c 0.7.4</strong> on device.
         <ul>
-          <li><strong>The tab bar no longer runs off the right edge.</strong> In 0.6.0 the five labels were wider than the screen and the last one was cut mid-word. Two of them lose a word they were not carrying — "This Book" is now "Book", "Sleep Screen" is now "Sleep" — which brings the bar from 531 to 392 pixels of the 460 available. The bar also refuses to paint past its own right edge now, whatever the labels say.</li>
-          <li><strong>Hold Up or Down to switch tab.</strong> A tap still moves one step, wrapping onto the tab bar at either end of a list. Holding now changes tab instead of repeating the step, the same gesture Text Settings and Settings already use. Confirm on the tab bar still moves to the next tab, and the Confirm hint at the bottom now names the tab it will take you to.</li>
-          <li><strong>A tab switch made from the tab bar stays on the tab bar.</strong> Each tab still remembers its own row, but arriving by hold no longer drops you onto that row — which could otherwise have put Confirm on Delete Wallpaper.</li>
+          <li><strong>A font size set inside a book is saved at once.</strong> It used to be recorded against the book only when you left the Reader Settings screen, so switching the reader off while still on that screen lost it. Every row of that screen now writes to the book as you change it.</li>
+          <li><strong>Paragraph numbers and Paperback Look survive a font change.</strong> Those are set from the in-book menu, and changing a book's font could previously drag your global values onto the book instead of keeping its own.</li>
+          <li><strong>Nothing re-reads its layout after this update.</strong> Your books, your places in them, and their settings are untouched.</li>
         </ul>
         <strong>Also in 0.5.1:</strong>
         <ul>
@@ -552,26 +552,9 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>0.7.5-exp &mdash; a book keeps its own text settings the moment you change them.</strong> One fix,
-          nothing else. Your books and your reading positions are untouched, and no book has to re-read its layout
-          after this one. Untested on a device.</p>
-        <ul>
-          <li><strong>The problem.</strong> Open a book, open its Reader Settings, change the font size. The page
-            changed straight away, but the change was only recorded against the book when you pressed Back to leave
-            that screen. Switch the reader off while still on the screen and the book forgot it. The global default
-            kept the new size; the book you were reading did not.</li>
-          <li><strong>The fix.</strong> Every row of that screen &mdash; font, size, line spacing, margins, alignment,
-            indent, hyphenation, all of them &mdash; is now written against the book at the instant you change it.</li>
-          <li><strong>Two details worth knowing.</strong> Changing the font of a book that shows paragraph numbers no
-            longer risks its numbering or its Paperback Look setting. And if you change a row and then change it
-            straight back, a book that was following your global settings goes on following them, instead of quietly
-            becoming a book with its own settings.</li>
-        </ul>
-        <p>Please check, in this order: change a font size inside a book and switch the reader off without leaving the
-           screen &mdash; the size must still be there when you open that book again. Do the same with a margin and
-           with hyphenation. Then change a size and change it straight back: the in-book menu must NOT then offer
-           "Reset Reader Settings". Last, turn paragraph numbers on for a book and change its font size &mdash; the
-           numbers must stay on.</p>
+        <p><strong>Nothing here is ahead of the stable build right now.</strong> The per-book text settings fix that
+          sat in this channel as 0.7.5-exp was tested on an X4 and is now in 0.7.3&#8202;&rarr;&#8202;0.7.4, which the
+          Update button above installs. There is no reason to flash this button today.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
@@ -639,6 +622,15 @@
     </details>
 
     <div class="panel whatsnew">
+      <h3>What's new in lector.c 0.7.4</h3>
+      <p>One fix. A book now keeps the text settings you give it the moment you give them, instead of at the moment you leave the screen.</p>
+      <ul>
+        <li><strong>What was wrong.</strong> Open a book, open its Reader Settings, change the font size. The page changed at once, so the change looked done. It was not recorded against the book until you pressed Back to leave that screen. Switch the reader off while still on the screen and the book forgot it. Your global default kept the new size; the book you were actually reading went back to what it had.</li>
+        <li><strong>What changed.</strong> Every row of that screen — font, size, line spacing, paragraph spacing, alignment, margins, indent, hyphenation, the lot — is written against the book at the instant you change it. The screen already saved your global settings on every row; it simply never told the book.</li>
+        <li><strong>Your paragraph numbers and Paperback Look are safe.</strong> Those three are set from the in-book menu, not from that screen, and the settings screen reports the global values for them. Changing a book's font used to be able to drag the global values onto the book. It takes the book's own now.</li>
+        <li><strong>Changing your mind costs nothing.</strong> Change a row and change it straight back, and a book that was following your global settings goes on following them. It does not quietly become a book with settings of its own.</li>
+      </ul>
+      <p>Nothing re-reads its layout after this update. Your books, your places in them, and their settings are untouched. Tested on an X4.</p>
       <h3>What's new in lector.c 0.7.3</h3>
       <p>Two fixes from upstream, both of which had to be applied by hand because this firmware had already changed the same code.</p>
       <ul>
