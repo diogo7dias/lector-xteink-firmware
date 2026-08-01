@@ -552,7 +552,7 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>0.7.3-exp: the hardware kit underneath moves up fourteen versions, second attempt.</strong> The first attempt blanked the sleep picture on an X3. The cause was not what it looked like. Pin GPIO13 is the battery latch on an X4 and the SD card's power switch on an X3, and the first attempt stopped this firmware driving it on the X3 on the grounds that the kit now owns it. The kit cannot own it: that pin is a flash pad, the chip pulls unused flash pads low every time the reader dozes, and only a deliberate pad hold survives that. So the card lost power while dozing, and the sleep picture is read from the card. This build keeps the hold on both readers and takes the kit anyway. The kit brings a ghosting fix, partial-refresh support and an on-demand memory reclaim. Untested on a device.</p>
+        <p><strong>Nothing here is ahead of the stable build right now.</strong> The hardware-kit work that sat in this channel passed on both an X3 and an X4 and is now in 0.7.2, which the Update button above installs. The build still parked on this button, 0.7.3-exp, is that same code under its test name, so there is no reason to flash it.</p>
         <ul>
           <li><strong>The Recent Books button is gone, and so is the screen behind it.</strong> The home screen already
             lists every book you have in progress, with its author and its percentage. The button opened a second view
@@ -637,6 +637,14 @@
     </details>
 
     <div class="panel whatsnew">
+      <h3>What's new in lector.c 0.7.2</h3>
+      <p>The hardware kit this firmware sits on had been left fourteen versions behind since 0.7.0, held there by a single disagreement about one pin. That is now settled and the kit is current.</p>
+      <ul>
+        <li><strong>The disagreement, and why it mattered.</strong> Pin GPIO13 is the battery latch on an X4 — hold it high and the reader stays alive, drop it and it switches off. The kit says that on an X3 the same pin switches the SD card's power instead. Both cannot be true, and being wrong meant either a reader that would not switch off or a card that lost power at the wrong moment. It was settled by building a firmware that simply stopped touching the pin on an X3 and trying it: the reader still switched off, so the pin is not the off switch there. The kit was right.</li>
+        <li><strong>But the kit cannot own that pin by itself.</strong> Two builds proved it, both by drawing the sleep picture half-finished or almost blank. That pin is a flash pad, and the chip pulls unused flash pads low every time the reader dozes. Only a deliberate hold survives that, and only this firmware knows to apply one — the kit has no reason to suspect the pin is special. The sleep picture is read from the SD card, so the card losing power mid-doze is exactly what a half-drawn picture looks like. The hold now stays on both readers, under both meanings.</li>
+        <li><strong>What the kit brings.</strong> A ghosting fix and partial-refresh support for the UC8179 panel, revised greyscale waveforms for it, an on-demand memory reclaim, and display-controller detection that probes the panel over its own bus rather than trusting a factory value in flash — that value can be overwritten by a full flash from another unit, and then names the wrong screen.</li>
+        <li><strong>Tested on both readers</strong> before release: sleep picture, switching off from the menu and by holding the power button on battery, reading from the card, waking, and a book with images in it.</li>
+      </ul>
       <h3>What's new in lector.c 0.7.1</h3>
       <p>The home screen had a Recent Books button sitting between Browse Files and OPDS Browser. It opened a list of the books you have in progress — which is what the home screen was already showing above it, with the same titles, the same authors and the same percentages. It is gone, and the space it was using now belongs to the list that was doing its job.</p>
       <ul>
