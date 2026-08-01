@@ -552,24 +552,26 @@
 
       <div class="rescue">
         <h3>Experimental build</h3>
-        <p><strong>Nothing here is ahead of the stable build right now.</strong> The two upstream fixes that sat in this channel were tested and are now in 0.7.3, which the Update button above installs. The build still parked on this button, 0.7.4-exp, is that same code under its test name, so there is no reason to flash it.<strong>Every book re-reads its layout once</strong> after this update, so the first open of each book is slower. Reading positions and per-book settings are kept. Untested on a device.</p>
+        <p><strong>0.7.5-exp &mdash; a book keeps its own text settings the moment you change them.</strong> One fix,
+          nothing else. Your books and your reading positions are untouched, and no book has to re-read its layout
+          after this one. Untested on a device.</p>
         <ul>
-          <li><strong>The Recent Books button is gone, and so is the screen behind it.</strong> The home screen already
-            lists every book you have in progress, with its author and its percentage. The button opened a second view
-            of what was already on the screen. If you had the home Back button set to open it, Back now resumes your
-            last book instead.</li>
-          <li><strong>Settings &rarr; Display &rarr; Author On Home.</strong> Choose Initials or Full Name. Initials is
-            the default and is what you have today, so nothing changes unless you change it.</li>
-          <li><strong>A dictionary lookup no longer runs out of memory</strong> on compressed definitions, and index
-            files are opened once per lookup instead of repeatedly.</li>
-          <li><strong>Text settings save the moment you change them</strong> rather than when you leave the screen.</li>
-          <li><strong>Book text is stored in a form that needs no single unbroken block of memory</strong>, which
-            should help heavy chapters on a full device.</li>
-          <li><strong>The language list is ordered by each language's own name</strong>, and the update screen no
-            longer prints "Cancel" and "Update" twice.</li>
+          <li><strong>The problem.</strong> Open a book, open its Reader Settings, change the font size. The page
+            changed straight away, but the change was only recorded against the book when you pressed Back to leave
+            that screen. Switch the reader off while still on the screen and the book forgot it. The global default
+            kept the new size; the book you were reading did not.</li>
+          <li><strong>The fix.</strong> Every row of that screen &mdash; font, size, line spacing, margins, alignment,
+            indent, hyphenation, all of them &mdash; is now written against the book at the instant you change it.</li>
+          <li><strong>Two details worth knowing.</strong> Changing the font of a book that shows paragraph numbers no
+            longer risks its numbering or its Paperback Look setting. And if you change a row and then change it
+            straight back, a book that was following your global settings goes on following them, instead of quietly
+            becoming a book with its own settings.</li>
         </ul>
-        <p>Please check: the home screen has four buttons and no Recent Books; your books still open from the list;
-           the new author setting does what it says; and nothing on the update or language screens looks wrong.</p>
+        <p>Please check, in this order: change a font size inside a book and switch the reader off without leaving the
+           screen &mdash; the size must still be there when you open that book again. Do the same with a margin and
+           with hyphenation. Then change a size and change it straight back: the in-book menu must NOT then offer
+           "Reset Reader Settings". Last, turn paragraph numbers on for a book and change its font size &mdash; the
+           numbers must stay on.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
