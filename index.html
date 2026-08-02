@@ -455,6 +455,8 @@
         <li><strong>Invert</strong> — only if a wallpaper shows up looking like a photo negative on your panel.</li>
         <li><strong>Re-target</strong> — drop a <code>.pxc</code> straight in; switch <em>Screen</em> to
           re-fit and re-encode for the other reader (the badge then reads e.g. <code>X3 → X4</code>).</li>
+        <li><strong>Names</strong> &mdash; a downloaded <code>.pxc</code> is named for the reader it was fitted
+          to, e.g. <code>sunset_X3.pxc</code>. Re-target it and the name follows the new screen.</li>
       </ul>
       <p class="foot">All conversion is local (HTML canvas). No server, no upload.</p>
     </details>
@@ -504,11 +506,18 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector.c 0.7.4:</strong> a book keeps the text settings you give it the moment you give them. Reports version <strong>lector.c 0.7.4</strong> on device.
+        <br><strong>What's new — lector.c 0.8.0:</strong> you can delete a book from inside it, and plain text files finally have settings of their own. Reports version <strong>lector.c 0.8.0</strong> on device.
+        <ul>
+          <li><strong>Delete Book, from inside the book.</strong> It sits in the in-book menu under This Book, below Remove from Recents. Remove only unfiles a book; Delete erases the file itself, together with its cache and its place in the recent list. It asks first, and it cannot be undone.</li>
+          <li><strong>Plain text files have a menu now.</strong> They had none at all. Press the confirm button while reading a .txt and a small panel opens with Font, Size and Delete Book.</li>
+          <li><strong>Text files open at the smallest size.</strong> A .txt is usually a dump rather than a typeset book, so it reads best packed small. Its font and size are kept apart from the reader font your EPUBs use, so changing one never moves the other.</li>
+          <li><strong>Changing a text file's font keeps your place.</strong> The page count changes with the font, so the reader lands on the page holding the words you were on, not on the same page number. Each text file re-reads its layout once after this update, which shows the Indexing screen briefly.</li>
+          <li><strong>Your EPUBs are untouched.</strong> Books, places and settings all carry over; nothing re-reads its layout.</li>
+        </ul>
+        <strong>Also in 0.7.4:</strong>
         <ul>
           <li><strong>A font size set inside a book is saved at once.</strong> It used to be recorded against the book only when you left the Reader Settings screen, so switching the reader off while still on that screen lost it. Every row of that screen now writes to the book as you change it.</li>
           <li><strong>Paragraph numbers and Paperback Look survive a font change.</strong> Those are set from the in-book menu, and changing a book's font could previously drag your global values onto the book instead of keeping its own.</li>
-          <li><strong>Nothing re-reads its layout after this update.</strong> Your books, your places in them, and their settings are untouched.</li>
         </ul>
         <strong>Also in 0.5.1:</strong>
         <ul>
@@ -550,11 +559,13 @@
         </ul>
       </div>
 
-      <div class="rescue">
+      <!-- Hidden while nothing is under test. The button, its handler and its manifest all stay
+           wired up; only the panel is out of sight, so putting a build back on this channel is a
+           matter of removing the hidden attribute below and publishing the payload. -->
+      <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>Nothing here is ahead of the stable build right now.</strong> The per-book text settings fix that
-          sat in this channel as 0.7.5-exp was tested on an X4 and is now in 0.7.3&#8202;&rarr;&#8202;0.7.4, which the
-          Update button above installs. There is no reason to flash this button today.</p>
+        <p><strong>Nothing is being tested right now.</strong> Everything that has been proven on a reader is in the
+          stable build, which the Update button above installs. When a build needs testing it appears here.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
@@ -972,7 +983,14 @@ function convert(f){
              : S.mode==="dither" ? true : S.mode==="threshold" ? false : autoWantsDither(g);
   const idx=quantize(g,dither);
   const bytes = S.fmt==="pxc" ? encodePxc(idx,S.invert) : encodeBmp(idx);
-  const base = f.name.replace(/\.[^.]+$/,"");
+  let base = f.name.replace(/\.[^.]+$/,"");
+  // A .pxc carries no record of which reader it was fitted for, and the two are not
+  // interchangeable, so the target goes in the name. Any suffix already there is
+  // dropped first: re-targeting an X3 file to an X4 must read wall_X4, not wall_X3_X4.
+  if(S.fmt==="pxc"){
+    const target = deviceForSize(S.w,S.h);
+    if(target){ base = base.replace(/_(X3|X4)$/i,"") + "_" + target; }
+  }
   return { idx, bytes, dither, filename: base+"."+S.fmt };
 }
 
