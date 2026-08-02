@@ -1,6 +1,6 @@
 {
   "name": "Lector (experimental)",
-  "version": "lector.c 0.8.2-exp",
+  "version": "lector.c 0.8.3-exp",
   "erase": false,
   "builds": [
     {

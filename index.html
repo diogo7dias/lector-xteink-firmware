@@ -576,9 +576,11 @@
            payload. -->
       <div class="rescue" id="experimentalPanel">
         <h3>Experimental build</h3>
-        <p><strong>Under test right now: new paragraph numbers.</strong> The small numbers in the reader margin are
-          drawn in a different font, Spleen, so the digits stay separate instead of blurring together. They are also
-          smaller than before. Nothing else in the reader changes.</p>
+        <p><strong>Under test right now: new paragraph numbers, and a size for them.</strong> The small numbers in the
+          reader margin are drawn in a different font, Spleen, so the digits stay separate instead of blurring
+          together. A new <strong>Number Size</strong> row sets how big they are — Small, or Double. Double is the
+          default, and books you have already opened adopt it. It sits in Settings &rarr; Reader, and in the in-book
+          menu under Paragraph Numbers. Nothing else in the reader changes.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
@@ -1185,8 +1187,8 @@ function initFlasher(){
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This experimental build has not been tested on a device. It changes the font used for the "+
-               "paragraph numbers in the reader margin. "+
+    if(confirm("This experimental build has not been tested on a device. It changes the font and the size of the "+
+               "paragraph numbers in the reader margin, and books you have already opened adopt the new size. "+
                "You can go back at any time with the Update button. Continue?")) runFlash("experimental");
   });
   document.getElementById("btnRescue").addEventListener("click",()=>{
