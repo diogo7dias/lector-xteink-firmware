@@ -1,1 +1,1 @@
-lector.c 0.7.5-exp
+lector.c 0.8.2-exp

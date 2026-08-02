@@ -140,11 +140,13 @@ test("the experimental button is wired, confirmed, and warns it is untested", ()
   assert.notEqual(at, -1, "experimental click handler not found");
   assert.match(html.slice(at, at + 600), /confirm\(/);
   // Durable safety claims, checked by meaning rather than one exact sentence so
-  // rewording the section does not quietly drop the warning:
-  // the confirm must say the build is untested AND that it can leave the reader
-  // unable to power off, and the page must offer a way back.
+  // rewording the section does not quietly drop the warning: the confirm must say
+  // the build is untested and must name what it changes, and the page must offer a
+  // way back. The specific risk sentence is NOT asserted here — it belongs to
+  // whichever build is on the channel, and an assertion on last build's wording
+  // pushes the next one into repeating a claim that is not true of it.
   assert.match(html, /not been tested on a device/i);
-  assert.match(html, /unable to power off/i);
+  assert.match(html, /It changes the /i);
   assert.match(html, /To go back, press <strong>Update my reader<\/strong>/);
 });
 
