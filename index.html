@@ -506,7 +506,14 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector.c 0.8.0:</strong> you can delete a book from inside it, and plain text files finally have settings of their own. Reports version <strong>lector.c 0.8.0</strong> on device.
+        <br><strong>What's new — lector.c 0.8.1:</strong> your place in a book survives a settings change, and books get a proper paragraph look. Reports version <strong>lector.c 0.8.1</strong> on device.
+        <ul>
+          <li><strong>Changing a setting no longer loses your page.</strong> A page number is a product of the layout, so a new font, indent, paragraph spacing or rotation used to leave you on a page that no longer meant anything. The reader now remembers the <em>paragraph</em> you were on and finds it again afterwards. A paragraph belongs to the book; a page number belongs to the font.</li>
+          <li><strong>It lands you at the paragraph's start.</strong> If a paragraph runs onto your page from the one before, you land at its beginning, so slightly earlier than you were and never later. Re-reading a line costs nothing; skipping one is a spoiler.</li>
+          <li><strong>New reading look, applied everywhere.</strong> First line of each paragraph indented 20%, half a line of air between paragraphs, and paragraph numbers counting per chapter. Your reader and every book you have already opened adopt these once.</li>
+          <li><strong>Nothing you set yourself is lost.</strong> Books with their own settings keep every other choice; only those three values are re-seeded. A book you have already read re-lays out once on its first open, and you land back on the paragraph you were reading.</li>
+        </ul>
+        <strong>Also in 0.8.0:</strong>
         <ul>
           <li><strong>Delete Book, from inside the book.</strong> It sits in the in-book menu under This Book, below Remove from Recents. Remove only unfiles a book; Delete erases the file itself, together with its cache and its place in the recent list. It asks first, and it cannot be undone.</li>
           <li><strong>Plain text files have a menu now.</strong> They had none at all. Press the confirm button while reading a .txt and a small panel opens with Font, Size and Delete Book.</li>
