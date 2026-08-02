@@ -1,1 +1,1 @@
-lector.c 0.8.2
+lector.c 0.8.3

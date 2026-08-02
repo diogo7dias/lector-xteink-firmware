@@ -146,7 +146,7 @@ test("the experimental button is wired, confirmed, and warns it is untested", ()
   // whichever build is on the channel, and an assertion on last build's wording
   // pushes the next one into repeating a claim that is not true of it.
   assert.match(html, /not been tested on a device/i);
-  assert.match(html, /It changes the /i);
+  assert.match(html, /It changes /i);
   assert.match(html, /To go back, press <strong>Update my reader<\/strong>/);
 });
 
