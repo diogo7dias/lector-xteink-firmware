@@ -583,10 +583,13 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>Nothing is being tested right now.</strong> Everything that has been proven on a reader is in the
-          stable build, which the Update button above installs. When a build needs testing it appears here.</p>
+        <p><strong>lector.exp.1 is being tested now.</strong> It brings this firmware level with twenty-four changes
+          from upstream CrossPoint, adds touchscreen support for readers that have a touch panel, and fixes a crash
+          when opening a folder holding thousands of images. None of it has been tried on a reader yet.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
+          <br><br><strong>Your books re-read their layout once</strong> on first open after installing this, which makes
+          that one open slower. Reading positions and per-book settings are kept.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
         <div class="verline">Experimental build on this site</div>
         <div class="verval"><span id="flashExperimentalVersion">…</span></div>
@@ -1191,7 +1194,9 @@ function initFlasher(){
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This experimental build has not been tested on a device. It changes how the reader works. "+
+    if(confirm("This experimental build has not been tested on a device. It changes how reading positions are "+
+               "stored and takes in twenty-four changes from upstream, so your books re-read their layout once "+
+               "on first open. Reading positions and per-book settings are kept. "+
                "You can go back at any time with the Update button. Continue?")) runFlash("experimental");
   });
   document.getElementById("btnRescue").addEventListener("click",()=>{

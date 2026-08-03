@@ -1,1 +1,1 @@
-lector.c 0.8.3-exp
+lector.exp.1

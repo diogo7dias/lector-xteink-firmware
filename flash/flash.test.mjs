@@ -87,9 +87,13 @@ test("the old /flash/ URL redirects into the tab", () => {
   assert.match(redirect, /location\.replace\("\.\.\/#flash"\)/);
 });
 
-test("version.txt is a lector.c version string", () => {
+test("version.txt is a stable lector version string", () => {
   const v = read("./version.txt").trim();
-  assert.match(v, /^lector\.c \d+\.\d+\.\d+$/);
+  // Naming from 2026-08-03: stable builds are "lector X.Y.Z"; the "lector.c" prefix
+  // is retired. The legacy form is still accepted because the currently published
+  // stable build predates the change; drop that alternative once the next stable
+  // publish lands. Either way this must never carry an experimental name.
+  assert.match(v, /^lector(\.c)? \d+\.\d+\.\d+$/);
 });
 
 test("the full-erase flash is presented as a first-time install, not only a rescue", () => {
@@ -155,13 +159,13 @@ test("a busy flash disables the experimental button too", () => {
   assert.match(fn.slice(0, 400), /btnExperimental/);
 });
 
-test("experimental-version.txt is an experimental lector.c version string", () => {
+test("experimental-version.txt is an experimental lector version string", () => {
   const v = read("./experimental-version.txt").trim();
-  // Any suffix is allowed, not just "-exp": this channel also carries one-off probe
-  // builds named for what they test (e.g. "0.7.0-wire13"). What the guard is for is
-  // unchanged -- a bare "lector.c 0.7.1" must never appear on the experimental button,
-  // because that button is where untested firmware lives.
-  assert.match(v, /^lector\.c \d+\.\d+\.\d+-[a-z0-9]+$/);
+  // Naming from 2026-08-03: experimental builds are "lector.exp.N", a plain counter
+  // that never resets. The guard is unchanged in purpose -- a stable "lector 0.8.4"
+  // must never appear on the experimental button, because that button is where
+  // untested firmware lives. The old "lector.c X.Y.Z-suffix" form is retired.
+  assert.match(v, /^lector\.exp\.\d+$/);
   // It must not claim to be the stable build.
   assert.notEqual(v, read("./version.txt").trim());
 });
