@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
@@ -89,11 +89,10 @@ test("the old /flash/ URL redirects into the tab", () => {
 
 test("version.txt is a stable lector version string", () => {
   const v = read("./version.txt").trim();
-  // Naming from 2026-08-03: stable builds are "lector X.Y.Z"; the "lector.c" prefix
-  // is retired. The legacy form is still accepted because the currently published
-  // stable build predates the change; drop that alternative once the next stable
-  // publish lands. Either way this must never carry an experimental name.
-  assert.match(v, /^lector(\.c)? \d+\.\d+\.\d+$/);
+  // Naming from 2026-08-03: stable builds are "lector X.Y.Z". The "lector.c" prefix
+  // is retired, and the transitional alternative was dropped once 0.9.0 shipped under
+  // the new name. This must never carry an experimental name.
+  assert.match(v, /^lector \d+\.\d+\.\d+$/);
 });
 
 test("the full-erase flash is presented as a first-time install, not only a rescue", () => {
@@ -118,9 +117,13 @@ test("a completed flash tells the user to reboot by hand", () => {
 // The experimental build is a SEPARATE payload from the stable one. It must never
 // erase, never touch the bootloader or partition table, and never read from
 // firmware/latest/ — otherwise flashing it would overwrite the user's way back.
-const experimental = readJson("./manifest-experimental.json");
+// The channel is emptied whenever the build it carried is promoted to stable, so
+// these files legitimately come and go. When they are absent the panel hides itself
+// and there is nothing to check; when present, every guard below still applies.
+const hasExperimental = existsSync(new URL("./manifest-experimental.json", import.meta.url));
+const experimental = hasExperimental ? readJson("./manifest-experimental.json") : null;
 
-test("experimental manifest keeps user data and is fully separate from the stable build", () => {
+test("experimental manifest keeps user data and is fully separate from the stable build", { skip: !hasExperimental }, () => {
   assert.equal(experimental.erase, false);
   assert.equal(experimental.builds[0].chipFamily, "ESP32-C3");
   const parts = experimental.builds[0].parts;
@@ -171,7 +174,7 @@ test("a busy flash disables the experimental button too", () => {
   assert.match(fn.slice(0, 400), /btnExperimental/);
 });
 
-test("experimental-version.txt is an experimental lector version string", () => {
+test("experimental-version.txt is an experimental lector version string", { skip: !hasExperimental }, () => {
   const v = read("./experimental-version.txt").trim();
   // Naming from 2026-08-03: experimental builds are "lector.exp.N", a plain counter
   // that never resets. The guard is unchanged in purpose -- a stable "lector 0.8.4"

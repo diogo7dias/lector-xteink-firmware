@@ -500,15 +500,47 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector.c 0.8.3:</strong> paragraph numbers you can actually read, at a size you choose. Reports version <strong>lector.c 0.8.3</strong> on device.
+        <br><strong>What's new — lector 0.9.0:</strong> caught up with upstream, touchscreen support, and three fixes found on the reader. Reports version <strong>lector 0.9.0</strong> on device.
+        <div class="warn"><strong>Your books re-read their layout once</strong> on first open after this update, which
+          makes that one open slower. Reading positions and per-book settings are kept.</div>
+        <ul>
+          <li><strong>Twenty-four changes taken from upstream CrossPoint in one go.</strong> This firmware had drifted
+            almost a month behind. Everything upstream had fixed in that time is now here: a dictionary that no longer
+            runs out of memory on compressed definitions, the SD card's power rails shutting down properly on an X3,
+            spaces between Korean words surviving, and the rest. Sixteen files collided during the merge, nearly all of
+            them because the same upstream fix had already been applied here by hand; each was settled by keeping this
+            firmware's feature and folding upstream's mechanism around it.</li>
+          <li><strong>Reading positions are now anchored to the words, not the page number.</strong> Upstream changed
+            how a position is stored so it survives the page being laid out differently — a font change, a margin
+            change, a different reader entirely. Syncing with other reading apps lands in the right place because of
+            it. This is what makes your books re-read their layout once.</li>
+          <li><strong>Touchscreen support, carried in full.</strong> Neither the X3 nor the X4 has a touch panel, so
+            none of it does anything on your reader today. It is here, complete and kept in step with upstream, so that
+            a reader with a touch screen works the day it arrives rather than months later.</li>
+          <li><strong>A folder with thousands of images no longer crashes the reader.</strong> Opening one built a list
+            holding every filename in memory at once, ran the reader out of memory, and killed it outright — a sleep
+            folder full of wallpapers was enough. Names are now held packed together in one block with a hard ceiling
+            on the whole thing, so a folder too large to list in full shows what fits and says "partial" in its title
+            instead of taking the reader down. The image viewer built its list the same way and would have crashed one
+            step later; it was fixed too.</li>
+          <li><strong>Confirming something no longer carries the button press into the book.</strong> A confirmation
+            acts the moment you press, so the button is often still down when it closes. The reader took over
+            mid-press, read it as a long hold it never saw begin, and ran whatever your long-press button is set to —
+            which, on the sync setting, quietly switched on Wi-Fi and started syncing after deleting a wallpaper. A
+            press now only acts where it started.</li>
+          <li><strong>Banners no longer leave a mark on the page.</strong> The repaint that removed one was the quick
+            kind, which cannot clear what the banner left behind, so its outline stayed faintly on the page. Removing a
+            banner now does the thorough repaint that clears it. Refresh Frequency set to Never still wins.</li>
+        </ul>
+        <details class="oldrel">
+        <summary>Earlier releases (0.8.3 and back)</summary>
+        <strong>Also in 0.8.3:</strong>
         <ul>
           <li><strong>The numbers are drawn in a different font.</strong> They used the menu font, which is a pixel font being drawn at 1.6 times its own grid — every stroke landed between pixels and smeared, until 8, 9 and 0 filled in and looked alike. On a real page 128 could read as 12B. They now use Spleen, drawn on its own grid exactly, so each stroke is one clean pixel.</li>
           <li><strong>A Number Size control, Small or Double.</strong> Small is the font's own size; Double is that same size with every pixel doubled, so the shapes are identical and simply larger. There is nothing offered in between because a pixel font has nothing to draw there: half a pixel rounds unevenly and the smearing comes back.</li>
           <li><strong>Double is the default, and your books adopt it.</strong> Set it in Settings &rarr; Reader &rarr; Number Size for newly opened books, or per book in the in-book menu under Paragraph Numbers. Books you have already opened take Double on this update; everything else you chose for them is left alone.</li>
           <li><strong>The numbers sit on the line now, not above it.</strong> They were being centred against the text's line box rather than the text itself, which left them riding high — and by a different amount at each reading size. They are now centred on the letters themselves, measured from the shapes in the font, so they stay put whether you read at 12pt or 18pt.</li>
         </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.8.2 and back)</summary>
         <strong>Also in 0.8.2:</strong>
         <ul>
           <li><strong>One paragraph spacing control instead of two.</strong> Extra Paragraph Spacing and a separate Paragraph Spacing percentage both added a gap, so they fought over the same result. The percentage is gone. Extra Paragraph Spacing is now the whole control: on gives half a line of air between paragraphs, off gives none.</li>
@@ -583,11 +615,8 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>lector.exp.2 is being tested now.</strong> It brings this firmware level with twenty-four changes
-          from upstream CrossPoint, adds touchscreen support for readers that have a touch panel, and fixes a crash
-          when opening a folder holding thousands of images. It also stops a held button from carrying an action into
-          the book after you confirm something — which could start Wi-Fi on its own after deleting a wallpaper — and
-          clears the mark a banner used to leave behind on the page. None of it has been tried on a reader yet.</p>
+        <p><strong>Nothing is being tested right now.</strong> Everything that has been proven on a reader is in the
+          stable build, which the Update button above installs. When a build needs testing it appears here.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br><strong>Your books re-read their layout once</strong> on first open after installing this, which makes
