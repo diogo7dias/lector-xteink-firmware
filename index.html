@@ -500,9 +500,29 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector 0.9.0:</strong> caught up with upstream, touchscreen support, and three fixes found on the reader. Reports version <strong>lector 0.9.0</strong> on device.
-        <div class="warn"><strong>Your books re-read their layout once</strong> on first open after this update, which
-          makes that one open slower. Reading positions and per-book settings are kept.</div>
+        <br><strong>What's new — lector 0.9.1:</strong> the reader wakes in half the time, and the wake screen finally names the right book. Reports version <strong>lector 0.9.1</strong> on device.
+        <ul>
+          <li><strong>Unlocking takes half as long.</strong> Waking the reader meant holding the power button for four
+            tenths of a second. It is now two tenths. The wait exists so a knock in a pocket cannot switch the reader
+            on, and two tenths is still far longer than any accidental brush, but short enough that the reader answers
+            a hand that has already decided. You still never need to let go: the reader wakes under your finger the
+            moment the time passes. Holding power to send the reader to sleep uses the same measure, so that is now
+            quicker by the same amount.</li>
+          <li><strong>The wake screen passes twice as quickly.</strong> The banners shown while a book loads were held
+            on screen for a full second at minimum. That is now half a second. It was never an added wait — a book
+            that took a while to load already counted towards it — so this only affects the books that were ready
+            early and left you looking at the banner with nothing happening.</li>
+          <li><strong>"Open a random book on boot" now names the book it is about to open.</strong> The wake screen
+            showed the title of the book you read last, then opened a different one. The reader was choosing the
+            random book after it had already drawn the banner, so the banner could only report what it knew at the
+            time. It now chooses first and draws second, and the choice it draws is the same one it opens. Holding
+            Back to go Home instead still works exactly as before.</li>
+        </ul>
+        <details class="oldrel">
+        <summary>Earlier releases (0.9.0 and back)</summary>
+        <strong>Also in 0.9.0:</strong>
+        <div class="warn"><strong>Your books re-read their layout once</strong> on first open after updating from 0.8.3
+          or earlier, which makes that one open slower. Reading positions and per-book settings are kept.</div>
         <ul>
           <li><strong>Twenty-four changes taken from upstream CrossPoint in one go.</strong> This firmware had drifted
             almost a month behind. Everything upstream had fixed in that time is now here: a dictionary that no longer
@@ -532,8 +552,6 @@
             kind, which cannot clear what the banner left behind, so its outline stayed faintly on the page. Removing a
             banner now does the thorough repaint that clears it. Refresh Frequency set to Never still wins.</li>
         </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.8.3 and back)</summary>
         <strong>Also in 0.8.3:</strong>
         <ul>
           <li><strong>The numbers are drawn in a different font.</strong> They used the menu font, which is a pixel font being drawn at 1.6 times its own grid — every stroke landed between pixels and smeared, until 8, 9 and 0 filled in and looked alike. On a real page 128 could read as 12B. They now use Spleen, drawn on its own grid exactly, so each stroke is one clean pixel.</li>
