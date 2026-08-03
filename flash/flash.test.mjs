@@ -154,6 +154,18 @@ test("the experimental button is wired, confirmed, and warns it is untested", ()
   assert.match(html, /To go back, press <strong>Update my reader<\/strong>/);
 });
 
+test("the experimental panel is revealed when a build is published", () => {
+  // The panel ships hidden in the markup. Something must un-hide it on a successful
+  // experimental-version.txt fetch, or the button is unreachable no matter what is
+  // published -- which is exactly what happened once, silently, because the panel
+  // text was kept current while nothing ever showed it.
+  assert.match(html, /id="experimentalPanel" hidden/);
+  const at = html.indexOf('experimental-version.txt');
+  assert.notEqual(at, -1, "experimental version fetch not found");
+  const block = html.slice(at, at + 700);
+  assert.match(block, /getElementById\("experimentalPanel"\)\.hidden\s*=\s*false/);
+});
+
 test("a busy flash disables the experimental button too", () => {
   const fn = html.slice(html.indexOf("function setButtonsDisabled"));
   assert.match(fn.slice(0, 400), /btnExperimental/);

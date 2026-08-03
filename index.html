@@ -1186,7 +1186,13 @@ function initFlasher(){
   // button that would fail on click.
   fetch("flash/experimental-version.txt",{cache:"no-cache"})
     .then(r=>r.ok?r.text():Promise.reject(r.status))
-    .then(t=>{document.getElementById("flashExperimentalVersion").textContent=t.trim()||"?";})
+    .then(t=>{
+      document.getElementById("flashExperimentalVersion").textContent=t.trim()||"?";
+      // The panel ships hidden and is revealed only once a build is actually published,
+      // so an empty channel shows nothing rather than a button that would fail on click.
+      // Without this it stayed hidden forever and the build was unreachable.
+      document.getElementById("experimentalPanel").hidden=false;
+    })
     .catch(()=>{
       document.getElementById("flashExperimentalVersion").textContent="not published";
       document.getElementById("flashExperimentalMissing").hidden=false;
