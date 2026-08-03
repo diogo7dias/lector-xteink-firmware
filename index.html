@@ -633,12 +633,16 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>Nothing is being tested right now.</strong> Everything that has been proven on a reader is in the
-          stable build, which the Update button above installs. When a build needs testing it appears here.</p>
+        <p><strong>lector.exp.3 is being tested now.</strong> It does two things to saved quotes. A quote you grab now
+          leaves a thin underline under those words in the book, and the mark stays there every time you come back to
+          the page — through a font change, a margin change, even turning the screen. And each quote gets a page of its
+          own when you open the book's quotes file as a book, instead of quotes running one into the next. Neither has
+          been tried on a reader yet.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
-          <br><br><strong>Your books re-read their layout once</strong> on first open after installing this, which makes
-          that one open slower. Reading positions and per-book settings are kept.
+          <br><br><strong>Your books are not re-laid out by this build</strong> and quotes you saved before it are left
+          exactly as they are — they simply carry no underline. Only a quotes text file opened as a book is paginated
+          again, once.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
         <div class="verline">Experimental build on this site</div>
         <div class="verval"><span id="flashExperimentalVersion">…</span></div>
@@ -1249,10 +1253,10 @@ function initFlasher(){
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This experimental build has not been tested on a device. It changes how reading positions are "+
-               "stored and takes in twenty-four changes from upstream, so your books re-read their layout once "+
-               "on first open. Reading positions and per-book settings are kept. "+
-               "You can go back at any time with the Update button. Continue?")) runFlash("experimental");
+    if(confirm("This experimental build has not been tested on a device. It changes how saved quotes are stored: a "+
+               "new quote is marked with a thin underline in the book, and each quote takes its own page in the "+
+               "quotes file. Quotes you saved before this build are left as they are. Your books are not re-laid "+
+               "out. You can go back at any time with the Update button. Continue?")) runFlash("experimental");
   });
   document.getElementById("btnRescue").addEventListener("click",()=>{
     if(confirm("Full install / rescue flash ERASES the entire device, including any books and settings in flash. "+
