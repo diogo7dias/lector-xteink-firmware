@@ -10,7 +10,7 @@ Xteink X3 / X4 e-ink reader. Two tools, no uploads:
 - **Cleaner** — repair wallpapers that were converted *before* the dithering below, and so carry
   stray pixels scattered over their flat areas.
 
-**→ Live tool: https://diogo7dias.github.io/lector-wallpaper-converter/**
+**→ Live tool: https://diogo7dias.github.io/lector-xteink-firmware/**
 
 Everything runs locally in the browser via an HTML canvas. No image is ever uploaded.
 
