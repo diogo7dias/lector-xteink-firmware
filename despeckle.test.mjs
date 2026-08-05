@@ -18,11 +18,11 @@ function extract(startMarker, endMarker) {
 const LEVELS = [0, 85, 170, 255];
 
 const despeckleSrc =
-  extract("const DESPECKLE_MAJORITY", "// ---------- encoders ----------");
+  extract("const MAX_SPECKLE", "// ---------- encoders ----------");
 const despeckleIdx = new Function(`${despeckleSrc}; return despeckleIdx;`)();
 
 const quantizeSrc =
-  extract("function nearestLevel(v){", "// Strip lone stray pixels");
+  extract("function nearestLevel(v){", "// Strip stray specks");
 const makeQuantize = new Function("LEVELS", "S", `${quantizeSrc}; return quantize;`);
 
 function grid(w, h, fill) {
@@ -42,7 +42,7 @@ test("a lone stray pixel in a flat field is pulled to its surroundings", () => {
   assert.equal(out.filter((v) => v !== 3).length, 0, "nothing else should change");
 });
 
-test("a one-pixel-wide line survives, because its own neighbours agree with it", () => {
+test("a one-pixel-wide line survives, being one long island", () => {
   const w = 9, h = 9;
   const idx = grid(w, h, 3);
   for (let y = 0; y < h; y++) idx[y * w + 4] = 0;   // vertical hairline
@@ -70,12 +70,61 @@ test("an image with no speckle comes back byte-for-byte identical", () => {
   assert.deepEqual([...out], [...idx]);
 });
 
-test("real dither texture is left alone; a majority of seven is never reached", () => {
+test("real dither texture is left alone; its islands all connect", () => {
   const w = 16, h = 16;
   const idx = new Uint8Array(w * h);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) idx[y * w + x] = (x + y) & 1 ? 3 : 2;
   const out = despeckleIdx(idx, w, h);
   assert.deepEqual([...out], [...idx]);
+});
+
+test("the end of a line is not eaten, and does not erode over repeated runs", () => {
+  // A neighbour-counting rule fails here: the last pixel of a line has seven
+  // background neighbours and one of its own, so it is removed, and then the new
+  // last pixel on the next run, until the line is gone. Measuring the island
+  // instead makes the pass safe to repeat, and this test is what keeps it so.
+  const w = 24, h = 24;
+  const idx = grid(w, h, 3);
+  for (let y = 4; y <= 18; y++) idx[y * w + 12] = 0;   // a line with two free ends
+  const before = idx.filter((v) => v === 0).length;
+  let out = idx;
+  for (let pass = 0; pass < 10; pass++) out = despeckleIdx(out, w, h);
+  assert.equal(out.filter((v) => v === 0).length, before,
+    "the line lost pixels; it is being eroded from its ends");
+  assert.equal(out[4 * w + 12], 0, "the top end of the line was eaten");
+  assert.equal(out[18 * w + 12], 0, "the bottom end of the line was eaten");
+});
+
+test("a small clump of stray pixels is cleaned, not just single ones", () => {
+  // Error diffusion drops specks next to each other as often as alone. A rule
+  // that only caught fully isolated pixels left roughly a sixth of the grit
+  // behind.
+  const w = 20, h = 20;
+  const idx = grid(w, h, 3);
+  idx[10 * w + 10] = 1; idx[10 * w + 11] = 1; idx[11 * w + 10] = 1;  // 3-pixel clump
+  const out = despeckleIdx(idx, w, h);
+  assert.equal(out.filter((v) => v !== 3).length, 0, "the clump should have been cleaned");
+});
+
+test("running the cleaner twice changes nothing the first run left", () => {
+  const w = 40, h = 40;
+  const idx = grid(w, h, 3);
+  for (let y = 5; y < 35; y++) idx[y * w + 8] = 0;         // structure
+  for (let i = 0; i < 30; i++) idx[(i * 7 % 36 + 2) * w + (i * 13 % 30 + 5)] = 1; // grit
+  const once = despeckleIdx(idx, w, h);
+  const twice = despeckleIdx(once, w, h);
+  assert.deepEqual([...twice], [...once], "the pass is not settled after one run");
+});
+
+test("a speck on a boundary between two levels is structure, and is kept", () => {
+  // With black on one side and white on the other there is no single surrounding
+  // level, so the pixel is part of the picture rather than grit on a background.
+  const w = 20, h = 20;
+  const idx = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) idx[y * w + x] = x < 10 ? 0 : 3;
+  idx[10 * w + 10] = 2;   // a mid-grey pixel sitting right on the edge
+  const out = despeckleIdx(idx, w, h);
+  assert.equal(out[10 * w + 10], 2, "a pixel on a boundary must not be filled in");
 });
 
 test("the border is left untouched, having no full neighbourhood to judge it", () => {

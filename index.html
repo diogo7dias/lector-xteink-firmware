@@ -475,9 +475,10 @@
     <div class="panel">
       <div class="note note-lead">Already converted a wallpaper and it came out with stray pixels scattered over a
         flat background? Drop it here. The cleaner reads a finished <code>.pxc</code> or <code>.bmp</code>,
-        removes the lone pixels that error diffusion left in flat areas, and writes the file back at the
+        fills in the specks that error diffusion left in flat areas, and writes the file back at the
         same size and format. Nothing is re-scaled and no tone is re-mapped, so the image is otherwise
-        untouched. Detail is kept: a one-pixel-wide line is never removed.</div>
+        untouched. Detail is kept: a speck is a tiny island of pixels enclosed by one single other
+        level, so a line is safe however thin it is, and cleaning the same file twice changes nothing.</div>
     </div>
 
     <div class="panel drop-panel">
@@ -1166,26 +1167,67 @@ function quantize(g, dither){
   return idx;
 }
 
-// Strip lone stray pixels out of an image that is ALREADY quantised, for files
-// converted before the dithering above existed. A pixel is grit when at least
-// DESPECKLE_MAJORITY of its eight neighbours agree on one level and the pixel
-// itself is not that level; it is then pulled to its surroundings. A genuine
-// one-pixel line survives, because its own neighbours along the line share its
-// level and so no neighbourhood ever reaches a seven-of-eight majority against
-// it. Every read is from the input, so one call is one simultaneous pass and a
-// change cannot cascade into the pixel next door.
-const DESPECKLE_MAJORITY = 7;
+// Strip stray specks out of an image that is ALREADY quantised, for files
+// converted before the dithering above existed. A speck is an island of at most
+// MAX_SPECKLE same-level pixels sitting completely enclosed by one single other
+// level; it is filled with that surrounding level.
+//
+// Both halves of that test earn their place. Judging each pixel by its own
+// neighbours instead is the obvious approach and it is wrong: the last pixel of
+// a line has seven background neighbours and one of its own level, so any
+// neighbour-counting rule eats it, then eats the new last pixel on the next run,
+// and a line shrinks from its ends every time the cleaner is used. Measuring the
+// island closes that off, because a line is one long island however thin it is.
+// Requiring a single uniform surround is what keeps the pass to flat areas: a
+// few pixels on a boundary between two levels are structure, not grit.
+//
+// Every read is from the input, so one call is one simultaneous pass, and a
+// second call changes nothing the first one left.
+const MAX_SPECKLE = 4;
 function despeckleIdx(idx,w,h){
-  const out=Uint8Array.from(idx), count=new Uint8Array(4);
+  const out=Uint8Array.from(idx), seen=new Uint8Array(w*h);
   for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){
-    const i=y*w+x;
-    count[0]=count[1]=count[2]=count[3]=0;
-    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
-      if(dx===0&&dy===0) continue;
-      count[idx[i+dy*w+dx]]++;
+    const start=y*w+x;
+    if(seen[start]) continue;
+    const level=idx[start];
+
+    // Grow the island, abandoning it the moment it is too big to be grit. That
+    // early exit is what keeps a long line cheap: a handful of steps, not a
+    // walk of its whole length.
+    const island=[start]; seen[start]=1;
+    let head=0, tooBig=false;
+    while(head<island.length){
+      const p=island[head++], py=(p/w)|0, px=p-py*w;
+      for(let dy=-1;dy<=1;dy++){ const ny=py+dy; if(ny<0||ny>=h) continue;
+        for(let dx=-1;dx<=1;dx++){ const nx=px+dx;
+          if((dx===0&&dy===0)||nx<0||nx>=w) continue;
+          const q=ny*w+nx;
+          if(idx[q]===level && !seen[q]){ seen[q]=1; island.push(q); } } }
+      if(island.length>MAX_SPECKLE){ tooBig=true; break; }
     }
-    let best=0; for(let v=1;v<4;v++) if(count[v]>count[best]) best=v;
-    if(count[best]>=DESPECKLE_MAJORITY && idx[i]!==best) out[i]=best;
+    if(tooBig) continue;
+
+    // The island must not touch the border, and everything around it must be one
+    // single other level. This is also what makes an abandoned fill safe: the
+    // members of a big island that were never reached can be seeded again later
+    // and look small alone, but such a fragment always has a neighbour of its
+    // own level just outside itself, which fails the uniform-surround test.
+    const members=new Set(island);
+    let surround=-1, enclosed=true;
+    outer:
+    for(const p of island){
+      const py=(p/w)|0, px=p-py*w;
+      if(px===0||py===0||px===w-1||py===h-1){ enclosed=false; break; }
+      for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+        const q=(py+dy)*w+(px+dx);
+        if(members.has(q)) continue;
+        if(surround<0) surround=idx[q];
+        else if(idx[q]!==surround){ enclosed=false; break outer; }
+      }
+    }
+    if(!enclosed||surround<0||surround===level) continue;
+
+    for(const p of island) out[p]=surround;
   }
   return out;
 }

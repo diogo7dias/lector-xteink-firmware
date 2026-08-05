@@ -66,25 +66,45 @@ or 2-bit `.bmp` to level indices, replace each lone stray pixel with the level i
 on, and pack the result back at the same size in the same format. Nothing is re-scaled and no tone is
 re-mapped.
 
-A pixel is treated as speckle only when at least seven of its eight neighbours share one level and the
-pixel itself is a different level. A genuine one-pixel line is therefore safe: its neighbours along
-the line carry its own level, so no neighbourhood ever reaches a seven-of-eight majority against it.
+A speck is an **island** of at most four same-level pixels that is completely enclosed by one single
+other level. Both halves of that test earn their place:
 
-The browser tab handles about 100 files at a time. For a whole SD card, use the script:
+- **Island size, not neighbour count.** Judging each pixel by its own neighbours is the obvious
+  approach and it is wrong. The last pixel of a line has seven background neighbours and one of its
+  own level, so any neighbour-counting rule eats it — then eats the new last pixel on the next run,
+  and the line shrinks from its ends every time the cleaner is used. A line is one long island
+  whatever its width, so measuring the island protects it outright and makes the pass safe to repeat.
+  It also catches the two- and three-pixel clumps that a neighbour rule misses, which is roughly a
+  sixth of the grit.
+- **One uniform surround.** A few stray pixels on a boundary between two levels are structure, not
+  grit on a background, and are left alone.
+
+Running it twice changes nothing the first run left. Tests cover the erosion case, the clump case and
+idempotency.
+
+The browser tab handles about 100 files at a time. For a whole SD card, use the script — point it at
+the card and it cleans the files where they lie, so there is nothing to copy back:
 
 ```sh
+# Clean the card. Asks once for confirmation, keeps a .bak of every original.
+python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep
+
 # Look first. Change nothing.
 python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep --dry-run
 
-# Write cleaned copies to a separate folder (the default, and the safe one).
-python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep -o ~/Desktop/cleaned
+# Once the wallpapers look right on the reader, remove the backups.
+python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep --drop-backups
 
-# Overwrite the originals. Asks for confirmation and keeps a .bak beside each file.
-python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep --in-place
+# Leave the originals alone and write cleaned copies elsewhere instead.
+python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep -o ~/Desktop/cleaned
 ```
 
-Python 3.8+, no third-party packages. It uses every CPU core by default: about five minutes for 5,000
-528×792 files on a modern laptop, against roughly half an hour single-threaded.
+`--yes` skips the confirmation, `--no-backup` writes no `.bak` files. The reader ignores the backups
+either way: its sleep-folder scan matches the last four characters of a name against `.pxc` or `.bmp`
+(`SdFatSleepFs.cpp`), and `.bak` is neither.
+
+Python 3.8+, no third-party packages. It uses every CPU core by default: about three minutes for 5,000
+528×792 files on a modern laptop, against roughly twenty-five single-threaded.
 
 ## Format notes
 

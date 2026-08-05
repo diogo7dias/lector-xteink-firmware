@@ -8,28 +8,40 @@ single pixel a whole level away from its neighbours. On a white or otherwise fla
 background that reads as grit.
 
 This script repairs finished files. It does not re-scale, re-map tones or
-re-dither: it unpacks a .pxc or 2-bit .bmp to level indices, replaces each lone
-stray pixel with the level its neighbours agree on, and packs the result back at
-the same size in the same format.
+re-dither: it unpacks a .pxc or 2-bit .bmp to level indices, fills in the stray
+specks, and packs the result back at the same size in the same format.
 
-A pixel is treated as speckle only when at least seven of its eight neighbours
-share one level and the pixel itself is a different level. A genuine one-pixel
-line is therefore safe, because its neighbours along the line carry its own
-level and no neighbourhood ever reaches a seven-of-eight majority against it.
+A speck is an island of at most a few same-level pixels sitting completely
+enclosed by one single other level. Lines and shapes are safe because they are
+one large island, whatever their width: even a hairline one pixel across is long,
+so its island exceeds the size cap and none of it can be touched. Running the
+cleaner twice changes nothing the first run left.
+
+Point it at the SD card and it cleans the files where they lie, so there is
+nothing to copy back afterwards. Each original is kept as a .bak beside it until
+you are happy with the result. The reader ignores those: its sleep-folder scan
+matches the last four characters of a name against .pxc or .bmp, and a .bak ends
+in neither.
 
 Usage:
 
-    # Look, change nothing. Always start here.
+    # Clean the card in place. Asks for confirmation, keeps a .bak of each file.
+    python3 clean_pxc.py /Volumes/LECTOR/sleep
+
+    # Look first, change nothing.
     python3 clean_pxc.py /Volumes/LECTOR/sleep --dry-run
 
-    # Write the cleaned copies into a separate folder (the default, and safe).
+    # Same, without being asked to confirm.
+    python3 clean_pxc.py /Volumes/LECTOR/sleep --yes
+
+    # No .bak copies. Only do this with the card backed up elsewhere.
+    python3 clean_pxc.py /Volumes/LECTOR/sleep --no-backup
+
+    # Leave the originals alone and write cleaned copies somewhere else.
     python3 clean_pxc.py /Volumes/LECTOR/sleep -o ~/Desktop/cleaned
 
-    # Overwrite the originals on the card. Keeps a .bak beside each file.
-    python3 clean_pxc.py /Volumes/LECTOR/sleep --in-place
-
-    # Overwrite with no backup. Only with a copy of the card elsewhere.
-    python3 clean_pxc.py /Volumes/LECTOR/sleep --in-place --no-backup
+    # Delete the .bak files once you have checked the wallpapers on the reader.
+    python3 clean_pxc.py /Volumes/LECTOR/sleep --drop-backups
 
 Requires Python 3.8 or newer. No third-party packages.
 """
@@ -46,10 +58,18 @@ from pathlib import Path
 
 LEVELS = (0, 85, 170, 255)
 
-# How many of the eight neighbours must agree before a pixel is called speckle.
-# Eight is the strictest setting and only removes fully isolated pixels; seven
-# also catches a stray sitting against an edge of its flat field.
-DEFAULT_MAJORITY = 7
+# The largest island of same-level pixels still treated as speckle. Anything
+# bigger is left alone.
+#
+# Judging each pixel by its own neighbours is the obvious approach and it is
+# wrong. The last pixel of a line has seven background neighbours and one of its
+# own level, so any neighbour-counting rule eats it, then eats the new last pixel
+# on the next run, and a line shrinks from its ends every time the cleaner is
+# used. Measuring the island instead fixes that completely: a line is one long
+# island, so its size exceeds the cap and every pixel in it is safe no matter how
+# often the pass repeats. It also catches what neighbour-counting misses, namely
+# the two- and three-pixel clumps that error diffusion drops next to each other.
+DEFAULT_MAX_SPECKLE = 4
 
 
 def nearest_level(value: float) -> int:
@@ -172,38 +192,105 @@ def encode_bmp(width: int, height: int, idx: bytearray) -> bytes:
 # ---------------------------------------------------------------- cleaning
 
 
-def despeckle(width: int, height: int, idx: bytearray, majority: int) -> tuple[bytearray, int]:
+def despeckle(width: int, height: int, idx: bytearray, max_speckle: int) -> tuple[bytearray, int]:
     """Return (cleaned copy, number of pixels changed).
 
-    Every neighbour is read from the input, so the pass is simultaneous: a pixel
-    that is corrected cannot pull the pixel next to it along with it. The border
-    row and column are left alone, because a pixel there has no full
-    neighbourhood to be judged against.
+    An island of up to max_speckle same-level pixels that is completely enclosed
+    by one single other level is speckle, and is filled with that surrounding
+    level. Both conditions matter. The size cap is what protects lines and
+    shapes, as described by DEFAULT_MAX_SPECKLE. Requiring one uniform
+    surrounding level is what keeps the pass to flat areas: a few stray pixels
+    sitting on a boundary between two levels are part of the picture's structure,
+    not grit on a background, and are left alone.
+
+    The border row and column are never removed, because a pixel there has no
+    full neighbourhood to be judged against.
+
+    Islands are found by flood fill, and the fill stops as soon as it passes the
+    cap, so a long line costs a handful of steps rather than a walk of its whole
+    length. Every read is from the input, so the pass is simultaneous.
     """
     out = bytearray(idx)
+    seen = bytearray(width * height)
     changed = 0
+
     for y in range(1, height - 1):
-        above = (y - 1) * width
-        here = y * width
-        below = (y + 1) * width
+        row = y * width
         for x in range(1, width - 1):
-            counts = [0, 0, 0, 0]
-            counts[idx[above + x - 1]] += 1
-            counts[idx[above + x]] += 1
-            counts[idx[above + x + 1]] += 1
-            counts[idx[here + x - 1]] += 1
-            counts[idx[here + x + 1]] += 1
-            counts[idx[below + x - 1]] += 1
-            counts[idx[below + x]] += 1
-            counts[idx[below + x + 1]] += 1
-            best = counts.index(max(counts))
-            if counts[best] >= majority and idx[here + x] != best:
-                out[here + x] = best
-                changed += 1
+            start = row + x
+            if seen[start]:
+                continue
+            level = idx[start]
+
+            # Grow the island, abandoning it the moment it is too big to be grit.
+            island = [start]
+            seen[start] = 1
+            head = 0
+            too_big = False
+            while head < len(island):
+                p = island[head]
+                head += 1
+                py, px = divmod(p, width)
+                for dy in (-1, 0, 1):
+                    ny = py + dy
+                    if not 0 <= ny < height:
+                        continue
+                    for dx in (-1, 0, 1):
+                        nx = px + dx
+                        if (dx == 0 and dy == 0) or not 0 <= nx < width:
+                            continue
+                        q = ny * width + nx
+                        if idx[q] == level and not seen[q]:
+                            seen[q] = 1
+                            island.append(q)
+                if len(island) > max_speckle:
+                    too_big = True
+                    break
+            if too_big:
+                continue
+
+            # An island touching the border has no full ring around it to judge.
+            # Its surroundings must also be a single level, or this is structure.
+            #
+            # This test is also what makes an abandoned fill safe. When a big
+            # island is given up on, the members not yet reached can be seeded
+            # again later and look small on their own. They are never removed,
+            # because such a fragment always has a neighbour of its own level
+            # just outside itself, which is either a surround that equals the
+            # island's own level or one that disagrees with the rest.
+            members = set(island)
+            surround = -1
+            enclosed = True
+            for p in island:
+                py, px = divmod(p, width)
+                if px == 0 or py == 0 or px == width - 1 or py == height - 1:
+                    enclosed = False
+                    break
+                for dy in (-1, 0, 1):
+                    for dx in (-1, 0, 1):
+                        q = (py + dy) * width + (px + dx)
+                        if q in members:
+                            continue
+                        if surround < 0:
+                            surround = idx[q]
+                        elif idx[q] != surround:
+                            enclosed = False
+                            break
+                    if not enclosed:
+                        break
+                if not enclosed:
+                    break
+            if not enclosed or surround < 0 or surround == level:
+                continue
+
+            for p in island:
+                out[p] = surround
+            changed += len(island)
+
     return out, changed
 
 
-def clean_file(path: Path, majority: int):
+def clean_file(path: Path, max_speckle: int):
     """Return (cleaned bytes, pixels changed) or None when the file is unreadable."""
     data = path.read_bytes()
     is_bmp = path.suffix.lower() == ".bmp"
@@ -211,7 +298,7 @@ def clean_file(path: Path, majority: int):
     if decoded is None:
         return None
     width, height, idx = decoded
-    cleaned, changed = despeckle(width, height, idx, majority)
+    cleaned, changed = despeckle(width, height, idx, max_speckle)
     if changed == 0:
         return data, 0
     encoded = encode_bmp(width, height, cleaned) if is_bmp else encode_pxc(width, height, cleaned)
@@ -228,15 +315,48 @@ def _worker(job):
     a cancelled run cannot leave half the files written by one process and half
     by another, and the on-screen report stays in file order.
     """
-    path, majority = job
+    path, max_speckle = job
     try:
-        result = clean_file(path, majority)
+        result = clean_file(path, max_speckle)
     except OSError as err:
         return path, None, 0, str(err)
     if result is None:
         return path, None, 0, "not a readable .pxc or 2-bit .bmp"
     encoded, changed = result
     return path, encoded, changed, None
+
+
+def drop_backups(target: Path, recursive: bool) -> int:
+    """Delete the .bak files an in-place run left behind, after confirmation.
+
+    Only names of the form <something>.pxc.bak or <something>.bmp.bak are
+    considered, so an unrelated .bak the user keeps in that folder is not swept
+    up by a wildcard.
+    """
+    root = target if target.is_dir() else target.parent
+    pattern = "**/*.bak" if recursive else "*.bak"
+    backups = sorted(
+        p for p in root.glob(pattern)
+        if p.is_file() and Path(p.stem).suffix.lower() in (".pxc", ".bmp")
+    )
+    if not backups:
+        print(f"No .pxc.bak or .bmp.bak files found under {root}")
+        return 0
+
+    freed = sum(p.stat().st_size for p in backups)
+    print("The files listed below are the untouched originals from an earlier run.")
+    print("Deleting them cannot be undone, and the cleaned files are all that will remain.")
+    print(f"Folder:  {root}")
+    print(f"Backups: {len(backups)} files, {freed / 1024 / 1024:.1f} MB")
+    answer = input("Type delete to remove them: ").strip().lower()
+    if answer != "delete":
+        print("Cancelled. Nothing was deleted.")
+        return 1
+
+    for p in backups:
+        p.unlink()
+    print(f"Deleted {len(backups)} backup files, freeing {freed / 1024 / 1024:.1f} MB.")
+    return 0
 
 
 def gather(target: Path, recursive: bool) -> list[Path]:
@@ -257,16 +377,21 @@ def main(argv: list[str]) -> int:
     )
     parser.add_argument("target", type=Path, help="a .pxc/.bmp file, or a folder of them")
     parser.add_argument("-o", "--output", type=Path,
-                        help="folder to write cleaned copies into (default: <target>/cleaned)")
+                        help="leave the originals alone and write cleaned copies into this folder "
+                             "(default: clean the files where they are)")
     parser.add_argument("--in-place", action="store_true",
-                        help="overwrite the originals instead of writing copies")
+                        help="accepted and ignored; cleaning in place is now the default")
     parser.add_argument("--no-backup", action="store_true",
-                        help="with --in-place, do not keep a .bak of each original")
+                        help="do not keep a .bak of each original (they are kept by default)")
+    parser.add_argument("-y", "--yes", action="store_true",
+                        help="do not ask for confirmation before overwriting")
+    parser.add_argument("--drop-backups", action="store_true",
+                        help="delete the .bak files left by an earlier run and do nothing else")
     parser.add_argument("--dry-run", action="store_true",
                         help="report what would change and write nothing")
-    parser.add_argument("--majority", type=int, default=DEFAULT_MAJORITY, choices=(7, 8),
-                        help="neighbours that must agree before a pixel is speckle (default 7; "
-                             "8 is stricter and removes only fully isolated pixels)")
+    parser.add_argument("--max-speckle", type=int, default=DEFAULT_MAX_SPECKLE, metavar="N",
+                        help=f"largest island of same-level pixels still treated as speckle "
+                             f"(default {DEFAULT_MAX_SPECKLE}; 1 removes only fully isolated pixels)")
     parser.add_argument("--no-recursive", action="store_true",
                         help="do not descend into sub-folders")
     parser.add_argument("-j", "--jobs", type=int, default=0,
@@ -279,26 +404,37 @@ def main(argv: list[str]) -> int:
         print(f"error: {target} does not exist", file=sys.stderr)
         return 1
 
+    if args.drop_backups:
+        return drop_backups(target, not args.no_recursive)
+
     files = gather(target, not args.no_recursive)
     if not files:
         print(f"No .pxc or .bmp files found under {target}")
         return 0
 
-    if args.in_place and not args.dry_run:
-        backup_note = "a .bak copy is kept beside each file" if not args.no_backup \
-            else "NO BACKUP WILL BE KEPT"
-        print("About to overwrite the original files in place.")
-        print(f"Folder: {target}")
-        print(f"Files:  {len(files)}")
-        print(f"Backup: {backup_note}")
-        answer = input("Type yes to continue: ").strip().lower()
-        if answer != "yes":
-            print("Cancelled. Nothing was written.")
-            return 1
+    # Cleaning where the files already lie is the default, so that pointing this
+    # at an SD card is the whole job and nothing has to be copied back. Passing
+    # -o opts out and leaves the originals untouched.
+    in_place = args.output is None
+
+    if in_place and not args.dry_run:
+        print("The files listed below will be cleaned and overwritten where they are.")
+        print(f"Folder:  {target}")
+        print(f"Files:   {len(files)}")
+        if args.no_backup:
+            print("Backup:  NONE. The originals will be replaced and cannot be recovered.")
+        else:
+            print("Backup:  each original is kept beside it as a .bak file.")
+            print("         The reader ignores those; delete them later with --drop-backups.")
+        if not args.yes:
+            answer = input("Type yes to continue: ").strip().lower()
+            if answer != "yes":
+                print("Cancelled. Nothing was written.")
+                return 1
 
     out_dir = None
-    if not args.in_place and not args.dry_run:
-        out_dir = args.output or (target if target.is_dir() else target.parent) / "cleaned"
+    if not in_place and not args.dry_run:
+        out_dir = args.output
         out_dir.mkdir(parents=True, exist_ok=True)
 
     root = target if target.is_dir() else target.parent
@@ -311,10 +447,10 @@ def main(argv: list[str]) -> int:
     if jobs > 1:
         print(f"Cleaning {len(files)} files across {jobs} cores.")
         with multiprocessing.Pool(jobs) as pool:
-            reports = pool.map(_worker, [(p, args.majority) for p in files],
+            reports = pool.map(_worker, [(p, args.max_speckle) for p in files],
                                chunksize=max(1, len(files) // (jobs * 8)))
     else:
-        reports = [_worker((p, args.majority)) for p in files]
+        reports = [_worker((p, args.max_speckle)) for p in files]
 
     total_changed = 0
     touched = 0
@@ -338,13 +474,16 @@ def main(argv: list[str]) -> int:
                 shutil.copy2(path, out_dir / path.name)
             continue
 
-        if args.in_place:
+        if in_place:
             if not args.no_backup:
                 backup = path.with_suffix(path.suffix + ".bak")
+                # An existing .bak is the untouched original from an earlier run.
+                # Overwriting it with an already-cleaned file would destroy the
+                # only copy of the original, so it is left exactly as it is.
                 if not backup.exists():
                     shutil.copy2(path, backup)
             path.write_bytes(encoded)
-            print(f"[{i}/{len(files)}] {path.name}: {changed} pixels cleaned (overwritten)")
+            print(f"[{i}/{len(files)}] {path.name}: {changed} pixels cleaned")
         else:
             relative = path.relative_to(root) if root in path.parents or root == path.parent else Path(path.name)
             destination = out_dir / relative
@@ -358,7 +497,10 @@ def main(argv: list[str]) -> int:
     if args.dry_run:
         print("This was a dry run. Nothing was written.")
     elif out_dir is not None:
-        print(f"Cleaned copies are in {out_dir}")
+        print(f"Cleaned copies are in {out_dir}. The originals were not touched.")
+    elif touched and not args.no_backup:
+        print("The originals are beside each file as .bak. Check the wallpapers on the reader,")
+        print(f"then remove them with:  python3 {Path(sys.argv[0]).name} {target} --drop-backups")
     return 0
 
 
