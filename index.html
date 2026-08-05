@@ -92,6 +92,8 @@
   .seg button.on{background:var(--ink);color:var(--on-ink);}
   select{width:100%;padding:9px 8px;border:3px solid var(--ink);border-radius:5px;background:var(--paper);
     color:var(--ink);font-size:13px;font-family:var(--sans);font-weight:600;cursor:pointer;}
+  /* A note that opens its panel has no controls above it to be divided from. */
+  .note.note-lead{margin-top:0;padding-top:0;border-top:0;}
   .note{margin-top:16px;padding-top:14px;border-top:1px solid var(--soft);color:var(--sub);
     font-size:12.5px;line-height:1.5;}
   .note strong{color:var(--ink);}
@@ -352,6 +354,7 @@
 
   <nav class="tabs" id="tabs" role="tablist" aria-label="Views">
     <button class="tab on" data-view="convert" role="tab" aria-selected="true">Converter</button>
+    <button class="tab" data-view="clean" role="tab" aria-selected="false">Cleaner</button>
     <button class="tab" data-view="gallery" role="tab" aria-selected="false">Gallery</button>
     <button class="tab" data-view="flash" role="tab" aria-selected="false">Flasher</button>
   </nav>
@@ -438,10 +441,21 @@
         header then 2 bits/pixel (4 gray levels: black · dark · light · white), MSB-first.
         <strong>BMP</strong> output is a standard 2-bit, 4-gray bitmap the reader also accepts.</p>
       <ul>
-        <li><strong>Auto rendering</strong> — the tonal range is measured. Photographs get Floyd–Steinberg
-          dithering; logos / line art / text get crisp thresholding. Click the <code>dither</code> /
+        <li><strong>Auto rendering</strong> — the tonal range is measured. Photographs get dithering;
+          logos / line art / text get crisp thresholding. Click the <code>dither</code> /
           <code>threshold</code> badge under any result to flip that one image; changing the Rendering
           dropdown resets them all.</li>
+        <li><strong>Dithering</strong> — the panel's four levels sit 85 greys apart, so one mis-fired
+          pixel is a whole step away from its neighbours, not a subtle speckle. Three things keep flat
+          areas clean: diffusion is Atkinson, which hands on six eighths of each error so a residual
+          decays instead of building up; the scan alternates direction row by row, which breaks up the
+          diagonal streaks a one-way pass leaves; and a flat area lying close to one of the four levels
+          is placed on that level with its error dropped. Gradients and detail still dither normally, and
+          a tone genuinely between two levels still mixes both.</li>
+        <li><strong>Cleaner</strong> — wallpapers converted before the above will still carry that grit.
+          The <strong>Cleaner</strong> tab repairs finished <code>.pxc</code> and <code>.bmp</code> files
+          in place of re-converting them, so nothing is re-scaled or re-toned. For a whole card, use
+          <code>scripts/clean_pxc.py</code> from the repository.</li>
         <li><strong>Auto-contrast</strong> — stretches tones to use all four levels so flat images don't
           come out muddy.</li>
         <li><strong>Fit</strong> — <em>Cover</em> fills and crops; <em>Fit</em> letterboxes;
@@ -454,6 +468,32 @@
       </ul>
       <p class="foot">All conversion is local (HTML canvas). No server, no upload.</p>
     </details>
+  </section>
+
+  <!-- ======================= CLEANER ======================= -->
+  <section id="view-clean" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="note note-lead">Already converted a wallpaper and it came out with stray pixels scattered over a
+        flat background? Drop it here. The cleaner reads a finished <code>.pxc</code> or <code>.bmp</code>,
+        removes the lone pixels that error diffusion left in flat areas, and writes the file back at the
+        same size and format. Nothing is re-scaled and no tone is re-mapped, so the image is otherwise
+        untouched. Detail is kept: a one-pixel-wide line is never removed.</div>
+    </div>
+
+    <div class="panel drop-panel">
+      <div class="drop" id="cleanDrop">
+        <div class="big">Drop converted files here <span>or click to choose</span></div>
+        <div class="sub"><code>.pxc</code> and <code>.bmp</code> — up to about 100 at a time in the browser. For a whole SD card, use
+          <code>scripts/clean_pxc.py</code> from the repository instead.</div>
+        <input type="file" id="cleanFile" accept=".pxc,.bmp,image/bmp" multiple hidden />
+      </div>
+      <div class="bar" id="cleanBar" hidden>
+        <button class="btn btn-red" id="cleanDlAll">Download all</button>
+        <button class="btn btn-ghost" id="cleanClear">Clear</button>
+        <span class="count" id="cleanCount"></span>
+      </div>
+      <div class="results" id="cleanResults"></div>
+    </div>
   </section>
 
   <!-- ======================= GALLERY ======================= -->
@@ -1046,21 +1086,108 @@ function autoWantsDither(g){
 
 function nearestLevel(v){ return v>=212?3:v>=127?2:v>=42?1:0; }
 
+// The panel has four levels 85 apart, so a single mis-fired pixel is not a
+// subtle speckle: it is a whole grey step away from its neighbours. Plain
+// Floyd-Steinberg produces exactly that on a large area whose tone sits near,
+// but not on, one of the four levels — the residual error has nowhere to go, so
+// it accumulates until it tips one pixel to the next level, over and over. On a
+// near-white background that reads as grit.
+//
+// Three constants govern the cure. A field counts as flat only when BOTH the
+// local spread of a lightly blurred copy stays within FLAT_TOL and the spread of
+// the raw pixels stays within RAW_TOL. The blur is what lets the test see past
+// sensor grain, so a noisy sky still counts as flat — but on its own the blur is
+// a trap: a line thinner than the blur kernel is smeared into a locally uniform
+// band and would be read as flat, then snapped away. The raw check is what saves
+// it, because a hairline's own neighbourhood spans the full distance from the
+// line to its background. A flat field within SNAP_TOL of a level is pulled onto
+// that level and its error discarded. Because the snap only reaches SNAP_TOL, a
+// region that drifts out of range meets ordinary dithering at its edge rather
+// than a hard band.
+const FLAT_TOL = 6;
+const RAW_TOL = 24;   // well under the 85 between levels, so no real edge hides
+const SNAP_TOL = 28;
+
+// 3x3 box mean, then the 3x3 spread of both that mean and the original. Returns
+// the blur too, because the quantiser wants the settled tone rather than one raw
+// pixel when it decides which level a flat field belongs to.
+function flatField(g,w,h){
+  const blur=new Float32Array(w*h), flat=new Uint8Array(w*h);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    let sum=0,n=0;
+    for(let dy=-1;dy<=1;dy++){ const yy=y+dy; if(yy<0||yy>=h) continue;
+      for(let dx=-1;dx<=1;dx++){ const xx=x+dx; if(xx<0||xx>=w) continue; sum+=g[yy*w+xx]; n++; } }
+    blur[y*w+x]=sum/n;
+  }
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    let blo=Infinity,bhi=-Infinity,rlo=Infinity,rhi=-Infinity;
+    for(let dy=-1;dy<=1;dy++){ const yy=y+dy; if(yy<0||yy>=h) continue;
+      for(let dx=-1;dx<=1;dx++){ const xx=x+dx; if(xx<0||xx>=w) continue;
+        const j=yy*w+xx, bv=blur[j], rv=g[j];
+        if(bv<blo)blo=bv; if(bv>bhi)bhi=bv;
+        if(rv<rlo)rlo=rv; if(rv>rhi)rhi=rv; } }
+    flat[y*w+x]=((bhi-blo)<=FLAT_TOL && (rhi-rlo)<=RAW_TOL)?1:0;
+  }
+  return {blur,flat};
+}
+
 // Quantise gray -> level indices 0..3 (w*h Uint8).
+// Dithering is Atkinson rather than Floyd-Steinberg: it hands on only six
+// eighths of each error, so a residual decays instead of building without
+// limit. The scan is serpentine (alternating row direction), which breaks the
+// diagonal worms a fixed left-to-right pass leaves behind. Flat fields near a
+// level are snapped, as described above.
 function quantize(g, dither){
   const {w,h}=S; const idx=new Uint8Array(w*h);
   if(!dither){ for(let i=0;i<g.length;i++) idx[i]=nearestLevel(g[i]); return idx; }
+  const {blur,flat}=flatField(g,w,h);
   const buf=Float32Array.from(g);
   for(let y=0;y<h;y++){
-    for(let x=0;x<w;x++){
-      const i=y*w+x, old=buf[i], q=nearestLevel(old); idx[i]=q;
-      const err=old-LEVELS[q];
-      if(x+1<w) buf[i+1]+=err*7/16;
-      if(y+1<h){ const n=(y+1)*w+x;
-        if(x>0) buf[n-1]+=err*3/16; buf[n]+=err*5/16; if(x+1<w) buf[n+1]+=err*1/16; }
+    const ltr=(y&1)===0, fwd=ltr?1:-1;
+    for(let k=0;k<w;k++){
+      const x=ltr?k:w-1-k, i=y*w+x;
+      const near=nearestLevel(blur[i]);
+      if(flat[i] && Math.abs(blur[i]-LEVELS[near])<=SNAP_TOL){
+        idx[i]=near;              // solid field: take the level, drop the error
+        continue;
+      }
+      const old=buf[i], q=nearestLevel(old); idx[i]=q;
+      const e=(old-LEVELS[q])/8;  // Atkinson: 1/8 to each of six neighbours
+      const x1=x+fwd, x2=x+fwd*2, xb=x-fwd;
+      if(x1>=0&&x1<w) buf[i+fwd]+=e;
+      if(x2>=0&&x2<w) buf[i+fwd*2]+=e;
+      if(y+1<h){ const n=i+w;
+        if(xb>=0&&xb<w) buf[n-fwd]+=e;
+        buf[n]+=e;
+        if(x1>=0&&x1<w) buf[n+fwd]+=e; }
+      if(y+2<h) buf[i+2*w]+=e;
     }
   }
   return idx;
+}
+
+// Strip lone stray pixels out of an image that is ALREADY quantised, for files
+// converted before the dithering above existed. A pixel is grit when at least
+// DESPECKLE_MAJORITY of its eight neighbours agree on one level and the pixel
+// itself is not that level; it is then pulled to its surroundings. A genuine
+// one-pixel line survives, because its own neighbours along the line share its
+// level and so no neighbourhood ever reaches a seven-of-eight majority against
+// it. Every read is from the input, so one call is one simultaneous pass and a
+// change cannot cascade into the pixel next door.
+const DESPECKLE_MAJORITY = 7;
+function despeckleIdx(idx,w,h){
+  const out=Uint8Array.from(idx), count=new Uint8Array(4);
+  for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){
+    const i=y*w+x;
+    count[0]=count[1]=count[2]=count[3]=0;
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+      if(dx===0&&dy===0) continue;
+      count[idx[i+dy*w+dx]]++;
+    }
+    let best=0; for(let v=1;v<4;v++) if(count[v]>count[best]) best=v;
+    if(count[best]>=DESPECKLE_MAJORITY && idx[i]!==best) out[i]=best;
+  }
+  return out;
 }
 
 // ---------- encoders ----------
@@ -1201,9 +1328,156 @@ document.getElementById("dlAll").addEventListener("click", ()=>{
   }, i*150));
 });
 
+// ---------- cleaner ----------
+// Works on finished files rather than source images, so nothing here goes near
+// toGray / autoContrast / quantize. A file is unpacked to level indices,
+// despeckled, and packed again at its own width and height in its own format.
+
+// Unpack a .pxc (4-byte LE width,height header, then 2bpp MSB-first).
+function decodePxcIdx(buf){
+  if(buf.byteLength<4) return null;
+  const dv=new DataView(buf), bytes=new Uint8Array(buf);
+  const w=dv.getUint16(0,true), h=dv.getUint16(2,true);
+  if(w<1||h<1||w>4096||h>4096) return null;
+  const stride=(w+3)>>2;
+  if(buf.byteLength<4+stride*h) return null;
+  const idx=new Uint8Array(w*h);
+  for(let y=0;y<h;y++){ const row=4+y*stride;
+    for(let x=0;x<w;x++) idx[y*w+x]=(bytes[row+(x>>2)]>>(6-((x&3)<<1)))&3; }
+  return {w,h,idx};
+}
+
+// Unpack the 2-bit, 4-gray BMP this page writes. Rows are bottom-up and padded
+// to four bytes. The palette is read rather than assumed, so a file whose four
+// entries are stored in another order still maps onto our level indices.
+function decodeBmpIdx(buf){
+  if(buf.byteLength<54) return null;
+  const dv=new DataView(buf), bytes=new Uint8Array(buf);
+  if(bytes[0]!==0x42||bytes[1]!==0x4D) return null;
+  const off=dv.getUint32(10,true), headerSize=dv.getUint32(14,true);
+  const w=dv.getInt32(18,true), rawH=dv.getInt32(22,true);
+  const bpp=dv.getUint16(28,true), compression=dv.getUint32(30,true);
+  if(bpp!==2||compression!==0) return null;
+  const h=Math.abs(rawH), topDown=rawH<0;
+  if(w<1||h<1||w>4096||h>4096) return null;
+  const rowBytes=(((w*2)+31)>>5)<<2;
+  if(buf.byteLength<off+rowBytes*h) return null;
+  // Map each palette entry to the nearest of our four levels.
+  const palette=new Uint8Array(4);
+  for(let i=0;i<4;i++){
+    const p=14+headerSize+i*4;
+    const gray=p+2<buf.byteLength ? (0.299*bytes[p+2]+0.587*bytes[p+1]+0.114*bytes[p]) : LEVELS[i];
+    palette[i]=nearestLevel(gray);
+  }
+  const idx=new Uint8Array(w*h);
+  for(let y=0;y<h;y++){
+    const srcY=topDown?y:h-1-y, row=off+y*rowBytes;
+    for(let x=0;x<w;x++) idx[srcY*w+x]=palette[(bytes[row+(x>>2)]>>(6-((x&3)<<1)))&3];
+  }
+  return {w,h,idx};
+}
+
+// Pack level indices at an explicit size, borrowing the converter's encoders
+// without disturbing whatever the Converter tab is currently set to.
+function packAtSize(idx,w,h,fmt){
+  const saved={w:S.w,h:S.h};
+  S.w=w; S.h=h;
+  try{ return fmt==="bmp" ? encodeBmp(idx) : encodePxc(idx,0); }
+  finally{ Object.assign(S,saved); }
+}
+
+const CLEAN_BROWSER_LIMIT = 100;
+const cleanState={files:[]};
+const cleanResults=document.getElementById("cleanResults");
+const cleanBar=document.getElementById("cleanBar");
+const cleanCount=document.getElementById("cleanCount");
+
+function cleanDrawPreview(canvas,idx,w,h){
+  canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext("2d"), im=ctx.createImageData(w,h), d=im.data;
+  for(let i=0,p=0;i<idx.length;i++,p+=4){ const v=LEVELS[idx[i]]; d[p]=d[p+1]=d[p+2]=v; d[p+3]=255; }
+  ctx.putImageData(im,0,0);
+}
+
+function cleanRender(){
+  cleanResults.innerHTML="";
+  cleanBar.hidden=cleanState.files.length===0;
+  const changed=cleanState.files.reduce((n,f)=>n+(f.changed?1:0),0);
+  cleanCount.textContent=cleanState.files.length
+    ? `${cleanState.files.length} file${cleanState.files.length>1?"s":""} · ${changed} cleaned`
+    : "";
+  cleanState.files.forEach(f=>{
+    const card=document.createElement("div"); card.className="card";
+    const cv=document.createElement("canvas");
+    cleanDrawPreview(cv,f.idx,f.w,f.h);
+    const name=document.createElement("div"); name.className="name"; name.textContent=f.name;
+    const meta=document.createElement("div"); meta.className="meta";
+    const tag=document.createElement("span"); tag.className="pill";
+    tag.textContent=f.changed?`${f.changed} pixels cleaned`:"already clean";
+    const dims=document.createElement("span"); dims.textContent=`${f.w}×${f.h}`;
+    meta.append(tag,dims);
+    const a=document.createElement("a"); a.className="dl"; a.textContent="Download";
+    a.href=URL.createObjectURL(new Blob([f.bytes],{type:"application/octet-stream"}));
+    a.download=f.name;
+    press(a);
+    card.append(cv,name,meta,a);
+    cleanResults.appendChild(card);
+  });
+}
+
+function cleanAddFiles(list){
+  const arr=[...list].filter(f=>/\.(pxc|bmp)$/i.test(f.name));
+  if(!arr.length) return;
+  if(arr.length>CLEAN_BROWSER_LIMIT){
+    alert(`That is ${arr.length} files. The browser handles about ${CLEAN_BROWSER_LIMIT} at a time.\n\n`+
+          `For a whole SD card, run scripts/clean_pxc.py from the repository instead. It has no limit.`);
+    return;
+  }
+  let pending=arr.length;
+  const done=()=>{ if(--pending===0) cleanRender(); };
+  arr.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const isBmp=/\.bmp$/i.test(file.name);
+      const decoded=isBmp?decodeBmpIdx(reader.result):decodePxcIdx(reader.result);
+      if(!decoded){ done(); return; }
+      const cleaned=despeckleIdx(decoded.idx,decoded.w,decoded.h);
+      let changed=0;
+      for(let i=0;i<cleaned.length;i++) if(cleaned[i]!==decoded.idx[i]) changed++;
+      cleanState.files.push({
+        name:file.name, w:decoded.w, h:decoded.h, idx:cleaned, changed,
+        bytes:packAtSize(cleaned,decoded.w,decoded.h,isBmp?"bmp":"pxc")
+      });
+      done();
+    };
+    reader.onerror=done;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+const cleanDrop=document.getElementById("cleanDrop"), cleanFile=document.getElementById("cleanFile");
+cleanDrop.addEventListener("click",()=>cleanFile.click());
+cleanFile.addEventListener("change",e=>cleanAddFiles(e.target.files));
+cleanDrop.addEventListener("dragover",e=>{e.preventDefault();cleanDrop.classList.add("over");});
+cleanDrop.addEventListener("dragleave",()=>cleanDrop.classList.remove("over"));
+cleanDrop.addEventListener("drop",e=>{
+  e.preventDefault(); cleanDrop.classList.remove("over");
+  if(e.dataTransfer?.files) cleanAddFiles(e.dataTransfer.files);
+});
+document.getElementById("cleanClear").addEventListener("click",()=>{cleanState.files=[];cleanRender();});
+document.getElementById("cleanDlAll").addEventListener("click",()=>{
+  cleanState.files.forEach((f,i)=>setTimeout(()=>{
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([f.bytes],{type:"application/octet-stream"}));
+    a.download=f.name; a.click();
+  }, i*150));
+});
+press(document.getElementById("cleanClear")); press(document.getElementById("cleanDlAll"));
+
 // ---------- tabs ----------
 const tabs=document.getElementById("tabs");
 const views={convert:document.getElementById("view-convert"),
+             clean:document.getElementById("view-clean"),
              gallery:document.getElementById("view-gallery"),
              flash:document.getElementById("view-flash")};
 let galleryLoaded=false, flashLoaded=false;
@@ -1211,9 +1485,7 @@ let galleryLoaded=false, flashLoaded=false;
 function showView(v){
   if(!views[v]) v="convert";
   [...tabs.children].forEach(t=>{const on=t.dataset.view===v; t.classList.toggle("on",on); t.setAttribute("aria-selected",on);});
-  views.convert.hidden = v!=="convert";
-  views.gallery.hidden = v!=="gallery";
-  views.flash.hidden   = v!=="flash";
+  Object.keys(views).forEach(k=>{ views[k].hidden = k!==v; });
   if(v==="gallery" && !galleryLoaded){ galleryLoaded=true; loadGallery(); }
   if(v==="flash" && !flashLoaded){ flashLoaded=true; initFlasher(); }
 }
