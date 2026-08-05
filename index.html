@@ -676,22 +676,18 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>lector.exp.4 is being tested now.</strong> It carries everything exp.3 had — a thin underline under
-          words you quote, and one quote per page when you open the quotes file as a book — and adds four things. A
-          quote can now run past the end of a page: keep extending it and the page turns for you. Grab Quote can be
-          bound to a held Confirm button, and Confirm gained a separate double-click action, so a hold and a double
-          click can do two different jobs. The wallpaper row that moves a picture out of rotation now says what it
-          does: Move to Pause folder. And the home screen has dropped its Pages counter, with a small skull in its
-          place. None of it has been tried on a reader yet.</p>
+        <p><strong>lector.exp.5 is being tested now.</strong> Everything exp.4 carried has since shipped in the
+          stable build, so this one starts from stable 0.13.0 and adds four fixes. Downloading a book over OPDS no
+          longer leaves the previous screen ghosted under the file browser. A chapter that fails to index now says
+          why, with a code and the free memory, so a failure can be reported without a cable. A download that arrives
+          short is thrown away instead of stored as a broken book. And the in-book menu opens with the cursor already
+          on the Favorite Wallpaper row. None of it has been tried on a reader yet.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
-          <br><br><strong>Your books are not re-laid out by this build</strong> and quotes you saved before it are left
-          exactly as they are — they simply carry no underline. Only a quotes text file opened as a book is paginated
-          again, once.
-          <br><br>The home screen's Pages tally is removed, and the number it was holding is not kept. If you bind a
-          double-click action to Confirm, a single click then waits a moment before the reader menu opens, because it
-          has to see whether a second click is coming. Leave that setting Disabled and the menu opens at once, as
-          before.
+          <br><br><strong>Your books keep their layout.</strong> Nothing is re-read and nothing is rebuilt. Reading
+          positions, quotes and per-book settings are all kept.
+          <br><br>If a chapter does fail to index, the message now ends with something like (E7 h31k a12k). That is the
+          failure code and the free memory at the moment it happened. Worth writing down.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
         <div class="verline">Experimental build on this site</div>
         <div class="verval"><span id="flashExperimentalVersion">…</span></div>
@@ -1577,10 +1573,10 @@ function initFlasher(){
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This experimental build has not been tested on a device. Quotes can now run across pages, Grab "+
-               "Quote can be bound to a held Confirm button, and Confirm has a new double-click action. The home "+
-               "Pages counter is removed and its number is not kept. Quotes you saved before this build are left "+
-               "as they are. Your books are not re-laid out. You can go back at any time with the Update button. "+
+    if(confirm("This experimental build has not been tested on a device. It fixes screen ghosting after an OPDS "+
+               "download, makes a failed chapter index report why it failed, and throws away a short download "+
+               "instead of storing it. Your books keep their layout: nothing is rebuilt, and reading positions, "+
+               "quotes and per-book settings are kept. You can go back at any time with the Update button. "+
                "Continue?")) runFlash("experimental");
   });
   document.getElementById("btnRescue").addEventListener("click",()=>{
