@@ -86,7 +86,10 @@ The browser tab handles about 100 files at a time. For a whole SD card, use the 
 the card and it cleans the files where they lie, so there is nothing to copy back:
 
 ```sh
-# Clean the card. Asks once for confirmation, keeps a .bak of every original.
+# Simplest: a window opens, you pick the folder, it cleans it.
+python3 scripts/clean_pxc.py
+
+# The same with the folder given directly. Keeps a .bak of every original.
 python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep
 
 # Look first. Change nothing.
@@ -99,6 +102,8 @@ python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep --drop-backups
 python3 scripts/clean_pxc.py /Volumes/LECTOR/sleep -o ~/Desktop/cleaned
 ```
 
+Run with no path at all and a folder chooser opens — on macOS the system's own, through `osascript`,
+falling back to tkinter elsewhere. If neither is available it says so and tells you to pass the path.
 `--yes` skips the confirmation, `--no-backup` writes no `.bak` files. The reader ignores the backups
 either way: its sleep-folder scan matches the last four characters of a name against `.pxc` or `.bmp`
 (`SdFatSleepFs.cpp`), and `.bak` is neither.

@@ -25,7 +25,10 @@ in neither.
 
 Usage:
 
-    # Clean the card in place. Asks for confirmation, keeps a .bak of each file.
+    # Simplest. A window opens, you pick the folder, it cleans it.
+    python3 clean_pxc.py
+
+    # The same thing with the folder given directly.
     python3 clean_pxc.py /Volumes/LECTOR/sleep
 
     # Look first, change nothing.
@@ -53,6 +56,7 @@ import multiprocessing
 import os
 import shutil
 import struct
+import subprocess
 import sys
 from pathlib import Path
 
@@ -326,6 +330,51 @@ def _worker(job):
     return path, encoded, changed, None
 
 
+def pick_folder() -> Path | None:
+    """Ask the user to choose a folder in a window. Returns None if they cancel.
+
+    Two ways are tried, because neither is available everywhere. On macOS the
+    system's own chooser is asked for first through osascript: it is always
+    present, it looks like every other Finder dialog, and it needs nothing
+    installed. Elsewhere, and if that fails, tkinter provides the same thing,
+    though some Python builds ship without it.
+    """
+    if sys.platform == "darwin":
+        try:
+            completed = subprocess.run(
+                ["osascript", "-e",
+                 'POSIX path of (choose folder with prompt '
+                 '"Choose the folder of wallpapers to clean, '
+                 'for example the sleep folder on the SD card:")'],
+                capture_output=True, text=True, timeout=300,
+            )
+            if completed.returncode == 0:
+                chosen = completed.stdout.strip()
+                if chosen:
+                    return Path(chosen)
+            # A non-zero exit is normally the user pressing Cancel.
+            if "cancel" in (completed.stderr or "").lower():
+                return None
+        except (OSError, subprocess.SubprocessError):
+            pass  # fall through to tkinter
+
+    try:
+        import tkinter
+        from tkinter import filedialog
+    except ImportError:
+        return None
+
+    try:
+        root = tkinter.Tk()
+        root.withdraw()
+        root.update()
+        chosen = filedialog.askdirectory(title="Choose the folder of wallpapers to clean")
+        root.destroy()
+    except Exception:
+        return None
+    return Path(chosen) if chosen else None
+
+
 def drop_backups(target: Path, recursive: bool) -> int:
     """Delete the .bak files an in-place run left behind, after confirmation.
 
@@ -375,7 +424,9 @@ def main(argv: list[str]) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__.split("Usage:", 1)[1] if "Usage:" in __doc__ else None,
     )
-    parser.add_argument("target", type=Path, help="a .pxc/.bmp file, or a folder of them")
+    parser.add_argument("target", type=Path, nargs="?",
+                        help="a .pxc/.bmp file, or a folder of them. Leave it out and a window "
+                             "opens for you to choose the folder.")
     parser.add_argument("-o", "--output", type=Path,
                         help="leave the originals alone and write cleaned copies into this folder "
                              "(default: clean the files where they are)")
@@ -399,7 +450,17 @@ def main(argv: list[str]) -> int:
                              "parallel work, which is easier to read when debugging)")
     args = parser.parse_args(argv)
 
-    target: Path = args.target
+    target: Path | None = args.target
+    if target is None:
+        print("Choose the folder of wallpapers to clean...")
+        target = pick_folder()
+        if target is None:
+            print("No folder chosen. Nothing was done.")
+            print(f"You can also pass the path directly: "
+                  f"python3 {Path(sys.argv[0]).name} /Volumes/YOUR_CARD/sleep")
+            return 1
+        print(f"Chosen: {target}")
+
     if not target.exists():
         print(f"error: {target} does not exist", file=sys.stderr)
         return 1
