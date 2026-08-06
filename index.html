@@ -1515,6 +1515,23 @@ const views={convert:document.getElementById("view-convert"),
              flash:document.getElementById("view-flash")};
 let galleryLoaded=false, flashLoaded=false;
 
+// The wallpaper gallery is only present when gallery/manifest.json is being served. It was
+// removed from this site (3,190 PXC files, 324 MB) because publishing it made every Pages
+// deploy slow and fragile; scripts/import-gallery.mjs puts it back whenever wanted. Hide
+// the tab rather than let it open onto an empty grid with an error in it: a tab that leads
+// nowhere reads as a broken site, and no tab at all reads as a site without a gallery.
+(async()=>{
+  const tab=[...tabs.children].find(t=>t.dataset.view==="gallery");
+  if(!tab) return;
+  try{
+    const res=await fetch("gallery/manifest.json",{method:"HEAD",cache:"no-cache"});
+    if(res.ok) return;
+  }catch(_){}
+  tab.hidden=true;
+  // A deep link to #gallery would otherwise land on the hidden panel with no tab lit.
+  if(!views.gallery.hidden) showView("convert");
+})();
+
 function showView(v){
   if(!views[v]) v="convert";
   [...tabs.children].forEach(t=>{const on=t.dataset.view===v; t.classList.toggle("on",on); t.setAttribute("aria-selected",on);});

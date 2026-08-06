@@ -5,11 +5,18 @@ import test from "node:test";
 
 const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
 const galleryDir = new URL("./gallery/", import.meta.url);
-const manifest = JSON.parse(readFileSync(new URL("manifest.json", galleryDir), "utf8"));
+// The gallery is optional: its 3,190 PXC files were removed from this repo because
+// publishing 324 MB made every Pages deploy slow and fragile, and scripts/import-gallery.mjs
+// restores them on demand. The content checks below only mean something when the files are
+// present, so they skip rather than fail when they are not; the UI and importer checks that
+// follow are about index.html and the script, and always run.
+const galleryPresent = existsSync(new URL("manifest.json", galleryDir));
+const manifest = galleryPresent ? JSON.parse(readFileSync(new URL("manifest.json", galleryDir), "utf8")) : null;
 const hashFile = new URL("hashes.json", galleryDir);
 const hashSnapshot = existsSync(hashFile) ? JSON.parse(readFileSync(hashFile, "utf8")) : [];
 
-test("gallery contains every unique download as a sequential unchanged PXC", () => {
+test("gallery contains every unique download as a sequential unchanged PXC",
+     { skip: galleryPresent ? false : "gallery not published in this checkout" }, () => {
   const entries = manifest.wallpapers;
   assert.equal(entries.length, 3190);
   assert.deepEqual(entries.map(entry => entry.file),
