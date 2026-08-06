@@ -676,8 +676,10 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>Nothing is being tested right now.</strong> Everything that has been proven on a reader is in the
-          stable build, which the Update button above installs. When a build needs testing it appears here.</p>
+        <p><strong>This build changes the screen driver.</strong> It is stable 0.14.0 plus one thing: a newer display
+          SDK. That brings support for the newer X3 screen panel, a separate driver for the X4 panel, greyscale
+          images, and a corrected half refresh. Nothing else was changed, so if anything looks wrong it is the
+          driver.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
@@ -1565,9 +1567,9 @@ function initFlasher(){
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This experimental build has not been tested on a device. It fixes screen ghosting after an OPDS "+
-               "download, makes a failed chapter index report why it failed, and throws away a short download "+
-               "instead of storing it. Your books keep their layout: nothing is rebuilt, and reading positions, "+
+    if(confirm("This experimental build has not been tested on a device. It is stable 0.14.0 with a newer display "+
+               "SDK, and nothing else. That is the screen driver, so watch the screen: page turns, the sleep "+
+               "picture, and images. Your books keep their layout: nothing is rebuilt, and reading positions, "+
                "quotes and per-book settings are kept. You can go back at any time with the Update button. "+
                "Continue?")) runFlash("experimental");
   });
