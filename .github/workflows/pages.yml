@@ -1,0 +1,50 @@
+name: Deploy site to GitHub Pages
+
+# Replaces the auto-generated "legacy" Pages pipeline. That pipeline is built by
+# GitHub and cannot be edited, and its deploy job ran without the `id-token: write`
+# permission that actions/deploy-pages needs to mint an OIDC token. Every deploy
+# from 2026-08-06 failed with:
+#   Error: Failed to get ID Token.  Error Code : 503
+#   upstream connect error or disconnect/reset before headers. reset reason: overflow
+#   ##[error]Ensure GITHUB_TOKEN has permission "id-token: write".
+# Owning the workflow lets us grant that permission explicitly and retry on our terms.
+#
+# The site is plain static HTML/JS: no Jekyll step, the repository is uploaded as-is.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once, but do not cancel one that is already publishing.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tell Pages to serve the files verbatim instead of running them through Jekyll,
+      # which would otherwise skip any path beginning with an underscore.
+      - name: Disable Jekyll processing
+        run: touch .nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
