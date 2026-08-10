@@ -397,6 +397,7 @@
           <label>Dither style</label>
           <div class="seg" id="segDither">
             <button data-v="clean" class="on">Clean</button>
+            <button data-v="smooth">Smooth</button>
             <button data-v="classic">Classic</button>
           </div>
         </div>
@@ -460,6 +461,11 @@
           is placed on that level with its error dropped. Gradients and detail still dither normally, and
           a tone genuinely between two levels still mixes both.</li>
         <li><strong>Dither style</strong> — <em>Clean</em> is the above and the default.
+          <em>Smooth</em> keeps the serpentine scan and the flat-area snap but swaps the diffusion for
+          Floyd&ndash;Steinberg, which passes on the whole error instead of six eighths of it. Tone is
+          preserved exactly, which is the usual reason photographs are dithered this way; flat areas stay
+          clean because the snap still absorbs the residue. Which of the two looks better on the panel is
+          a matter for your own eye and your own photographs.
           <em>Classic</em> is the plain Floyd&ndash;Steinberg pass this converter used before August 2026:
           one left-to-right scan, no flatness test, no snapping. It grits flat areas, which is why
           <em>Clean</em> replaced it, but it keeps texture and fine tonal drift that snapping levels out,
@@ -1160,17 +1166,32 @@ function quantizeClassic(g, w, h, idx){
 }
 
 // Quantise gray -> level indices 0..3 (w*h Uint8).
-// Dithering is Atkinson rather than Floyd-Steinberg: it hands on only six
-// eighths of each error, so a residual decays instead of building without
-// limit. The scan is serpentine (alternating row direction), which breaks the
-// diagonal worms a fixed left-to-right pass leaves behind. Flat fields near a
-// level are snapped, as described above.
+//
+// Two of the three styles share this loop: the serpentine scan and the
+// flat-field snap are the same, and only the diffusion kernel differs.
+//
+//   Clean  — Atkinson. Hands on only six eighths of each error, so a residual
+//            decays instead of building without limit. Cleanest flat areas, at
+//            the cost of some tonal accuracy: the discarded eighth is real
+//            information, and it shows most in gradients and skin.
+//   Smooth — Floyd-Steinberg. Hands on the whole error, so tone is preserved
+//            exactly, which is what makes it the usual choice for photographs.
+//            On its own it grits flat areas — that is what "Classic" does — but
+//            here it keeps the snap, which absorbs the residue where it would
+//            otherwise pile up. Whether that beats Clean on the panel is a
+//            matter for the eye, not for theory; both are offered.
+//
+// The scan is serpentine (alternating row direction) for both, which breaks the
+// diagonal worms a fixed left-to-right pass leaves behind. Note the kernel
+// offsets are written against `fwd` rather than +1, so they mirror with the scan
+// direction; a kernel hard-coded to the right would smear on every other row.
 function quantize(g, dither){
   const {w,h}=S; const idx=new Uint8Array(w*h);
   if(!dither){ for(let i=0;i<g.length;i++) idx[i]=nearestLevel(g[i]); return idx; }
   // Unset means Clean: callers that predate the setting (and the host tests,
   // which build their own S) must keep the current behaviour.
   if(S.ditherStyle==="classic") return quantizeClassic(g,w,h,idx);
+  const smooth = S.ditherStyle==="smooth";
   const {blur,flat}=flatField(g,w,h);
   const buf=Float32Array.from(g);
   for(let y=0;y<h;y++){
@@ -1183,8 +1204,17 @@ function quantize(g, dither){
         continue;
       }
       const old=buf[i], q=nearestLevel(old); idx[i]=q;
-      const e=(old-LEVELS[q])/8;  // Atkinson: 1/8 to each of six neighbours
+      const err=old-LEVELS[q];
       const x1=x+fwd, x2=x+fwd*2, xb=x-fwd;
+      if(smooth){                 // Floyd-Steinberg: 7/16, 3/16, 5/16, 1/16
+        if(x1>=0&&x1<w) buf[i+fwd]+=err*7/16;
+        if(y+1<h){ const n=i+w;
+          if(xb>=0&&xb<w) buf[n-fwd]+=err*3/16;
+          buf[n]+=err*5/16;
+          if(x1>=0&&x1<w) buf[n+fwd]+=err*1/16; }
+        continue;
+      }
+      const e=err/8;              // Atkinson: 1/8 to each of six neighbours
       if(x1>=0&&x1<w) buf[i+fwd]+=e;
       if(x2>=0&&x2<w) buf[i+fwd*2]+=e;
       if(y+1<h){ const n=i+w;

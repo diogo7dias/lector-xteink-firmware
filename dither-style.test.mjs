@@ -78,6 +78,38 @@ test("Classic keeps the speckle on a flat field and Clean removes it", () => {
   assert.ok(strays(classic) > 0, "Classic must keep the old grit — that is what it is for");
 });
 
+test("Smooth keeps flat fields clean, like Clean and unlike Classic", () => {
+  const w = 64, h = 64;
+  const g = flat(w, h, 245);
+  const smooth = makeQuantize(LEVELS, { w, h, ditherStyle: "smooth" })(g, true);
+  const strays = out => out.reduce((n, v) => n + (v === 3 ? 0 : 1), 0);
+  assert.equal(strays(smooth), 0, "the flat-area snap must still apply under Smooth");
+});
+
+test("Smooth is its own pass: not Clean, not Classic", () => {
+  const w = 64, h = 64;
+  const g = ramp(w, h);
+  const smooth = Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: "smooth" })(g, true));
+  const clean = Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: "clean" })(g, true));
+  const classic = Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: "classic" })(g, true));
+  assert.notDeepEqual(smooth, clean, "Smooth must differ from Clean — the kernel is the whole point");
+  assert.notDeepEqual(smooth, classic, "Smooth keeps the serpentine scan and the snap; Classic has neither");
+});
+
+// The reason Smooth exists. Atkinson discards two eighths of every error, so the
+// rendered average drifts away from the source; Floyd-Steinberg conserves it.
+test("Smooth holds the average tone at least as well as Clean", () => {
+  const w = 96, h = 96;
+  const g = ramp(w, h);
+  const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+  const rendered = style =>
+    mean(Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: style })(g, true)).map(i => LEVELS[i]));
+  const target = mean(Array.from(g));
+  const smoothErr = Math.abs(rendered("smooth") - target);
+  const cleanErr = Math.abs(rendered("clean") - target);
+  assert.ok(smoothErr <= cleanErr, `Smooth drifted ${smoothErr} vs Clean ${cleanErr}`);
+});
+
 test("an unset style behaves as Clean, so callers predating the setting are unchanged", () => {
   const w = 32, h = 32;
   const g = flat(w, h, 245);
