@@ -393,11 +393,15 @@
             <option value="threshold" selected>Threshold (line art)</option>
           </select>
         </div>
-        <div class="ctl">
+        <!-- Hidden on purpose. Smooth is the only style offered for now; Clean and
+             Classic are kept whole, in the markup and in quantize(), so bringing the
+             choice back is one attribute. Open the page with ?dither=1 to reveal it
+             and compare the three without editing anything. -->
+        <div class="ctl" id="ctlDither" hidden>
           <label>Dither style</label>
           <div class="seg" id="segDither">
-            <button data-v="clean" class="on">Clean</button>
-            <button data-v="smooth">Smooth</button>
+            <button data-v="clean">Clean</button>
+            <button data-v="smooth" class="on">Smooth</button>
             <button data-v="classic">Classic</button>
           </div>
         </div>
@@ -454,23 +458,13 @@
           <code>threshold</code> badge under any result to flip that one image; changing the Rendering
           dropdown resets them all.</li>
         <li><strong>Dithering</strong> — the panel's four levels sit 85 greys apart, so one mis-fired
-          pixel is a whole step away from its neighbours, not a subtle speckle. Three things keep flat
-          areas clean: diffusion is Atkinson, which hands on six eighths of each error so a residual
-          decays instead of building up; the scan alternates direction row by row, which breaks up the
-          diagonal streaks a one-way pass leaves; and a flat area lying close to one of the four levels
-          is placed on that level with its error dropped. Gradients and detail still dither normally, and
-          a tone genuinely between two levels still mixes both.</li>
-        <li><strong>Dither style</strong> — <em>Clean</em> is the above and the default.
-          <em>Smooth</em> keeps the serpentine scan and the flat-area snap but swaps the diffusion for
-          Floyd&ndash;Steinberg, which passes on the whole error instead of six eighths of it. Tone is
-          preserved exactly, which is the usual reason photographs are dithered this way; flat areas stay
-          clean because the snap still absorbs the residue. Which of the two looks better on the panel is
-          a matter for your own eye and your own photographs.
-          <em>Classic</em> is the plain Floyd&ndash;Steinberg pass this converter used before August 2026:
-          one left-to-right scan, no flatness test, no snapping. It grits flat areas, which is why
-          <em>Clean</em> replaced it, but it keeps texture and fine tonal drift that snapping levels out,
-          and it reproduces old wallpapers exactly if you still have the original photo. Only affects
-          dithered images; thresholding is identical either way.</li>
+          pixel is a whole step away from its neighbours, not a subtle speckle. Diffusion is
+          Floyd&ndash;Steinberg, which passes on the whole error and so holds tone exactly; that is why
+          photographs are usually dithered this way. Two things stop it gritting flat areas: the scan
+          alternates direction row by row, which breaks up the diagonal streaks a one-way pass leaves,
+          and a flat area lying close to one of the four levels is placed on that level with its error
+          dropped, so no residue can pile up there. Gradients and detail still dither normally, and a
+          tone genuinely between two levels still mixes both.</li>
         <li><strong>Cleaner</strong> — wallpapers converted before the above will still carry that grit.
           The <strong>Cleaner</strong> tab repairs finished <code>.pxc</code> and <code>.bmp</code> files
           in place of re-converting them, so nothing is re-scaled or re-toned. For a whole card, use
@@ -929,7 +923,7 @@ themeToggle.addEventListener("click",()=>{
 const INK = "var(--ink)";
 const LEVELS = [0,85,170,255];
 // ---------- state ----------
-const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"clean", files:[] };
+const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"smooth", files:[] };
 
 // ---------- brutalist press feedback ----------
 // Nudges an element down-right and shrinks its hard shadow while pressed, so
@@ -956,6 +950,11 @@ function seg(id, on){
 seg("segSize", b=>{ S.w=+b.dataset.w; S.h=+b.dataset.h; });
 seg("segFmt", b=> S.fmt=b.dataset.fmt);
 seg("segDither", b=> S.ditherStyle=b.dataset.v);
+// The style picker is hidden by default (see the markup). ?dither=1 brings it back
+// for a side-by-side comparison; the styles themselves are always available.
+if(new URLSearchParams(location.search).get("dither")==="1"){
+  document.getElementById("ctlDither").hidden=false;
+}
 seg("segContrast", b=> S.contrast=+b.dataset.v);
 seg("segInvert", b=> S.invert=+b.dataset.v);
 document.getElementById("fit").addEventListener("change", e=>{S.fit=e.target.value;rerender();});
@@ -1188,8 +1187,10 @@ function quantizeClassic(g, w, h, idx){
 function quantize(g, dither){
   const {w,h}=S; const idx=new Uint8Array(w*h);
   if(!dither){ for(let i=0;i<g.length;i++) idx[i]=nearestLevel(g[i]); return idx; }
-  // Unset means Clean: callers that predate the setting (and the host tests,
-  // which build their own S) must keep the current behaviour.
+  // Unset means Clean, which is NOT the app default — the page always sets a
+  // style, and sets it to "smooth". The fallback exists for callers that predate
+  // the setting and for host tests that build their own S, so both keep pinning
+  // the Atkinson pass rather than silently following whatever the default becomes.
   if(S.ditherStyle==="classic") return quantizeClassic(g,w,h,idx);
   const smooth = S.ditherStyle==="smooth";
   const {blur,flat}=flatField(g,w,h);
