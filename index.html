@@ -393,16 +393,17 @@
             <option value="threshold" selected>Threshold (line art)</option>
           </select>
         </div>
-        <!-- Hidden on purpose. Smooth is the only style offered for now; Clean and
-             Classic are kept whole, in the markup and in quantize(), so bringing the
-             choice back is one attribute. Open the page with ?dither=1 to reveal it
-             and compare the three without editing anything. -->
+        <!-- Hidden on purpose. Classic — the dithering this converter shipped before
+             2026-08-05 — is the only style offered; Diogo judged it against the other
+             two and prefers it. Clean and Smooth are kept whole, in the markup and in
+             quantize(), so bringing the choice back is one attribute. Open the page
+             with ?dither=1 to reveal it and compare the three without editing anything. -->
         <div class="ctl" id="ctlDither" hidden>
           <label>Dither style</label>
           <div class="seg" id="segDither">
             <button data-v="clean">Clean</button>
-            <button data-v="smooth" class="on">Smooth</button>
-            <button data-v="classic">Classic</button>
+            <button data-v="smooth">Smooth</button>
+            <button data-v="classic" class="on">Classic</button>
           </div>
         </div>
         <div class="ctl">
@@ -923,7 +924,7 @@ themeToggle.addEventListener("click",()=>{
 const INK = "var(--ink)";
 const LEVELS = [0,85,170,255];
 // ---------- state ----------
-const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"smooth", files:[] };
+const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"classic", files:[] };
 
 // ---------- brutalist press feedback ----------
 // Nudges an element down-right and shrinks its hard shadow while pressed, so
@@ -1166,7 +1167,9 @@ function quantizeClassic(g, w, h, idx){
 
 // Quantise gray -> level indices 0..3 (w*h Uint8).
 //
-// Two of the three styles share this loop: the serpentine scan and the
+// Classic is what the page ships and the only style it offers; it lives in
+// quantizeClassic above and returns before this loop. The two below are kept for
+// comparison behind ?dither=1 and share this loop: the serpentine scan and the
 // flat-field snap are the same, and only the diffusion kernel differs.
 //
 //   Clean  — Atkinson. Hands on only six eighths of each error, so a residual
@@ -1177,8 +1180,8 @@ function quantizeClassic(g, w, h, idx){
 //            exactly, which is what makes it the usual choice for photographs.
 //            On its own it grits flat areas — that is what "Classic" does — but
 //            here it keeps the snap, which absorbs the residue where it would
-//            otherwise pile up. Whether that beats Clean on the panel is a
-//            matter for the eye, not for theory; both are offered.
+//            otherwise pile up. It measured better than Clean on a synthetic
+//            ramp and still lost on the panel, which is the whole lesson.
 //
 // The scan is serpentine (alternating row direction) for both, which breaks the
 // diagonal worms a fixed left-to-right pass leaves behind. Note the kernel
@@ -1188,7 +1191,7 @@ function quantize(g, dither){
   const {w,h}=S; const idx=new Uint8Array(w*h);
   if(!dither){ for(let i=0;i<g.length;i++) idx[i]=nearestLevel(g[i]); return idx; }
   // Unset means Clean, which is NOT the app default — the page always sets a
-  // style, and sets it to "smooth". The fallback exists for callers that predate
+  // style, and sets it to "classic". The fallback exists for callers that predate
   // the setting and for host tests that build their own S, so both keep pinning
   // the Atkinson pass rather than silently following whatever the default becomes.
   if(S.ditherStyle==="classic") return quantizeClassic(g,w,h,idx);

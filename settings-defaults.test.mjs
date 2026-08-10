@@ -11,11 +11,11 @@ test("converter starts with requested X3 line-art defaults", () => {
   assert.match(html, /option value="threshold" selected>Threshold \(line art\)/);
   assert.match(html, /id="segContrast">[\s\S]*?data-v="1" class="on">On/);
   assert.match(html, /id="segInvert">[\s\S]*?data-v="0" class="on">Off/);
-  assert.match(html, /id="segDither">[\s\S]*?data-v="smooth" class="on">Smooth/);
-  assert.match(html, /const S = \{ w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"smooth"/);
-  // Smooth is the only style offered for now, but Clean and Classic stay in the
-  // page so restoring the choice is one attribute rather than a rewrite.
+  assert.match(html, /id="segDither">[\s\S]*?data-v="classic" class="on">Classic/);
+  assert.match(html, /const S = \{ w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"classic"/);
+  // Classic is the only style offered, but Clean and Smooth stay in the page so
+  // restoring the choice is one attribute rather than a rewrite.
   assert.match(html, /id="ctlDither" hidden/);
   assert.match(html, /data-v="clean">Clean/);
-  assert.match(html, /data-v="classic">Classic/);
+  assert.match(html, /data-v="smooth">Smooth/);
 });
