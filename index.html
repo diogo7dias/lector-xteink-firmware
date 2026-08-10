@@ -394,6 +394,13 @@
           </select>
         </div>
         <div class="ctl">
+          <label>Dither style</label>
+          <div class="seg" id="segDither">
+            <button data-v="clean" class="on">Clean</button>
+            <button data-v="classic">Classic</button>
+          </div>
+        </div>
+        <div class="ctl">
           <label>Auto-contrast</label>
           <div class="seg" id="segContrast">
             <button data-v="1" class="on">On</button>
@@ -452,6 +459,12 @@
           diagonal streaks a one-way pass leaves; and a flat area lying close to one of the four levels
           is placed on that level with its error dropped. Gradients and detail still dither normally, and
           a tone genuinely between two levels still mixes both.</li>
+        <li><strong>Dither style</strong> — <em>Clean</em> is the above and the default.
+          <em>Classic</em> is the plain Floyd&ndash;Steinberg pass this converter used before August 2026:
+          one left-to-right scan, no flatness test, no snapping. It grits flat areas, which is why
+          <em>Clean</em> replaced it, but it keeps texture and fine tonal drift that snapping levels out,
+          and it reproduces old wallpapers exactly if you still have the original photo. Only affects
+          dithered images; thresholding is identical either way.</li>
         <li><strong>Cleaner</strong> — wallpapers converted before the above will still carry that grit.
           The <strong>Cleaner</strong> tab repairs finished <code>.pxc</code> and <code>.bmp</code> files
           in place of re-converting them, so nothing is re-scaled or re-toned. For a whole card, use
@@ -910,7 +923,7 @@ themeToggle.addEventListener("click",()=>{
 const INK = "var(--ink)";
 const LEVELS = [0,85,170,255];
 // ---------- state ----------
-const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, files:[] };
+const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"clean", files:[] };
 
 // ---------- brutalist press feedback ----------
 // Nudges an element down-right and shrinks its hard shadow while pressed, so
@@ -936,6 +949,7 @@ function seg(id, on){
 }
 seg("segSize", b=>{ S.w=+b.dataset.w; S.h=+b.dataset.h; });
 seg("segFmt", b=> S.fmt=b.dataset.fmt);
+seg("segDither", b=> S.ditherStyle=b.dataset.v);
 seg("segContrast", b=> S.contrast=+b.dataset.v);
 seg("segInvert", b=> S.invert=+b.dataset.v);
 document.getElementById("fit").addEventListener("change", e=>{S.fit=e.target.value;rerender();});
@@ -1123,6 +1137,28 @@ function flatField(g,w,h){
   return {blur,flat};
 }
 
+// The dithering this converter shipped before 2026-08-05, kept verbatim behind
+// the "Classic" style. Plain Floyd-Steinberg, one left-to-right pass, no flat
+// detection and no snapping: every pixel keeps its full error and passes all of
+// it on. It grits flat areas — that is the whole reason "Clean" exists — but it
+// preserves texture and fine tonal drift that snapping deliberately flattens,
+// and it is what every wallpaper converted before that date was made with. Keep
+// it byte-for-byte identical so re-converting an old master reproduces the old
+// file exactly; do not "improve" it here.
+function quantizeClassic(g, w, h, idx){
+  const buf=Float32Array.from(g);
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const i=y*w+x, old=buf[i], q=nearestLevel(old); idx[i]=q;
+      const err=old-LEVELS[q];
+      if(x+1<w) buf[i+1]+=err*7/16;
+      if(y+1<h){ const n=(y+1)*w+x;
+        if(x>0) buf[n-1]+=err*3/16; buf[n]+=err*5/16; if(x+1<w) buf[n+1]+=err*1/16; }
+    }
+  }
+  return idx;
+}
+
 // Quantise gray -> level indices 0..3 (w*h Uint8).
 // Dithering is Atkinson rather than Floyd-Steinberg: it hands on only six
 // eighths of each error, so a residual decays instead of building without
@@ -1132,6 +1168,9 @@ function flatField(g,w,h){
 function quantize(g, dither){
   const {w,h}=S; const idx=new Uint8Array(w*h);
   if(!dither){ for(let i=0;i<g.length;i++) idx[i]=nearestLevel(g[i]); return idx; }
+  // Unset means Clean: callers that predate the setting (and the host tests,
+  // which build their own S) must keep the current behaviour.
+  if(S.ditherStyle==="classic") return quantizeClassic(g,w,h,idx);
   const {blur,flat}=flatField(g,w,h);
   const buf=Float32Array.from(g);
   for(let y=0;y<h;y++){
