@@ -962,22 +962,22 @@ const LEVELS = [0,85,170,255];
 //   Halftone 45      The same dot at 45 degrees. A straight grid reads as a
 //                    pattern; the identical dots turned 45 read as texture. This
 //                    is the screen print has used for a century.
-//   Halftone coarse  45 degrees with the dots roughly twice as far apart. Fewer,
-//                    fatter dots: less fine detail, but more room to grow, so big
-//                    skies and slow gradients step more smoothly instead of banding.
 //   Halftone fine    45 degrees with the dots close together, for a picture whose
 //                    subject IS detail — foliage, crowds, brickwork.
 //   Line screen      Not dots. Diagonal bands that thicken as the picture darkens.
 //                    Graphic rather than photographic; strong on posters and logos.
-//   Halftone subject Halftone 45 that leaves settled areas alone: a flat sky or
-//                    backdrop takes its level solid and only the parts carrying
-//                    detail get the screen.
+//   Halftone subject The fine 45 dot, but only where there is detail: a flat sky
+//                    or backdrop takes its level solid and never gets a screen.
+//
+// A coarse variant shipped alongside these on 2026-08-11 and was removed the same
+// day: Diogo did not want it. A stale per-image override naming it now falls
+// through knownStyle() to the first entry rather than blanking the card.
 const STYLES = ["threshold","solid","classic","clean","smooth",
                 "jarvis","stucki","burkes","sierra","ordered","halftone",
-                "halftone45","halftonecoarse","halftonefine","linescreen","halftonesubject"];
+                "halftone45","halftonefine","linescreen","halftonesubject"];
 const STYLE_LABEL = { threshold:"Threshold", solid:"Solid", classic:"Classic", clean:"Clean",
   smooth:"Smooth", jarvis:"Jarvis", stucki:"Stucki", burkes:"Burkes", sierra:"Sierra",
-  ordered:"Ordered", halftone:"Halftone", halftone45:"Halftone 45", halftonecoarse:"Halftone coarse",
+  ordered:"Ordered", halftone:"Halftone", halftone45:"Halftone 45",
   halftonefine:"Halftone fine", linescreen:"Line screen", halftonesubject:"Halftone subject" };
 // An unknown style lands on the first entry, so a stale override can never leave a
 // card's picker showing a blank.
@@ -1398,8 +1398,8 @@ function screenMatrix(n, spot){
 // A 45-degree cell carries TWO dots, so the dot spacing is n/sqrt(2), not n. The
 // sizes below are chosen by that spacing, not by n:
 //   ROUND45  n=12 -> ~8.5 px, about the dot the straight Halftone already draws
-//   COARSE45 n=22 -> ~15.6 px, poster dots
-//   FINE45   n=6  -> ~4.2 px, for pictures whose subject is all detail
+//   FINE45   n=6  -> ~4.2 px, for pictures whose subject is all detail, and the
+//                    screen Halftone subject lays on its subjects
 const spot45 = (x,y,n)=> Math.cos(2*Math.PI*(x+y)/n) + Math.cos(2*Math.PI*(x-y)/n);
 // A line screen is the one case that must NOT be a permutation. Every cell on a
 // band has to share one threshold, or the ranking hands the cells along a band
@@ -1421,7 +1421,6 @@ function lineMatrix(n){
 }
 
 const SCREEN_ROUND45 = screenMatrix(12, spot45);
-const SCREEN_COARSE45 = screenMatrix(22, spot45);
 const SCREEN_FINE45 = screenMatrix(6, spot45);
 const SCREEN_LINE = lineMatrix(10);
 
@@ -1478,14 +1477,18 @@ function uniformField(blur,w,h){
 function quantizeHalftoneSubject(g, w, h, idx){
   const {blur,flat}=flatField(g,w,h);
   const uniform=uniformField(blur,w,h);
-  const n=12, cells=n*n;
+  // The FINE dot, at Diogo's request. It is the right pairing: this style only
+  // ever screens the detailed parts of a picture, and a detailed part is exactly
+  // where a wide dot loses the most. The backdrop it would have suited is being
+  // painted solid here anyway.
+  const n=6, cells=n*n;
   const buf=Float32Array.from(g);
   for(let y=0;y<h;y++){
     const ltr=(y&1)===0, fwd=ltr?1:-1;
     for(let k=0;k<w;k++){
       const x=ltr?k:w-1-k, i=y*w+x;
       if(!flat[i]){
-        const t=(SCREEN_ROUND45[(y%n)*n+(x%n)]+0.5)/cells - 0.5;
+        const t=(SCREEN_FINE45[(y%n)*n+(x%n)]+0.5)/cells - 0.5;
         idx[i]=nearestLevel(g[i]+t*LEVEL_STEP);
         continue;
       }
@@ -1544,7 +1547,6 @@ function quantize(g, dither, style){
   if(st==="ordered") return quantizeOrdered(g,w,h,idx,BAYER8);
   if(st==="halftone") return quantizeOrdered(g,w,h,idx,CLUSTER8);
   if(st==="halftone45") return quantizeOrdered(g,w,h,idx,SCREEN_ROUND45,12);
-  if(st==="halftonecoarse") return quantizeOrdered(g,w,h,idx,SCREEN_COARSE45,22);
   if(st==="halftonefine") return quantizeOrdered(g,w,h,idx,SCREEN_FINE45,6);
   if(st==="linescreen") return quantizeOrdered(g,w,h,idx,SCREEN_LINE,10);
   if(st==="halftonesubject") return quantizeHalftoneSubject(g,w,h,idx);

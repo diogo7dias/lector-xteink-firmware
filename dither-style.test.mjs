@@ -254,12 +254,11 @@ test("Ordered repeats on an 8x8 tile, everywhere in the image", () => {
 // The generated screens are only correct if every threshold appears exactly once.
 // A duplicated or missing rank bends the tone response, and it would be invisible
 // by eye until a gradient came out wrong, so pin the permutation itself.
-const { screenMatrix, SCREEN_ROUND45, SCREEN_COARSE45, SCREEN_FINE45, SCREEN_LINE } =
-  new Function("LEVELS", "S", `${quantizeSrc}; return {screenMatrix, SCREEN_ROUND45, SCREEN_COARSE45, SCREEN_FINE45, SCREEN_LINE};`)(LEVELS, {});
+const { screenMatrix, SCREEN_ROUND45, SCREEN_FINE45, SCREEN_LINE } =
+  new Function("LEVELS", "S", `${quantizeSrc}; return {screenMatrix, SCREEN_ROUND45, SCREEN_FINE45, SCREEN_LINE};`)(LEVELS, {});
 
 test("every generated dot screen uses each threshold exactly once", () => {
-  for (const [name, m, n] of [["round45", SCREEN_ROUND45, 12], ["coarse45", SCREEN_COARSE45, 22],
-                              ["fine45", SCREEN_FINE45, 6]]) {
+  for (const [name, m, n] of [["round45", SCREEN_ROUND45, 12], ["fine45", SCREEN_FINE45, 6]]) {
     assert.equal(m.length, n * n, `${name} is not ${n}x${n}`);
     assert.deepEqual([...m].sort((a, b) => a - b), Array.from({ length: n * n }, (_, i) => i),
       `${name} is not a permutation of 0..${n * n - 1}`);
@@ -317,9 +316,9 @@ test("Halftone subject leaves a flat background solid and still screens detail",
   const bg = flat(w, h, 150);   // a settled mid-grey backdrop, between two levels
 
   const subject = makeQuantize(LEVELS, { w, h, ditherStyle: "halftonesubject" })(bg, true);
-  const plain = makeQuantize(LEVELS, { w, h, ditherStyle: "halftone45" })(bg, true);
+  const plain = makeQuantize(LEVELS, { w, h, ditherStyle: "halftonefine" })(bg, true);
   assert.equal(new Set(subject).size, 1, "a flat backdrop must come out on one level");
-  assert.ok(new Set(plain).size > 1, "plain Halftone 45 screens it — that is what this style avoids");
+  assert.ok(new Set(plain).size > 1, "plain Halftone fine screens it — that is what this style avoids");
 
   // Now give it something to describe. A busy patch is not flat, so it keeps the screen.
   const g = flat(w, h, 150);
@@ -337,6 +336,18 @@ test("Halftone subject leaves a flat background solid and still screens detail",
   }
   assert.ok(patchLevels.size > 1, "the detailed patch must still be screened");
   assert.equal(edgeLevels.size, 1, "the background around it must stay solid");
+});
+
+// Which screen it lays on the subject is a choice, not an accident: Diogo asked
+// for the fine dot. With nothing flat in the picture there is no backdrop to
+// spare, so every pixel takes the screen and the two must agree exactly. Swap the
+// screen underneath and this fails.
+test("Halftone subject screens with the fine dot", () => {
+  const w = 64, h = 64, g = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) g[y * w + x] = (x * 37 + y * 91) % 256;
+  const subject = makeQuantize(LEVELS, { w, h, ditherStyle: "halftonesubject" })(g, true);
+  const fine = makeQuantize(LEVELS, { w, h, ditherStyle: "halftonefine" })(g, true);
+  assert.deepEqual(Array.from(subject), Array.from(fine));
 });
 
 // The fault that the first version of Halftone subject shipped with: a sky
