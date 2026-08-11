@@ -956,11 +956,29 @@ const LEVELS = [0,85,170,255];
 //              never worms and never drifts. Posters and flat art take it well.
 //   Halftone   A clustered 8x8 matrix instead of a scattered one, so tone is carried
 //              by the size of a blob. A newspaper screen. Coarse on purpose.
+//
+// The five that follow are the same idea with the four knobs a real screen has
+// turned: angle, dot spacing, dot shape, and where the screen is allowed to fall.
+//   Halftone 45      The same dot at 45 degrees. A straight grid reads as a
+//                    pattern; the identical dots turned 45 read as texture. This
+//                    is the screen print has used for a century.
+//   Halftone coarse  45 degrees with the dots roughly twice as far apart. Fewer,
+//                    fatter dots: less fine detail, but more room to grow, so big
+//                    skies and slow gradients step more smoothly instead of banding.
+//   Halftone fine    45 degrees with the dots close together, for a picture whose
+//                    subject IS detail — foliage, crowds, brickwork.
+//   Line screen      Not dots. Diagonal bands that thicken as the picture darkens.
+//                    Graphic rather than photographic; strong on posters and logos.
+//   Halftone subject Halftone 45 that leaves settled areas alone: a flat sky or
+//                    backdrop takes its level solid and only the parts carrying
+//                    detail get the screen.
 const STYLES = ["threshold","solid","classic","clean","smooth",
-                "jarvis","stucki","burkes","sierra","ordered","halftone"];
+                "jarvis","stucki","burkes","sierra","ordered","halftone",
+                "halftone45","halftonecoarse","halftonefine","linescreen","halftonesubject"];
 const STYLE_LABEL = { threshold:"Threshold", solid:"Solid", classic:"Classic", clean:"Clean",
   smooth:"Smooth", jarvis:"Jarvis", stucki:"Stucki", burkes:"Burkes", sierra:"Sierra",
-  ordered:"Ordered", halftone:"Halftone" };
+  ordered:"Ordered", halftone:"Halftone", halftone45:"Halftone 45", halftonecoarse:"Halftone coarse",
+  halftonefine:"Halftone fine", linescreen:"Line screen", halftonesubject:"Halftone subject" };
 // An unknown style lands on the first entry, so a stale override can never leave a
 // card's picker showing a blank.
 function knownStyle(s){ return STYLES.includes(s) ? s : STYLES[0]; }
@@ -1339,10 +1357,153 @@ const CLUSTER8 = [
 // on it and only a tone between two is carried by the pattern. Pure black and pure
 // white therefore come out pure.
 const LEVEL_STEP = 85;
-function quantizeOrdered(g, w, h, idx, matrix){
+function quantizeOrdered(g, w, h, idx, matrix, n){
+  const side = n || 8, cells = side*side;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
-    const i=y*w+x, t=(matrix[(y&7)*8+(x&7)]+0.5)/64 - 0.5;
+    const i=y*w+x, t=(matrix[(y%side)*side+(x%side)]+0.5)/cells - 0.5;
     idx[i]=nearestLevel(g[i]+t*LEVEL_STEP);
+  }
+  return idx;
+}
+
+// ---------- generated screens ----------
+//
+// CLUSTER8 above was typed out by hand, which is fine for one 8x8 tile and
+// hopeless past that: a screen matrix is only correct if every threshold from 0
+// to n*n-1 appears EXACTLY once, or the tone response bends. So the rest are
+// generated. A spot function scores each cell by how much it wants ink, the
+// cells are ranked, and the ranks become the thresholds. Ranking is what makes
+// the permutation true by construction rather than by proofreading.
+//
+// A low threshold darkens first (see the offset in quantizeOrdered), so rank 0 —
+// the highest spot score — is a dot centre, and ink grows outward from there
+// exactly as a printing screen does.
+function screenMatrix(n, spot){
+  const cells=[];
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++) cells.push({i:y*n+x, v:spot(x,y,n)});
+  // Ties break on index so the matrix is identical in every browser: Array.sort
+  // is not required to be stable for long arrays in every engine.
+  cells.sort((a,b)=> b.v-a.v || a.i-b.i);
+  const m=new Array(n*n);
+  cells.forEach((c,rank)=>{ m[c.i]=rank; });
+  return m;
+}
+
+// Rotating the screen is the single biggest change to how a halftone reads. The
+// eye picks a straight grid out as a pattern; the same dots at 45 degrees read as
+// texture. Every newspaper on earth uses 45 for that reason. The rotation is in
+// the spot function, not in the sampling: the axes become (x+y) and (x-y), which
+// keeps the tile an exact n-by-n repeat with no resampling and no seam.
+//
+// A 45-degree cell carries TWO dots, so the dot spacing is n/sqrt(2), not n. The
+// sizes below are chosen by that spacing, not by n:
+//   ROUND45  n=12 -> ~8.5 px, about the dot the straight Halftone already draws
+//   COARSE45 n=22 -> ~15.6 px, poster dots
+//   FINE45   n=6  -> ~4.2 px, for pictures whose subject is all detail
+const spot45 = (x,y,n)=> Math.cos(2*Math.PI*(x+y)/n) + Math.cos(2*Math.PI*(x-y)/n);
+// A line screen is the one case that must NOT be a permutation. Every cell on a
+// band has to share one threshold, or the ranking hands the cells along a band
+// consecutive values and the band fills along its length instead of thickening —
+// which draws a diagonal gradient of dots, not lines. So the n bands are ranked
+// by the same cosine and each band's cells all carry its rank, spread evenly over
+// the same 0..n*n-1 range the dot screens use so the offset maths is unchanged.
+// The cost is real and inherent: n thresholds between levels instead of n*n, so a
+// line screen steps more coarsely than a dot screen. That is what a line screen is.
+function lineMatrix(n){
+  const cells=n*n, m=new Array(cells);
+  const bands=[];
+  for(let d=0;d<n;d++) bands.push({d, v:Math.cos(2*Math.PI*d/n)});
+  bands.sort((a,b)=> b.v-a.v || a.d-b.d);
+  const rankOf=new Array(n);
+  bands.forEach((b,rank)=>{ rankOf[b.d]=rank; });
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++) m[y*n+x]=Math.round((rankOf[(x+y)%n]+0.5)*cells/n - 0.5);
+  return m;
+}
+
+const SCREEN_ROUND45 = screenMatrix(12, spot45);
+const SCREEN_COARSE45 = screenMatrix(22, spot45);
+const SCREEN_FINE45 = screenMatrix(6, spot45);
+const SCREEN_LINE = lineMatrix(10);
+
+// Halftone where there is something to describe, and nowhere else.
+//
+// A screen laid over a whole picture also lays itself over the sky, the studio
+// backdrop and the black border, which is where a halftone looks least like a
+// halftone and most like a texture someone forgot to remove. flatField() already
+// knows which pixels sit in a settled area — it is the same test Solid uses — so
+// those take their level straight from the blurred tone and come out clean. The
+// screen falls only on the parts that carry detail.
+//
+// Uniform-field test over a WIDE window, which is what tells a backdrop apart
+// from a sky. Both look flat across three pixels: a sky drifting a fraction of a
+// grey per pixel has almost no local spread. Across nine pixels they separate —
+// a gradient has moved several greys by then, a real backdrop has not. Separable
+// min/max (a row pass, then a column pass) so the cost is ~2*R per pixel rather
+// than the (2R+1)^2 a naive window would pay.
+const WIDE_R = 4;    // 9x9
+const WIDE_TOL = 8;  // a 255-over-90px sky spans ~23 across nine pixels; a backdrop, ~3
+function uniformField(blur,w,h){
+  const rlo=new Float32Array(w*h), rhi=new Float32Array(w*h), out=new Uint8Array(w*h);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    let lo=Infinity,hi=-Infinity;
+    for(let d=-WIDE_R;d<=WIDE_R;d++){ const xx=x+d; if(xx<0||xx>=w) continue;
+      const v=blur[y*w+xx]; if(v<lo)lo=v; if(v>hi)hi=v; }
+    rlo[y*w+x]=lo; rhi[y*w+x]=hi;
+  }
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    let lo=Infinity,hi=-Infinity;
+    for(let d=-WIDE_R;d<=WIDE_R;d++){ const yy=y+d; if(yy<0||yy>=h) continue;
+      const j=yy*w+x; if(rlo[j]<lo)lo=rlo[j]; if(rhi[j]>hi)hi=rhi[j]; }
+    out[y*w+x]=(hi-lo)<=WIDE_TOL?1:0;
+  }
+  return out;
+}
+
+// A settled area gets one of two treatments, not one. Snapping every flat pixel
+// to its nearest level was the obvious first version and it is wrong: a sky
+// reads as flat everywhere across three pixels, so the whole sky stepped into
+// hard bands. On a synthetic ramp that version degenerated into plain
+// thresholding, which is how the fault was caught. Endpoint-only snapping was the
+// second try; it fades a sky properly but leaves fine grain over a mid-grey
+// backdrop, which is the very thing this style exists to remove.
+//
+// So the wide test decides. Truly uniform (a wall, a studio backdrop, a black
+// border) takes its level solid, at ANY level. Settled but drifting (a sky, a
+// slow vignette) gets Atkinson: quiet, fine, no visible screen, and it fades
+// rather than banding. Everything carrying real detail gets the dots.
+//
+// The error a screened pixel owes stops at that pixel. An ordered screen has no
+// memory by design, so there is nothing to hand on, and diffusion resumes at the
+// next settled pixel from whatever the buffer holds.
+function quantizeHalftoneSubject(g, w, h, idx){
+  const {blur,flat}=flatField(g,w,h);
+  const uniform=uniformField(blur,w,h);
+  const n=12, cells=n*n;
+  const buf=Float32Array.from(g);
+  for(let y=0;y<h;y++){
+    const ltr=(y&1)===0, fwd=ltr?1:-1;
+    for(let k=0;k<w;k++){
+      const x=ltr?k:w-1-k, i=y*w+x;
+      if(!flat[i]){
+        const t=(SCREEN_ROUND45[(y%n)*n+(x%n)]+0.5)/cells - 0.5;
+        idx[i]=nearestLevel(g[i]+t*LEVEL_STEP);
+        continue;
+      }
+      if(uniform[i]){
+        idx[i]=nearestLevel(blur[i]);   // a real backdrop: take the level, drop the error
+        continue;
+      }
+      const old=buf[i], q=nearestLevel(old); idx[i]=q;
+      const e=(old-LEVELS[q])/8;  // Atkinson: 1/8 to each of six neighbours
+      const x1=x+fwd, x2=x+fwd*2, xb=x-fwd;
+      if(x1>=0&&x1<w) buf[i+fwd]+=e;
+      if(x2>=0&&x2<w) buf[i+fwd*2]+=e;
+      if(y+1<h){ const nx=i+w;
+        if(xb>=0&&xb<w) buf[nx-fwd]+=e;
+        buf[nx]+=e;
+        if(x1>=0&&x1<w) buf[nx+fwd]+=e; }
+      if(y+2<h) buf[i+2*w]+=e;
+    }
   }
   return idx;
 }
@@ -1382,6 +1543,11 @@ function quantize(g, dither, style){
   if(st==="classic") return quantizeClassic(g,w,h,idx);
   if(st==="ordered") return quantizeOrdered(g,w,h,idx,BAYER8);
   if(st==="halftone") return quantizeOrdered(g,w,h,idx,CLUSTER8);
+  if(st==="halftone45") return quantizeOrdered(g,w,h,idx,SCREEN_ROUND45,12);
+  if(st==="halftonecoarse") return quantizeOrdered(g,w,h,idx,SCREEN_COARSE45,22);
+  if(st==="halftonefine") return quantizeOrdered(g,w,h,idx,SCREEN_FINE45,6);
+  if(st==="linescreen") return quantizeOrdered(g,w,h,idx,SCREEN_LINE,10);
+  if(st==="halftonesubject") return quantizeHalftoneSubject(g,w,h,idx);
   if(DIFFUSION[st]) return quantizeDiffusion(g,w,h,idx,st);
   const smooth = st==="smooth";
   const {blur,flat}=flatField(g,w,h);

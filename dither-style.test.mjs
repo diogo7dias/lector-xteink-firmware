@@ -251,9 +251,120 @@ test("Ordered repeats on an 8x8 tile, everywhere in the image", () => {
   assert.ok(new Set(out).size > 1, "a midtone must actually be carried by the pattern");
 });
 
-test("every style renders differently, so no badge step is a duplicate", () => {
+// The generated screens are only correct if every threshold appears exactly once.
+// A duplicated or missing rank bends the tone response, and it would be invisible
+// by eye until a gradient came out wrong, so pin the permutation itself.
+const { screenMatrix, SCREEN_ROUND45, SCREEN_COARSE45, SCREEN_FINE45, SCREEN_LINE } =
+  new Function("LEVELS", "S", `${quantizeSrc}; return {screenMatrix, SCREEN_ROUND45, SCREEN_COARSE45, SCREEN_FINE45, SCREEN_LINE};`)(LEVELS, {});
+
+test("every generated dot screen uses each threshold exactly once", () => {
+  for (const [name, m, n] of [["round45", SCREEN_ROUND45, 12], ["coarse45", SCREEN_COARSE45, 22],
+                              ["fine45", SCREEN_FINE45, 6]]) {
+    assert.equal(m.length, n * n, `${name} is not ${n}x${n}`);
+    assert.deepEqual([...m].sort((a, b) => a - b), Array.from({ length: n * n }, (_, i) => i),
+      `${name} is not a permutation of 0..${n * n - 1}`);
+  }
+});
+
+// The line screen is deliberately not a permutation — every cell on a band shares
+// one threshold, which is what makes bands thicken instead of filling lengthwise.
+// Its promise is instead that the n band thresholds are evenly spread over the
+// same range, so tone still rises steadily.
+test("the line screen spreads one threshold per band, evenly", () => {
+  const n = 10, cells = n * n;
+  assert.equal(SCREEN_LINE.length, cells);
+  const values = [...new Set(SCREEN_LINE)].sort((a, b) => a - b);
+  assert.equal(values.length, n, `expected ${n} band thresholds, got ${values.length}`);
+  assert.ok(values[0] < cells / n && values[n - 1] > cells - cells / n, "bands must span the range");
+  const gaps = values.slice(1).map((v, i) => v - values[i]);
+  assert.equal(new Set(gaps).size, 1, `band spacing must be even, got ${gaps.join(",")}`);
+});
+
+// The rank order is what makes it a screen rather than noise: ink has to start at
+// one point per dot and spread outward from there. If the ordering were wrong the
+// matrix would still be a valid permutation and still pass the test above.
+test("a generated screen grows outward from its dot centre", () => {
+  const n = 12, m = SCREEN_ROUND45;
+  const at = (x, y) => m[((y % n) + n) % n * n + ((x % n) + n) % n];
+  const centre = m.indexOf(0), cx = centre % n, cy = (centre - cx) / n;
+  for (const [dx, dy] of [[1, 0], [0, 1], [1, 1], [-1, 0], [0, -1]]) {
+    assert.ok(at(cx + dx, cy + dy) < at(cx + 2 * dx, cy + 2 * dy),
+      `ink at ${dx},${dy} must arrive before ${2 * dx},${2 * dy}`);
+  }
+});
+
+// A line screen must not close into dots — that is the whole difference. Its spot
+// function reads one axis only, so every cell on a given diagonal shares a tone.
+// Bands must thicken, not fill along their length. Ranking every cell separately
+// gives the cells on one band consecutive thresholds, which draws a diagonal
+// gradient of dots instead of lines — the first version did exactly that.
+test("the line screen renders bands, not dots", () => {
+  const w = 40, h = 40;
+  const out = makeQuantize(LEVELS, { w, h, ditherStyle: "linescreen" })(flat(w, h, 128), true);
+  for (let y = 1; y < h; y++) for (let x = 0; x + 1 < w; x++) {
+    // Walking along a band (+1,-1) keeps x+y fixed, so the level must not change.
+    assert.equal(out[y * w + x], out[(y - 1) * w + x + 1], `band broke at ${x},${y}`);
+  }
+  assert.ok(new Set(out).size > 1, "a midtone must actually be carried by the bands");
+});
+
+// The one Diogo asked for by behaviour: screen on the subject, nothing on the
+// background. A flat mid-grey field is the background case, and it must come out
+// as one level rather than a field of dots — which is exactly what plain Halftone
+// 45 does to it, so both halves are pinned here.
+test("Halftone subject leaves a flat background solid and still screens detail", () => {
+  const w = 64, h = 64;
+  const bg = flat(w, h, 150);   // a settled mid-grey backdrop, between two levels
+
+  const subject = makeQuantize(LEVELS, { w, h, ditherStyle: "halftonesubject" })(bg, true);
+  const plain = makeQuantize(LEVELS, { w, h, ditherStyle: "halftone45" })(bg, true);
+  assert.equal(new Set(subject).size, 1, "a flat backdrop must come out on one level");
+  assert.ok(new Set(plain).size > 1, "plain Halftone 45 screens it — that is what this style avoids");
+
+  // Now give it something to describe. A busy patch is not flat, so it keeps the screen.
+  const g = flat(w, h, 150);
+  for (let y = 16; y < 48; y++) for (let x = 16; x < 48; x++) g[y * w + x] = (x * 7 + y * 13) % 256;
+  const mixed = makeQuantize(LEVELS, { w, h, ditherStyle: "halftonesubject" })(g, true);
+  const patchLevels = new Set(), edgeLevels = new Set();
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const inPatch = x >= 20 && x < 44 && y >= 20 && y < 44;
+    // The ring around the patch belongs to neither region. The 3x3 blur pulls the
+    // patch one pixel out and the 9x9 uniform window reads four pixels of that
+    // blur, so the patch's influence reaches five pixels past its edge.
+    const wellOutside = x < 10 || x >= 54 || y < 10 || y >= 54;
+    if (inPatch) patchLevels.add(mixed[y * w + x]);
+    else if (wellOutside) edgeLevels.add(mixed[y * w + x]);
+  }
+  assert.ok(patchLevels.size > 1, "the detailed patch must still be screened");
+  assert.equal(edgeLevels.size, 1, "the background around it must stay solid");
+});
+
+// The fault that the first version of Halftone subject shipped with: a sky
+// drifting a fraction of a grey per pixel reads as flat everywhere, so snapping
+// every flat pixel banded the whole sky and, on a ramp, degenerated into plain
+// thresholding. A settled area BETWEEN levels now gets Atkinson instead.
+test("Halftone subject fades a slow gradient instead of banding it", () => {
   const w = 96, h = 96;
   const g = ramp(w, h);
+  const subject = Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: "halftonesubject" })(g, true));
+  const threshold = Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: "clean" })(g, false));
+  assert.notDeepEqual(subject, threshold, "a gradient must not collapse to hard bands");
+
+  // And it must still hold the ramp's average, which banding does not.
+  const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+  const rendered = mean(subject.map(i => LEVELS[i]));
+  assert.ok(Math.abs(rendered - mean(Array.from(g))) < 6,
+    `tone drifted to ${rendered.toFixed(2)} from ${mean(Array.from(g)).toFixed(2)}`);
+});
+
+test("every style renders differently, so no badge step is a duplicate", () => {
+  const w = 96, h = 96;
+  // A ramp alone is the wrong probe now: it is flat everywhere by the 3x3 test, so
+  // Halftone subject correctly declines to screen ANY of it and matches Clean. The
+  // picture needs both a gradient and a textured patch for every style to have
+  // somewhere to differ, which is what a real photograph has.
+  const g = ramp(w, h);
+  for (let y = 24; y < 72; y++) for (let x = 24; x < 72; x++) g[y * w + x] = (x * 37 + y * 91) % 256;
   const seen = new Map();
   for (const style of STYLES) {
     const dither = style !== "threshold";
