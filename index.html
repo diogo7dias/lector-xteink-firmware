@@ -565,7 +565,24 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><strong>What's new — lector 0.20.0:</strong> a double-click of the power button can now do almost anything you can do from the in-book menu, and the settings screens lost a pile of options that were not earning their place. Reports version <strong>lector 0.20.0</strong> on device.
+        <br><strong>What's new — lector 0.20.1:</strong> one fix, and two changes to the list of actions a button shortcut can run. Reports version <strong>lector 0.20.1</strong> on device.
+        <ul>
+          <li><strong>Closing the pop-up no longer throws you out of the book.</strong> Opening the double-click
+            pop-up and pressing Back to dismiss it sent the reader to the home screen instead of back to the page.
+            The reader pairs a button press with its release so a screen that closed under your thumb cannot leave
+            a stray release behind. The pop-up was closing on the press, but the pairing had already been recorded,
+            so the release that followed looked exactly like a deliberate Back on the page — and Back on a page
+            means go home. The pop-up is now offered the press first, so a press it takes is never recorded, and
+            the release is discarded the same way every other screen's is.</li>
+          <li><strong>Bookmarks and View Quotes can now be put on a shortcut.</strong> The saved bookmark list, next
+            to Toggle Bookmark that adds to it, and the saved quotes viewer, next to Grab Quote that writes to it.
+            Neither is offered when there is nothing to show.</li>
+          <li><strong>Select Chapter and Go to Percent left the list.</strong> A shortcut still set to one of them
+            switches itself off.</li>
+        </ul>
+        <details class="oldrel">
+        <summary>Earlier releases (0.20.0 and back)</summary>
+        <strong>Also in 0.20.0:</strong>
         <ul>
           <li><strong>Double-click the power button to do one thing you choose.</strong> Pick it in Settings ·
             Controls · Double-click power. It can select a chapter, jump to a percentage or a paragraph, toggle a
@@ -601,8 +618,6 @@
             already was, and the button shortcuts. Both act on the wallpaper the lock screen actually showed, which
             the old settings row could not.</li>
         </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.9.1 and back)</summary>
         <strong>Also in 0.9.1:</strong>
         <ul>
           <li><strong>Unlocking takes half as long.</strong> Waking the reader meant holding the power button for four
@@ -808,6 +823,16 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.20.1</summary>
+      <p>One fix on top of 0.20.0, and two changes to what a button shortcut can be set to.</p>
+      <ul>
+        <li><strong>Closing the double-click pop-up with Back went home instead of back to the page.</strong> The reader pairs a button press with its release, so that a screen closing under your thumb cannot leave a stray release behind. The pop-up closed on the press, but the pairing had already been recorded, so the release that followed was indistinguishable from a deliberate Back on the page — which goes home. The pop-up now gets the press before it is recorded, and the release is discarded like any other screen's. Confirm had the same hole and would have opened the reader menu behind the pop-up.</li>
+        <li><strong>Bookmarks and View Quotes added</strong> to the actions a shortcut can run, beside Toggle Bookmark and Grab Quote. Neither is offered when there is nothing to show.</li>
+        <li><strong>Select Chapter and Go to Percent removed.</strong> A shortcut still set to one of them switches itself off.</li>
+      </ul>
+      <p>Nothing re-reads its layout. Your books, your places in them, and their settings are untouched.</p>
+      </details>
       <details class="relnote">
         <summary>lector 0.20.0</summary>
       <p>A double-click of the power button became a shortcut you choose, and the settings screens lost a pile of options that were not earning their place.</p>
