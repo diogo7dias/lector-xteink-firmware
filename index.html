@@ -565,11 +565,27 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <br><div class="warn"><strong>This site is serving lector 0.19.6.</strong> An X3 stops starting after
-          updating to 0.20.1 — it hangs before it paints anything, so the panel keeps whatever was on it. The
-          binary is not at fault: the served bytes were checksummed against a clean rebuild and match. The last
-          known-good build is here while the cause is found. 0.20.1's notes are kept below for reference.</div>
-        <strong>What's new — lector 0.20.1:</strong> one fix, and two changes to the list of actions a button shortcut can run. Reports version <strong>lector 0.20.1</strong> on device.
+        <strong>What's new — lector 0.20.2:</strong> two fixes for faults 0.20.1 introduced, and one change to the shortcut pop-up. Reports version <strong>lector 0.20.2</strong> on device.
+        <ul>
+          <li><strong>An X3 could stop starting after updating to 0.20.1.</strong> It reached the SD card and then
+            reset, over and over, before it painted anything — so the panel just kept whatever picture was already
+            on it and the reader looked dead. The settings list had grown one entry too many. It was being built
+            all at once, which needed 15,584 bytes of working space against the 16,376 the reader has, and the
+            reader stopped itself the moment it ran past the end. The list is now built one row at a time and needs
+            272 bytes. Nothing about the settings themselves changed.</li>
+          <li><strong>The screen no longer speckles while the reader sits idle.</strong> An X3 left alone for a few
+            seconds could go from a clean screen to a grey, mottled one with older text faintly showing through, all
+            without being touched. The screen keeps its picture with no power at all, but the reader was leaving the
+            panel powered after every draw, and a powered panel left with nothing to do lets its picture drift. The
+            reader now switches the panel off shortly after you stop using it, and switches it back on by itself the
+            next time it draws. You will not see it happen: no flash, and the picture stays put.</li>
+          <li><strong>The shortcut pop-up can hold every action at once.</strong> The limit was eight of the twelve.
+            The pop-up now tightens its spacing when it needs to rather than running off the screen, so the limit is
+            gone.</li>
+        </ul>
+        <details class="oldrel">
+        <summary>Earlier releases (0.20.1 and back)</summary>
+        <strong>Also in 0.20.1:</strong>
         <ul>
           <li><strong>Closing the pop-up no longer throws you out of the book.</strong> Opening the double-click
             pop-up and pressing Back to dismiss it sent the reader to the home screen instead of back to the page.
@@ -584,8 +600,6 @@
           <li><strong>Select Chapter and Go to Percent left the list.</strong> A shortcut still set to one of them
             switches itself off.</li>
         </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.20.0 and back)</summary>
         <strong>Also in 0.20.0:</strong>
         <ul>
           <li><strong>Double-click the power button to do one thing you choose.</strong> Pick it in Settings ·
@@ -827,6 +841,16 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.20.2</summary>
+      <p>Two fixes for faults 0.20.1 introduced, and one change to the shortcut pop-up.</p>
+      <ul>
+        <li><strong>An X3 could stop starting after updating to 0.20.1.</strong> It got as far as finding the SD card and then reset, over and over, before it painted anything — so the panel kept the last picture it had been given and the reader looked dead rather than stuck. The cause was the settings list, which had grown one entry too many. It was built all in one go, which needed 15,584 bytes of working space against the 16,376 the reader has, and the reader halted itself the moment it ran past the end. The list is now built a row at a time and needs 272 bytes. The settings themselves are unchanged.</li>
+        <li><strong>The screen no longer speckles while the reader sits idle.</strong> An X3 could go from a clean screen to a grey, mottled one — with older text faintly showing through — within seconds of being set down, untouched. The screen holds its picture with no power at all, but the reader was leaving the panel powered after every draw, and a powered panel with nothing to do lets its picture drift. That had been true for a long time; it turned into a visible fault when the reader started power-napping a second after your last press, which was tested on the X4 and not the X3. The reader now switches the panel off shortly after you stop using it, and switches it on again by itself the next time it draws. Nothing is visible while it happens: no flash, and the picture stays where it is.</li>
+        <li><strong>The shortcut pop-up can hold every action at once.</strong> The limit was eight of the twelve. It existed because the pop-up grows with the number of rows and would have run off the screen; it now tightens its spacing instead, so the limit is gone. A tap and the row it lands on are also now measured the same way, which they were not before.</li>
+      </ul>
+      <p>Nothing re-reads its layout. Your books, your places in them, and their settings are untouched.</p>
+      </details>
       <details class="relnote">
         <summary>lector 0.20.1</summary>
       <p>One fix on top of 0.20.0, and two changes to what a button shortcut can be set to.</p>
