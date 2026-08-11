@@ -125,3 +125,70 @@ test("thresholding ignores the style entirely", () => {
   const classic = makeQuantize(LEVELS, { w, h, ditherStyle: "classic" })(g, false);
   assert.deepEqual(Array.from(clean), Array.from(classic));
 });
+
+// Solid is Classic with one narrow exception: flat fields that are almost pure
+// black or almost pure white are taken to that level and their error dropped.
+// The tests below pin both halves of that sentence — the exception fires where it
+// should, and nowhere else.
+
+test("Solid clears the grey dots off a solid black ground", () => {
+  const w = 64, h = 64;
+  const g = flat(w, h, 18);   // a photo's black background: dark, but not level 0
+
+  const solid = makeQuantize(LEVELS, { w, h, ditherStyle: "solid" })(g, true);
+  const classic = makeQuantize(LEVELS, { w, h, ditherStyle: "classic" })(g, true);
+
+  const dots = out => out.reduce((n, v) => n + (v === 0 ? 0 : 1), 0);
+  assert.equal(dots(solid), 0, "a flat near-black field must come out solid black");
+  assert.ok(dots(classic) > 0, "Classic peppers it — that is the complaint Solid answers");
+});
+
+test("Solid clears the grey dots off a solid white ground", () => {
+  const w = 64, h = 64;
+  const g = flat(w, h, 240);
+  const solid = makeQuantize(LEVELS, { w, h, ditherStyle: "solid" })(g, true);
+  assert.equal(solid.reduce((n, v) => n + (v === 3 ? 0 : 1), 0), 0);
+});
+
+// The reason Solid restricts the snap to the endpoints. A midtone has levels on
+// both sides and can pay its error in either direction, so ordinary dithering
+// there is honest and must be left exactly as Classic renders it.
+test("Solid is Classic byte for byte away from the two endpoints", () => {
+  const w = 64, h = 64;
+  for (const fill of [110, 150, 190]) {
+    const solid = makeQuantize(LEVELS, { w, h, ditherStyle: "solid" })(flat(w, h, fill), true);
+    const classic = makeQuantize(LEVELS, { w, h, ditherStyle: "classic" })(flat(w, h, fill), true);
+    assert.deepEqual(Array.from(solid), Array.from(classic), `midtone ${fill} must be untouched`);
+  }
+});
+
+// RAW_TOL is what makes this safe: a one-pixel line's own neighbourhood spans the
+// whole distance from the line to its ground, so the line never counts as flat and
+// the snap cannot swallow it.
+test("Solid keeps a one-pixel line standing on a near-black ground", () => {
+  const w = 64, h = 64;
+  const g = flat(w, h, 18);
+  for (let y = 0; y < h; y++) g[y * w + 32] = 250;
+
+  const solid = makeQuantize(LEVELS, { w, h, ditherStyle: "solid" })(g, true);
+
+  let kept = 0, dots = 0;
+  for (let y = 0; y < h; y++) {
+    if (solid[y * w + 32] >= 2) kept++;
+    for (let x = 0; x < w; x++) if (Math.abs(x - 32) > 2 && solid[y * w + x] !== 0) dots++;
+  }
+  assert.equal(kept, h, "every pixel of the line must survive");
+  assert.equal(dots, 0, "and the ground around it must still come out solid black");
+});
+
+test("Solid holds tone far better than Clean, which is why it is not just Clean", () => {
+  const w = 96, h = 96;
+  const g = ramp(w, h);
+  const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
+  const rendered = style =>
+    mean(Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: style })(g, true)).map(i => LEVELS[i]));
+  const target = mean(Array.from(g));
+  const solidErr = Math.abs(rendered("solid") - target);
+  const cleanErr = Math.abs(rendered("clean") - target);
+  assert.ok(solidErr < cleanErr, `Solid drifted ${solidErr} vs Clean ${cleanErr}`);
+});
