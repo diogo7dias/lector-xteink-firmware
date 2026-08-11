@@ -946,39 +946,36 @@ const LEVELS = [0,85,170,255];
 //   Clean      Atkinson. Throws away two eighths of every error so flat areas settle,
 //              and gradients pay for it.
 //   Smooth     Floyd-Steinberg, serpentine, with the snap at all four levels.
-//   Jarvis     Jarvis-Judice-Ninke. Twelve neighbours over two rows: the softest
-//              grain of the diffusion set, and the most smearing of fine detail.
-//   Stucki     The same reach weighted tighter. Softer than Floyd-Steinberg, crisper
-//              than Jarvis.
-//   Burkes     Stucki with the far row dropped. Sits between Floyd-Steinberg and Stucki.
-//   Sierra     Three rows, weighted flatter than Stucki. Quiet midtones.
-//   Ordered    No diffusion at all: a fixed 8x8 Bayer matrix. A regular weave that
-//              never worms and never drifts. Posters and flat art take it well.
-//   Halftone   A clustered 8x8 matrix instead of a scattered one, so tone is carried
+//   Halftone   A clustered 8x8 matrix rather than a scattered one, so tone is carried
 //              by the size of a blob. A newspaper screen. Coarse on purpose.
 //
-// The five that follow are the same idea with the four knobs a real screen has
+// The six that follow are the same idea with the four knobs a real screen has
 // turned: angle, dot spacing, dot shape, and where the screen is allowed to fall.
 //   Halftone 45      The same dot at 45 degrees. A straight grid reads as a
 //                    pattern; the identical dots turned 45 read as texture. This
 //                    is the screen print has used for a century.
 //   Halftone fine    45 degrees with the dots close together, for a picture whose
 //                    subject IS detail — foliage, crowds, brickwork.
-//   Line screen      Not dots. Diagonal bands that thicken as the picture darkens.
-//                    Graphic rather than photographic; strong on posters and logos.
+//   Line screen …    Not dots. Bands that thicken as the picture darkens, in three
+//                    directions: diagonal, vertical, horizontal. Graphic rather
+//                    than photographic; strong on posters and logos. The direction
+//                    is a compositional choice — a vertical band suits a standing
+//                    figure, a horizontal one suits a landscape or a horizon.
 //   Halftone subject The fine 45 dot, but only where there is detail: a flat sky
 //                    or backdrop takes its level solid and never gets a screen.
 //
-// A coarse variant shipped alongside these on 2026-08-11 and was removed the same
-// day: Diogo did not want it. A stale per-image override naming it now falls
-// through knownStyle() to the first entry rather than blanking the card.
-const STYLES = ["threshold","solid","classic","clean","smooth",
-                "jarvis","stucki","burkes","sierra","ordered","halftone",
-                "halftone45","halftonefine","linescreen","halftonesubject"];
+// Removed on 2026-08-11, both at Diogo's word: a coarse 45 variant, and the whole
+// diffusion set past Smooth (Jarvis, Stucki, Burkes, Sierra) together with Ordered.
+// A stale per-image override naming any of them falls through knownStyle() to the
+// first entry rather than blanking the card.
+const STYLES = ["threshold","solid","classic","clean","smooth","halftone",
+                "halftone45","halftonefine",
+                "linescreen","linescreenv","linescreenh","halftonesubject"];
 const STYLE_LABEL = { threshold:"Threshold", solid:"Solid", classic:"Classic", clean:"Clean",
-  smooth:"Smooth", jarvis:"Jarvis", stucki:"Stucki", burkes:"Burkes", sierra:"Sierra",
-  ordered:"Ordered", halftone:"Halftone", halftone45:"Halftone 45",
-  halftonefine:"Halftone fine", linescreen:"Line screen", halftonesubject:"Halftone subject" };
+  smooth:"Smooth", halftone:"Halftone", halftone45:"Halftone 45",
+  halftonefine:"Halftone fine", linescreen:"Line screen diagonal",
+  linescreenv:"Line screen vertical", linescreenh:"Line screen horizontal",
+  halftonesubject:"Halftone subject" };
 // An unknown style lands on the first entry, so a stale override can never leave a
 // card's picker showing a blank.
 function knownStyle(s){ return STYLES.includes(s) ? s : STYLES[0]; }
@@ -1270,73 +1267,11 @@ function quantizeSolid(g, w, h, idx){
   return idx;
 }
 
-// Error-diffusion kernels, as [dx, dy, weight] against a divisor. dx is mirrored on
-// right-to-left rows, which is what makes the scan serpentine: the error always
-// travels the way the scan is already going, instead of being thrown back over
-// ground that is already decided. Weights are the published ones; each taps array
-// sums to its own divisor, and a test pins that.
-//
-// Reaching further with more taps spreads a single error thinner, so the grain gets
-// finer and the directional worming that Floyd-Steinberg shows on flat tone fades.
-// The cost is that detail smears slightly, because a pixel's error now lands up to
-// two rows away. Jarvis reaches furthest, Burkes least.
-const DIFFUSION = {
-  jarvis: { div:48, taps:[[1,0,7],[2,0,5],
-                          [-2,1,3],[-1,1,5],[0,1,7],[1,1,5],[2,1,3],
-                          [-2,2,1],[-1,2,3],[0,2,5],[1,2,3],[2,2,1]] },
-  stucki: { div:42, taps:[[1,0,8],[2,0,4],
-                          [-2,1,2],[-1,1,4],[0,1,8],[1,1,4],[2,1,2],
-                          [-2,2,1],[-1,2,2],[0,2,4],[1,2,2],[2,2,1]] },
-  burkes: { div:32, taps:[[1,0,8],[2,0,4],
-                          [-2,1,2],[-1,1,4],[0,1,8],[1,1,4],[2,1,2]] },
-  sierra: { div:32, taps:[[1,0,5],[2,0,3],
-                          [-2,1,2],[-1,1,4],[0,1,5],[1,1,4],[2,1,2],
-                          [-1,2,2],[0,2,3],[1,2,2]] },
-};
-
-// One serpentine diffusion pass over any of the kernels above, carrying the same
-// endpoint snap Solid uses. The snap is not part of the published algorithms; it is
-// here because a peppered black ground is the one failure this panel punishes hardest,
-// and a style that cannot avoid it would never be picked. Classic is the deliberate
-// exception and stays byte for byte without it.
-function quantizeDiffusion(g, w, h, idx, name){
-  const {div,taps}=DIFFUSION[name];
-  const {blur,flat}=flatField(g,w,h);
-  const buf=Float32Array.from(g);
-  for(let y=0;y<h;y++){
-    const ltr=(y&1)===0, fwd=ltr?1:-1;
-    for(let k=0;k<w;k++){
-      const x=ltr?k:w-1-k, i=y*w+x;
-      if(flat[i] && (blur[i]<=SNAP_TOL || blur[i]>=255-SNAP_TOL)){
-        idx[i] = blur[i]<=SNAP_TOL ? 0 : 3;
-        continue;
-      }
-      const old=buf[i], q=nearestLevel(old); idx[i]=q;
-      const err=(old-LEVELS[q])/div;
-      for(let t=0;t<taps.length;t++){
-        const nx=x+taps[t][0]*fwd, ny=y+taps[t][1];
-        if(nx<0||nx>=w||ny>=h) continue;
-        buf[ny*w+nx]+=err*taps[t][2];
-      }
-    }
-  }
-  return idx;
-}
-
-// Bayer 8x8: the standard recursive matrix, 0..63, every value used once.
-const BAYER8 = [
-   0,32, 8,40, 2,34,10,42,
-  48,16,56,24,50,18,58,26,
-  12,44, 4,36,14,46, 6,38,
-  60,28,52,20,62,30,54,22,
-   3,35,11,43, 1,33, 9,41,
-  51,19,59,27,49,17,57,25,
-  15,47, 7,39,13,45, 5,37,
-  63,31,55,23,61,29,53,21];
-
-// The same 0..63 budget with the low values grouped in the middle of each cell instead
-// of scattered across it. Tone is then carried by how big a blob grows, which is how a
-// newspaper screen works, rather than by how many separate pixels are lit.
+// A clustered 8x8 matrix: a 0..63 budget with the low values grouped in the middle of
+// each cell rather than scattered across it, so tone is carried by how big a blob grows,
+// which is how a newspaper screen works, rather than by how many separate pixels are lit.
+// A scattered Bayer matrix of the same size shipped beside it as "Ordered" until
+// 2026-08-11, along with the four longer-reach diffusion kernels; Diogo dropped all five.
 const CLUSTER8 = [
   24,10,12,26,35,47,49,37,
    8, 0, 2,14,45,59,61,51,
@@ -1350,18 +1285,26 @@ const CLUSTER8 = [
 // An ordered pass has no memory. Each pixel is judged on its own against a fixed
 // matrix, so nothing accumulates: no worming, no drift, and the same tone always
 // produces the same weave wherever it appears. That steadiness is the whole appeal,
-// and it is also why these two get no snap — a snap is a memory, and adding one
-// would take away the property they are here for.
+// and it is also why the screened styles get no snap — a snap is a memory, and adding
+// one would take away the property they are here for.
 //
 // The offset spans the 85 between levels, so a tone sitting exactly on a level stays
 // on it and only a tone between two is carried by the pattern. Pure black and pure
 // white therefore come out pure.
+//
+// That promise needs its own rounding to hold. nearestLevel() breaks at 42/127/212,
+// which are half a grey BELOW the true midpoints, and the offset reaches +42.2 on a
+// 12x12 screen — so the darkest cell of Halftone 45 tipped a pure black ground to
+// grey 85, one pixel in 144. The screens are symmetric by construction, so rounding
+// them at the true midpoints is what the comment above already claims. Every other
+// pass keeps nearestLevel: their thresholds are load-bearing elsewhere.
 const LEVEL_STEP = 85;
+function screenedLevel(v){ return v>=212.5?3:v>=127.5?2:v>=42.5?1:0; }
 function quantizeOrdered(g, w, h, idx, matrix, n){
   const side = n || 8, cells = side*side;
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){
     const i=y*w+x, t=(matrix[(y%side)*side+(x%side)]+0.5)/cells - 0.5;
-    idx[i]=nearestLevel(g[i]+t*LEVEL_STEP);
+    idx[i]=screenedLevel(g[i]+t*LEVEL_STEP);
   }
   return idx;
 }
@@ -1404,25 +1347,35 @@ const spot45 = (x,y,n)=> Math.cos(2*Math.PI*(x+y)/n) + Math.cos(2*Math.PI*(x-y)/
 // A line screen is the one case that must NOT be a permutation. Every cell on a
 // band has to share one threshold, or the ranking hands the cells along a band
 // consecutive values and the band fills along its length instead of thickening —
-// which draws a diagonal gradient of dots, not lines. So the n bands are ranked
-// by the same cosine and each band's cells all carry its rank, spread evenly over
-// the same 0..n*n-1 range the dot screens use so the offset maths is unchanged.
+// which draws a gradient of dots, not lines. So the n bands are ranked by the same
+// cosine and each band's cells all carry its rank, spread evenly over the same
+// 0..n*n-1 range the dot screens use so the offset maths is unchanged.
 // The cost is real and inherent: n thresholds between levels instead of n*n, so a
 // line screen steps more coarsely than a dot screen. That is what a line screen is.
-function lineMatrix(n){
+//
+// `band` picks which cells share a threshold, and that is the only difference
+// between the three directions. (x+y) counts diagonals, x alone counts columns and
+// draws vertical lines, y alone counts rows and draws horizontal ones.
+function lineMatrix(n, band){
   const cells=n*n, m=new Array(cells);
   const bands=[];
   for(let d=0;d<n;d++) bands.push({d, v:Math.cos(2*Math.PI*d/n)});
   bands.sort((a,b)=> b.v-a.v || a.d-b.d);
   const rankOf=new Array(n);
   bands.forEach((b,rank)=>{ rankOf[b.d]=rank; });
-  for(let y=0;y<n;y++) for(let x=0;x<n;x++) m[y*n+x]=Math.round((rankOf[(x+y)%n]+0.5)*cells/n - 0.5);
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++) m[y*n+x]=Math.round((rankOf[band(x,y,n)]+0.5)*cells/n - 0.5);
   return m;
 }
 
 const SCREEN_ROUND45 = screenMatrix(12, spot45);
 const SCREEN_FINE45 = screenMatrix(6, spot45);
-const SCREEN_LINE = lineMatrix(10);
+// Sizes are chosen by the spacing the eye sees, not by n. A diagonal band repeats
+// every n/sqrt(2) pixels measured across the band, so n=10 diagonal gives ~7 px; a
+// straight band repeats every n, so n=7 puts the three screens at the same weight.
+// The straight pair pay for it with 7 tone steps between levels instead of 10.
+const SCREEN_LINE = lineMatrix(10, (x,y,n)=> (x+y)%n);
+const SCREEN_LINE_V = lineMatrix(7, (x)=> x);
+const SCREEN_LINE_H = lineMatrix(7, (x,y)=> y);
 
 // Halftone where there is something to describe, and nowhere else.
 //
@@ -1489,7 +1442,7 @@ function quantizeHalftoneSubject(g, w, h, idx){
       const x=ltr?k:w-1-k, i=y*w+x;
       if(!flat[i]){
         const t=(SCREEN_FINE45[(y%n)*n+(x%n)]+0.5)/cells - 0.5;
-        idx[i]=nearestLevel(g[i]+t*LEVEL_STEP);
+        idx[i]=screenedLevel(g[i]+t*LEVEL_STEP);
         continue;
       }
       if(uniform[i]){
@@ -1544,13 +1497,13 @@ function quantize(g, dither, style){
   const st = style || S.ditherStyle;
   if(st==="solid") return quantizeSolid(g,w,h,idx);
   if(st==="classic") return quantizeClassic(g,w,h,idx);
-  if(st==="ordered") return quantizeOrdered(g,w,h,idx,BAYER8);
   if(st==="halftone") return quantizeOrdered(g,w,h,idx,CLUSTER8);
   if(st==="halftone45") return quantizeOrdered(g,w,h,idx,SCREEN_ROUND45,12);
   if(st==="halftonefine") return quantizeOrdered(g,w,h,idx,SCREEN_FINE45,6);
   if(st==="linescreen") return quantizeOrdered(g,w,h,idx,SCREEN_LINE,10);
+  if(st==="linescreenv") return quantizeOrdered(g,w,h,idx,SCREEN_LINE_V,7);
+  if(st==="linescreenh") return quantizeOrdered(g,w,h,idx,SCREEN_LINE_H,7);
   if(st==="halftonesubject") return quantizeHalftoneSubject(g,w,h,idx);
-  if(DIFFUSION[st]) return quantizeDiffusion(g,w,h,idx,st);
   const smooth = st==="smooth";
   const {blur,flat}=flatField(g,w,h);
   const buf=Float32Array.from(g);

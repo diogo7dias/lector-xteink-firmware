@@ -203,15 +203,6 @@ const styleListSrc = extract("const STYLES = [", "// ---------- state ----------
 const { STYLES, STYLE_LABEL, knownStyle } =
   new Function(`${styleListSrc}; return {STYLES, STYLE_LABEL, knownStyle};`)();
 
-const { DIFFUSION } = new Function("LEVELS", "S", `${quantizeSrc}; return {DIFFUSION};`)(LEVELS, {});
-
-test("every diffusion kernel's weights sum to its own divisor", () => {
-  for (const [name, k] of Object.entries(DIFFUSION)) {
-    const sum = k.taps.reduce((s, t) => s + t[2], 0);
-    assert.equal(sum, k.div, `${name} weights sum to ${sum}, divisor is ${k.div}`);
-  }
-});
-
 test("every style is offered once in the badge list, and each one has a label", () => {
   assert.equal(new Set(STYLES).size, STYLES.length, "a repeated entry would list a style twice");
   for (const k of STYLES) assert.ok(STYLE_LABEL[k], `${k} needs a label for the badge`);
@@ -221,19 +212,16 @@ test("every style is offered once in the badge list, and each one has a label", 
   assert.equal(knownStyle("no-such-style"), STYLES[0], "a stale override must not blank a card");
 });
 
-test("the new diffusion styles keep a solid black ground solid", () => {
-  const w = 64, h = 64;
-  for (const name of Object.keys(DIFFUSION)) {
-    const out = makeQuantize(LEVELS, { w, h, ditherStyle: name })(flat(w, h, 18), true);
-    assert.equal(out.reduce((n, v) => n + (v === 0 ? 0 : 1), 0), 0, `${name} peppered the ground`);
-  }
-});
-
 // An ordered pass has no memory, so its only hard promise is that a tone sitting
 // exactly on a level is never pushed off it. That is what keeps pure black pure.
-test("Ordered and Halftone leave pure black and pure white alone", () => {
+// This once covered the 8x8 screens only, and they passed by luck: the offset on an
+// 8x8 tile stops just short of nearestLevel's 42 break. Widening it to every screen
+// caught Halftone 45 and the diagonal line screen tipping a pure black ground to
+// grey on one cell, which screenedLevel() now prevents for any tile size.
+test("every screened style leaves pure black and pure white alone", () => {
   const w = 32, h = 32;
-  for (const style of ["ordered", "halftone"]) {
+  for (const style of ["halftone", "halftone45", "halftonefine",
+                       "linescreen", "linescreenv", "linescreenh"]) {
     const quantize = makeQuantize(LEVELS, { w, h, ditherStyle: style });
     assert.deepEqual([...new Set(quantize(flat(w, h, 0), true))], [0], `${style} dirtied pure black`);
     assert.deepEqual([...new Set(quantize(flat(w, h, 255), true))], [3], `${style} dirtied pure white`);
@@ -242,9 +230,9 @@ test("Ordered and Halftone leave pure black and pure white alone", () => {
 
 // The reason to have an ordered style at all: the same tone renders the same way
 // wherever it appears, so a flat area is one repeating tile rather than a drifting one.
-test("Ordered repeats on an 8x8 tile, everywhere in the image", () => {
+test("Halftone repeats on an 8x8 tile, everywhere in the image", () => {
   const w = 64, h = 64;
-  const out = makeQuantize(LEVELS, { w, h, ditherStyle: "ordered" })(flat(w, h, 128), true);
+  const out = makeQuantize(LEVELS, { w, h, ditherStyle: "halftone" })(flat(w, h, 128), true);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     assert.equal(out[y * w + x], out[(y & 7) * w + (x & 7)], `tile broke at ${x},${y}`);
   }
@@ -254,8 +242,8 @@ test("Ordered repeats on an 8x8 tile, everywhere in the image", () => {
 // The generated screens are only correct if every threshold appears exactly once.
 // A duplicated or missing rank bends the tone response, and it would be invisible
 // by eye until a gradient came out wrong, so pin the permutation itself.
-const { screenMatrix, SCREEN_ROUND45, SCREEN_FINE45, SCREEN_LINE } =
-  new Function("LEVELS", "S", `${quantizeSrc}; return {screenMatrix, SCREEN_ROUND45, SCREEN_FINE45, SCREEN_LINE};`)(LEVELS, {});
+const { screenMatrix, SCREEN_ROUND45, SCREEN_FINE45, SCREEN_LINE, SCREEN_LINE_V, SCREEN_LINE_H } =
+  new Function("LEVELS", "S", `${quantizeSrc}; return {screenMatrix, SCREEN_ROUND45, SCREEN_FINE45, SCREEN_LINE, SCREEN_LINE_V, SCREEN_LINE_H};`)(LEVELS, {});
 
 test("every generated dot screen uses each threshold exactly once", () => {
   for (const [name, m, n] of [["round45", SCREEN_ROUND45, 12], ["fine45", SCREEN_FINE45, 6]]) {
@@ -269,14 +257,18 @@ test("every generated dot screen uses each threshold exactly once", () => {
 // one threshold, which is what makes bands thicken instead of filling lengthwise.
 // Its promise is instead that the n band thresholds are evenly spread over the
 // same range, so tone still rises steadily.
-test("the line screen spreads one threshold per band, evenly", () => {
-  const n = 10, cells = n * n;
-  assert.equal(SCREEN_LINE.length, cells);
-  const values = [...new Set(SCREEN_LINE)].sort((a, b) => a - b);
-  assert.equal(values.length, n, `expected ${n} band thresholds, got ${values.length}`);
-  assert.ok(values[0] < cells / n && values[n - 1] > cells - cells / n, "bands must span the range");
-  const gaps = values.slice(1).map((v, i) => v - values[i]);
-  assert.equal(new Set(gaps).size, 1, `band spacing must be even, got ${gaps.join(",")}`);
+test("every line screen spreads one threshold per band, evenly", () => {
+  for (const [name, m, n] of [["diagonal", SCREEN_LINE, 10],
+                              ["vertical", SCREEN_LINE_V, 7],
+                              ["horizontal", SCREEN_LINE_H, 7]]) {
+    const cells = n * n;
+    assert.equal(m.length, cells, `${name} is not ${n}x${n}`);
+    const values = [...new Set(m)].sort((a, b) => a - b);
+    assert.equal(values.length, n, `${name}: expected ${n} band thresholds, got ${values.length}`);
+    assert.ok(values[0] < cells / n && values[n - 1] > cells - cells / n, `${name} must span the range`);
+    const gaps = values.slice(1).map((v, i) => v - values[i]);
+    assert.equal(new Set(gaps).size, 1, `${name} band spacing must be even, got ${gaps.join(",")}`);
+  }
 });
 
 // The rank order is what makes it a screen rather than noise: ink has to start at
@@ -297,14 +289,19 @@ test("a generated screen grows outward from its dot centre", () => {
 // Bands must thicken, not fill along their length. Ranking every cell separately
 // gives the cells on one band consecutive thresholds, which draws a diagonal
 // gradient of dots instead of lines — the first version did exactly that.
-test("the line screen renders bands, not dots", () => {
+// Each direction is pinned by walking ALONG its own band: the level must not change
+// there, and must change across it. Swapping the vertical and horizontal band
+// functions leaves both matrices valid and would only show up here.
+test("each line screen renders bands in its own direction", () => {
   const w = 40, h = 40;
-  const out = makeQuantize(LEVELS, { w, h, ditherStyle: "linescreen" })(flat(w, h, 128), true);
-  for (let y = 1; y < h; y++) for (let x = 0; x + 1 < w; x++) {
-    // Walking along a band (+1,-1) keeps x+y fixed, so the level must not change.
-    assert.equal(out[y * w + x], out[(y - 1) * w + x + 1], `band broke at ${x},${y}`);
+  //                    style          step along a band
+  for (const [style, dx, dy] of [["linescreen", 1, -1], ["linescreenv", 0, 1], ["linescreenh", 1, 0]]) {
+    const out = makeQuantize(LEVELS, { w, h, ditherStyle: style })(flat(w, h, 128), true);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x + 1 < w; x++) {
+      assert.equal(out[y * w + x], out[(y + dy) * w + x + dx], `${style} band broke at ${x},${y}`);
+    }
+    assert.ok(new Set(out).size > 1, `${style}: a midtone must be carried by the bands`);
   }
-  assert.ok(new Set(out).size > 1, "a midtone must actually be carried by the bands");
 });
 
 // The one Diogo asked for by behaviour: screen on the subject, nothing on the
@@ -392,7 +389,7 @@ test("every diffusion style holds the average tone of a ramp", () => {
   const w = 96, h = 96;
   const g = ramp(w, h);
   const target = Array.from(g).reduce((s, v) => s + v, 0) / g.length;
-  for (const style of ["solid", "classic", "smooth", ...Object.keys(DIFFUSION)]) {
+  for (const style of ["solid", "classic", "smooth"]) {
     const out = makeQuantize(LEVELS, { w, h, ditherStyle: style })(g, true);
     const mean = Array.from(out).reduce((s, i) => s + LEVELS[i], 0) / out.length;
     assert.ok(Math.abs(mean - target) < 3, `${style} drifted to ${mean.toFixed(2)} from ${target.toFixed(2)}`);
