@@ -32,3 +32,14 @@ test("the dither picker offers Classic against Solid, on the page by default", (
   assert.match(html, /data-v="smooth" hidden>Smooth/);
   assert.match(html, /querySelectorAll\('#segDither button\[hidden\]'\)/);
 });
+
+// The per-image rendering picker must stay a real <select> built from STYLES: one tap
+// shows the whole list. A button that stepped one style at a time made finding the
+// right rendering an eleven-tap hunt, which is what Diogo asked to be rid of.
+test("the per-image badge lists every rendering in one dropdown", () => {
+  assert.match(html, /createElement\("select"\); tag\.className="pill pill-toggle pill-style"/);
+  assert.match(html, /for\(const s of STYLES\)\{[\s\S]*?o\.textContent=STYLE_LABEL\[s\]/);
+  assert.match(html, /tag\.value=knownStyle\(conv\.style\)/);
+  assert.match(html, /tag\.addEventListener\("change"/);
+  assert.match(html, /\.pill-style\{width:auto;min-height:0/);
+});

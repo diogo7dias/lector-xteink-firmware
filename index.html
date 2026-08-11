@@ -141,6 +141,9 @@
   .pill{border-radius:999px;padding:1px 9px;font-size:10.5px;font-weight:700;}
   .pill-toggle{background:var(--yellow-soft);color:var(--ink);border:2px solid var(--ink);
     font-family:var(--sans);cursor:pointer;}
+  /* The rendering picker is a real <select>, so it must shed the full-width control
+     styling and sit in the meta row at pill size. */
+  .pill-style{width:auto;min-height:0;padding:1px 4px 1px 8px;font-size:10.5px;line-height:1.7;}
   .pill-src{background:var(--code);border:2px solid var(--ink);color:var(--sub);}
   .card a.dl{display:block;text-align:center;margin-top:12px;background:var(--red);color:var(--on-red);
     text-decoration:none;padding:9px;border:3px solid var(--ink);border-radius:6px;font-size:13px;
@@ -264,6 +267,7 @@
     .controls{grid-template-columns:1fr;gap:14px;}
     .seg button{min-height:44px;font-size:12px;}
     select,.btn{min-height:44px;}
+    .pill-style{min-height:32px;}
     .drop{padding:28px 14px;}
     .drop .big{font-size:22px;}
     .bar{align-items:stretch;}
@@ -957,8 +961,9 @@ const STYLES = ["threshold","solid","classic","clean","smooth",
 const STYLE_LABEL = { threshold:"Threshold", solid:"Solid", classic:"Classic", clean:"Clean",
   smooth:"Smooth", jarvis:"Jarvis", stucki:"Stucki", burkes:"Burkes", sierra:"Sierra",
   ordered:"Ordered", halftone:"Halftone" };
-// An unknown style lands on the first entry, so a stale override can never wedge a card.
-function nextStyle(s){ return STYLES[(STYLES.indexOf(s)+1)%STYLES.length]; }
+// An unknown style lands on the first entry, so a stale override can never leave a
+// card's picker showing a blank.
+function knownStyle(s){ return STYLES.includes(s) ? s : STYLES[0]; }
 // ---------- state ----------
 const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"auto", contrast:1, invert:0, ditherStyle:"solid", files:[] };
 
@@ -1539,10 +1544,9 @@ function drawPreview(canvas, idx){
   ctx.putImageData(im,0,0);
 }
 
-// Build one result card. The badge is a button naming this image's rendering:
-// clicking it steps to the next entry in STYLES and re-renders just this card,
-// leaving every other card (and its own override) untouched. Eleven steps returns
-// it to where it started, so the button is safe to lean on.
+// Build one result card. The badge is a dropdown listing every rendering: one tap
+// shows all eleven and picking one re-renders just this card, leaving every other
+// card (and its own override) untouched.
 // conv is cached on the file for Download all.
 function buildCard(f){
   const conv=convert(f); f.conv=conv;
@@ -1550,11 +1554,16 @@ function buildCard(f){
   const cv=document.createElement("canvas"); card.appendChild(cv); drawPreview(cv,conv.idx);
   const name=document.createElement("div"); name.className="name"; name.textContent=conv.filename;
   const meta=document.createElement("div"); meta.className="meta";
-  const tag=document.createElement("button"); tag.type="button"; tag.className="pill pill-toggle";
-  tag.textContent=STYLE_LABEL[conv.style]+" ⇄";
-  tag.title=`Rendering for this image only — click for ${STYLE_LABEL[nextStyle(conv.style)]}`;
-  tag.addEventListener("click", ()=>{
-    f.style = nextStyle(conv.style);                 // this image only
+  const tag=document.createElement("select"); tag.className="pill pill-toggle pill-style";
+  tag.title="Rendering for this image only";
+  tag.setAttribute("aria-label", `Rendering for ${conv.filename}`);
+  for(const s of STYLES){
+    const o=document.createElement("option"); o.value=s; o.textContent=STYLE_LABEL[s];
+    tag.appendChild(o);
+  }
+  tag.value=knownStyle(conv.style);
+  tag.addEventListener("change", ()=>{
+    f.style = tag.value;                             // this image only
     card.replaceWith(buildCard(f));
   });
   const dims=document.createElement("span"); dims.textContent=`${S.w}×${S.h}`;

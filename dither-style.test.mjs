@@ -200,8 +200,8 @@ test("Solid holds tone far better than Clean, which is why it is not just Clean"
 // two badge steps that render the same image.
 
 const styleListSrc = extract("const STYLES = [", "// ---------- state ----------");
-const { STYLES, STYLE_LABEL, nextStyle } =
-  new Function(`${styleListSrc}; return {STYLES, STYLE_LABEL, nextStyle};`)();
+const { STYLES, STYLE_LABEL, knownStyle } =
+  new Function(`${styleListSrc}; return {STYLES, STYLE_LABEL, knownStyle};`)();
 
 const { DIFFUSION } = new Function("LEVELS", "S", `${quantizeSrc}; return {DIFFUSION};`)(LEVELS, {});
 
@@ -212,14 +212,13 @@ test("every diffusion kernel's weights sum to its own divisor", () => {
   }
 });
 
-test("the badge cycles every style and comes back to where it started", () => {
-  let s = STYLES[0];
-  const seen = [s];
-  for (let i = 1; i < STYLES.length; i++) { s = nextStyle(s); seen.push(s); }
-  assert.deepEqual(seen, STYLES, "one lap must visit each style exactly once, in order");
-  assert.equal(nextStyle(s), STYLES[0], "and then wrap");
-  assert.equal(nextStyle("no-such-style"), STYLES[0], "a stale override must not wedge a card");
+test("every style is offered once in the badge list, and each one has a label", () => {
+  assert.equal(new Set(STYLES).size, STYLES.length, "a repeated entry would list a style twice");
   for (const k of STYLES) assert.ok(STYLE_LABEL[k], `${k} needs a label for the badge`);
+  for (const k of STYLES) assert.equal(knownStyle(k), k, `${k} must survive the guard`);
+  // A <select> whose value is not among its options shows blank, so an unknown name
+  // has to land on a real entry rather than leave the picker empty.
+  assert.equal(knownStyle("no-such-style"), STYLES[0], "a stale override must not blank a card");
 });
 
 test("the new diffusion styles keep a solid black ground solid", () => {
