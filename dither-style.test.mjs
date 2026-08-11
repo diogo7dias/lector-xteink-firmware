@@ -192,3 +192,88 @@ test("Solid holds tone far better than Clean, which is why it is not just Clean"
   const cleanErr = Math.abs(rendered("clean") - target);
   assert.ok(solidErr < cleanErr, `Solid drifted ${solidErr} vs Clean ${cleanErr}`);
 });
+
+// ---------- the rest of the style set ----------
+// These reach the page through the per-image badge rather than the global picker, so
+// the guard that matters most is the last test here: a name that quantize() does not
+// handle falls through to the Clean fallback and would otherwise ship silently, giving
+// two badge steps that render the same image.
+
+const styleListSrc = extract("const STYLES = [", "// ---------- state ----------");
+const { STYLES, STYLE_LABEL, nextStyle } =
+  new Function(`${styleListSrc}; return {STYLES, STYLE_LABEL, nextStyle};`)();
+
+const { DIFFUSION } = new Function("LEVELS", "S", `${quantizeSrc}; return {DIFFUSION};`)(LEVELS, {});
+
+test("every diffusion kernel's weights sum to its own divisor", () => {
+  for (const [name, k] of Object.entries(DIFFUSION)) {
+    const sum = k.taps.reduce((s, t) => s + t[2], 0);
+    assert.equal(sum, k.div, `${name} weights sum to ${sum}, divisor is ${k.div}`);
+  }
+});
+
+test("the badge cycles every style and comes back to where it started", () => {
+  let s = STYLES[0];
+  const seen = [s];
+  for (let i = 1; i < STYLES.length; i++) { s = nextStyle(s); seen.push(s); }
+  assert.deepEqual(seen, STYLES, "one lap must visit each style exactly once, in order");
+  assert.equal(nextStyle(s), STYLES[0], "and then wrap");
+  assert.equal(nextStyle("no-such-style"), STYLES[0], "a stale override must not wedge a card");
+  for (const k of STYLES) assert.ok(STYLE_LABEL[k], `${k} needs a label for the badge`);
+});
+
+test("the new diffusion styles keep a solid black ground solid", () => {
+  const w = 64, h = 64;
+  for (const name of Object.keys(DIFFUSION)) {
+    const out = makeQuantize(LEVELS, { w, h, ditherStyle: name })(flat(w, h, 18), true);
+    assert.equal(out.reduce((n, v) => n + (v === 0 ? 0 : 1), 0), 0, `${name} peppered the ground`);
+  }
+});
+
+// An ordered pass has no memory, so its only hard promise is that a tone sitting
+// exactly on a level is never pushed off it. That is what keeps pure black pure.
+test("Ordered and Halftone leave pure black and pure white alone", () => {
+  const w = 32, h = 32;
+  for (const style of ["ordered", "halftone"]) {
+    const quantize = makeQuantize(LEVELS, { w, h, ditherStyle: style });
+    assert.deepEqual([...new Set(quantize(flat(w, h, 0), true))], [0], `${style} dirtied pure black`);
+    assert.deepEqual([...new Set(quantize(flat(w, h, 255), true))], [3], `${style} dirtied pure white`);
+  }
+});
+
+// The reason to have an ordered style at all: the same tone renders the same way
+// wherever it appears, so a flat area is one repeating tile rather than a drifting one.
+test("Ordered repeats on an 8x8 tile, everywhere in the image", () => {
+  const w = 64, h = 64;
+  const out = makeQuantize(LEVELS, { w, h, ditherStyle: "ordered" })(flat(w, h, 128), true);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    assert.equal(out[y * w + x], out[(y & 7) * w + (x & 7)], `tile broke at ${x},${y}`);
+  }
+  assert.ok(new Set(out).size > 1, "a midtone must actually be carried by the pattern");
+});
+
+test("every style renders differently, so no badge step is a duplicate", () => {
+  const w = 96, h = 96;
+  const g = ramp(w, h);
+  const seen = new Map();
+  for (const style of STYLES) {
+    const dither = style !== "threshold";
+    const key = Array.from(makeQuantize(LEVELS, { w, h, ditherStyle: style })(g, dither)).join("");
+    const clash = seen.get(key);
+    assert.equal(clash, undefined, `${style} renders identically to ${clash} — quantize() is not handling it`);
+    seen.set(key, style);
+  }
+});
+
+// Diffusion conserves error by construction, so every one of these should land close
+// to the source average. A kernel typed in wrong shows up here as tone drift.
+test("every diffusion style holds the average tone of a ramp", () => {
+  const w = 96, h = 96;
+  const g = ramp(w, h);
+  const target = Array.from(g).reduce((s, v) => s + v, 0) / g.length;
+  for (const style of ["solid", "classic", "smooth", ...Object.keys(DIFFUSION)]) {
+    const out = makeQuantize(LEVELS, { w, h, ditherStyle: style })(g, true);
+    const mean = Array.from(out).reduce((s, i) => s + LEVELS[i], 0) / out.length;
+    assert.ok(Math.abs(mean - target) < 3, `${style} drifted to ${mean.toFixed(2)} from ${target.toFixed(2)}`);
+  }
+});

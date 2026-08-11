@@ -388,9 +388,9 @@
         <div class="ctl">
           <label>Rendering</label>
           <select id="mode">
-            <option value="auto">Auto (detect per image)</option>
+            <option value="auto" selected>Auto (detect per image)</option>
             <option value="dither">Dither (photos)</option>
-            <option value="threshold" selected>Threshold (line art)</option>
+            <option value="threshold">Threshold (line art)</option>
           </select>
         </div>
         <!-- Two styles are offered, and the choice is on the page by default: Classic is
@@ -927,8 +927,40 @@ themeToggle.addEventListener("click",()=>{
 
 const INK = "var(--ink)";
 const LEVELS = [0,85,170,255];
+
+// Every rendering the page can produce, in the order the per-image badge cycles them.
+// The badge is the only place the whole set is reachable, and that is on purpose:
+// which one suits a picture is a property of the picture, not of the converter. A
+// portrait on a black ground and a soft sky want opposite things, so no global default
+// can be right for both, and the honest answer is to try them on the image itself.
+//
+//   Threshold  No dither. Each pixel goes to its nearest level and stops.
+//   Solid      Floyd-Steinberg, with solid black and solid white areas taken to the
+//              level outright. The default, and the safest with a black background.
+//   Classic    Plain Floyd-Steinberg, exactly as this converter shipped before
+//              2026-08-05. Keeps every drop of tone; grits flat areas.
+//   Clean      Atkinson. Throws away two eighths of every error so flat areas settle,
+//              and gradients pay for it.
+//   Smooth     Floyd-Steinberg, serpentine, with the snap at all four levels.
+//   Jarvis     Jarvis-Judice-Ninke. Twelve neighbours over two rows: the softest
+//              grain of the diffusion set, and the most smearing of fine detail.
+//   Stucki     The same reach weighted tighter. Softer than Floyd-Steinberg, crisper
+//              than Jarvis.
+//   Burkes     Stucki with the far row dropped. Sits between Floyd-Steinberg and Stucki.
+//   Sierra     Three rows, weighted flatter than Stucki. Quiet midtones.
+//   Ordered    No diffusion at all: a fixed 8x8 Bayer matrix. A regular weave that
+//              never worms and never drifts. Posters and flat art take it well.
+//   Halftone   A clustered 8x8 matrix instead of a scattered one, so tone is carried
+//              by the size of a blob. A newspaper screen. Coarse on purpose.
+const STYLES = ["threshold","solid","classic","clean","smooth",
+                "jarvis","stucki","burkes","sierra","ordered","halftone"];
+const STYLE_LABEL = { threshold:"Threshold", solid:"Solid", classic:"Classic", clean:"Clean",
+  smooth:"Smooth", jarvis:"Jarvis", stucki:"Stucki", burkes:"Burkes", sierra:"Sierra",
+  ordered:"Ordered", halftone:"Halftone" };
+// An unknown style lands on the first entry, so a stale override can never wedge a card.
+function nextStyle(s){ return STYLES[(STYLES.indexOf(s)+1)%STYLES.length]; }
 // ---------- state ----------
-const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"solid", files:[] };
+const S = { w:528, h:792, fmt:"pxc", fit:"stretch", mode:"auto", contrast:1, invert:0, ditherStyle:"solid", files:[] };
 
 // ---------- brutalist press feedback ----------
 // Nudges an element down-right and shrinks its hard shadow while pressed, so
@@ -954,7 +986,10 @@ function seg(id, on){
 }
 seg("segSize", b=>{ S.w=+b.dataset.w; S.h=+b.dataset.h; });
 seg("segFmt", b=> S.fmt=b.dataset.fmt);
-seg("segDither", b=> S.ditherStyle=b.dataset.v);
+// Both global controls clear the per-image overrides, so a global change always shows
+// on every card. Otherwise a card pinned by the badge would sit there ignoring it and
+// read as a bug rather than as a choice made earlier.
+seg("segDither", b=>{ S.ditherStyle=b.dataset.v; S.files.forEach(f=>{delete f.style;}); });
 // Classic and Solid are on the page by default. Clean and Smooth lost to them and
 // are hidden buttons rather than deleted ones; ?dither=1 puts the pair back in the
 // row. The styles themselves are always available in quantize() either way.
@@ -965,7 +1000,7 @@ seg("segContrast", b=> S.contrast=+b.dataset.v);
 seg("segInvert", b=> S.invert=+b.dataset.v);
 document.getElementById("fit").addEventListener("change", e=>{S.fit=e.target.value;rerender();});
 document.getElementById("mode").addEventListener("change", e=>{
-  S.mode=e.target.value; S.files.forEach(f=>{delete f.mode;}); rerender();  // global change resets per-image overrides
+  S.mode=e.target.value; S.files.forEach(f=>{delete f.style;}); rerender();  // global change resets per-image overrides
 });
 
 // ---------- file intake ----------
@@ -1212,13 +1247,106 @@ function quantizeSolid(g, w, h, idx){
   return idx;
 }
 
+// Error-diffusion kernels, as [dx, dy, weight] against a divisor. dx is mirrored on
+// right-to-left rows, which is what makes the scan serpentine: the error always
+// travels the way the scan is already going, instead of being thrown back over
+// ground that is already decided. Weights are the published ones; each taps array
+// sums to its own divisor, and a test pins that.
+//
+// Reaching further with more taps spreads a single error thinner, so the grain gets
+// finer and the directional worming that Floyd-Steinberg shows on flat tone fades.
+// The cost is that detail smears slightly, because a pixel's error now lands up to
+// two rows away. Jarvis reaches furthest, Burkes least.
+const DIFFUSION = {
+  jarvis: { div:48, taps:[[1,0,7],[2,0,5],
+                          [-2,1,3],[-1,1,5],[0,1,7],[1,1,5],[2,1,3],
+                          [-2,2,1],[-1,2,3],[0,2,5],[1,2,3],[2,2,1]] },
+  stucki: { div:42, taps:[[1,0,8],[2,0,4],
+                          [-2,1,2],[-1,1,4],[0,1,8],[1,1,4],[2,1,2],
+                          [-2,2,1],[-1,2,2],[0,2,4],[1,2,2],[2,2,1]] },
+  burkes: { div:32, taps:[[1,0,8],[2,0,4],
+                          [-2,1,2],[-1,1,4],[0,1,8],[1,1,4],[2,1,2]] },
+  sierra: { div:32, taps:[[1,0,5],[2,0,3],
+                          [-2,1,2],[-1,1,4],[0,1,5],[1,1,4],[2,1,2],
+                          [-1,2,2],[0,2,3],[1,2,2]] },
+};
+
+// One serpentine diffusion pass over any of the kernels above, carrying the same
+// endpoint snap Solid uses. The snap is not part of the published algorithms; it is
+// here because a peppered black ground is the one failure this panel punishes hardest,
+// and a style that cannot avoid it would never be picked. Classic is the deliberate
+// exception and stays byte for byte without it.
+function quantizeDiffusion(g, w, h, idx, name){
+  const {div,taps}=DIFFUSION[name];
+  const {blur,flat}=flatField(g,w,h);
+  const buf=Float32Array.from(g);
+  for(let y=0;y<h;y++){
+    const ltr=(y&1)===0, fwd=ltr?1:-1;
+    for(let k=0;k<w;k++){
+      const x=ltr?k:w-1-k, i=y*w+x;
+      if(flat[i] && (blur[i]<=SNAP_TOL || blur[i]>=255-SNAP_TOL)){
+        idx[i] = blur[i]<=SNAP_TOL ? 0 : 3;
+        continue;
+      }
+      const old=buf[i], q=nearestLevel(old); idx[i]=q;
+      const err=(old-LEVELS[q])/div;
+      for(let t=0;t<taps.length;t++){
+        const nx=x+taps[t][0]*fwd, ny=y+taps[t][1];
+        if(nx<0||nx>=w||ny>=h) continue;
+        buf[ny*w+nx]+=err*taps[t][2];
+      }
+    }
+  }
+  return idx;
+}
+
+// Bayer 8x8: the standard recursive matrix, 0..63, every value used once.
+const BAYER8 = [
+   0,32, 8,40, 2,34,10,42,
+  48,16,56,24,50,18,58,26,
+  12,44, 4,36,14,46, 6,38,
+  60,28,52,20,62,30,54,22,
+   3,35,11,43, 1,33, 9,41,
+  51,19,59,27,49,17,57,25,
+  15,47, 7,39,13,45, 5,37,
+  63,31,55,23,61,29,53,21];
+
+// The same 0..63 budget with the low values grouped in the middle of each cell instead
+// of scattered across it. Tone is then carried by how big a blob grows, which is how a
+// newspaper screen works, rather than by how many separate pixels are lit.
+const CLUSTER8 = [
+  24,10,12,26,35,47,49,37,
+   8, 0, 2,14,45,59,61,51,
+  22, 6, 4,16,43,57,63,53,
+  30,20,18,28,33,41,55,39,
+  34,46,48,38,25,11,13,27,
+  44,58,60,50, 9, 1, 3,15,
+  42,56,62,52,23, 7, 5,17,
+  32,40,54,36,31,21,19,29];
+
+// An ordered pass has no memory. Each pixel is judged on its own against a fixed
+// matrix, so nothing accumulates: no worming, no drift, and the same tone always
+// produces the same weave wherever it appears. That steadiness is the whole appeal,
+// and it is also why these two get no snap — a snap is a memory, and adding one
+// would take away the property they are here for.
+//
+// The offset spans the 85 between levels, so a tone sitting exactly on a level stays
+// on it and only a tone between two is carried by the pattern. Pure black and pure
+// white therefore come out pure.
+const LEVEL_STEP = 85;
+function quantizeOrdered(g, w, h, idx, matrix){
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+    const i=y*w+x, t=(matrix[(y&7)*8+(x&7)]+0.5)/64 - 0.5;
+    idx[i]=nearestLevel(g[i]+t*LEVEL_STEP);
+  }
+  return idx;
+}
+
 // Quantise gray -> level indices 0..3 (w*h Uint8).
 //
-// Solid is what the page ships and the only style it offers; it lives in
-// quantizeSolid above, Classic in quantizeClassic, and both return before this
-// loop. The two below are kept for comparison behind ?dither=1 and share this
-// loop: the serpentine scan and the flat-field snap are the same, and only the
-// diffusion kernel differs.
+// Every style above returns before this loop. What is left here is the original pair,
+// which share one loop because the serpentine scan and the four-level snap are the
+// same for both and only the diffusion kernel differs.
 //
 //   Clean  — Atkinson. Hands on only six eighths of each error, so a residual
 //            decays instead of building without limit. Cleanest flat areas, at
@@ -1235,16 +1363,22 @@ function quantizeSolid(g, w, h, idx){
 // diagonal worms a fixed left-to-right pass leaves behind. Note the kernel
 // offsets are written against `fwd` rather than +1, so they mirror with the scan
 // direction; a kernel hard-coded to the right would smear on every other row.
-function quantize(g, dither){
+// style is optional and is what the per-image badge passes: a card renders its own
+// style without touching the global setting, so the other cards keep theirs.
+function quantize(g, dither, style){
   const {w,h}=S; const idx=new Uint8Array(w*h);
   if(!dither){ for(let i=0;i<g.length;i++) idx[i]=nearestLevel(g[i]); return idx; }
   // Unset means Clean, which is NOT the app default — the page always sets a
   // style, and sets it to "solid". The fallback exists for callers that predate
   // the setting and for host tests that build their own S, so both keep pinning
   // the Atkinson pass rather than silently following whatever the default becomes.
-  if(S.ditherStyle==="solid") return quantizeSolid(g,w,h,idx);
-  if(S.ditherStyle==="classic") return quantizeClassic(g,w,h,idx);
-  const smooth = S.ditherStyle==="smooth";
+  const st = style || S.ditherStyle;
+  if(st==="solid") return quantizeSolid(g,w,h,idx);
+  if(st==="classic") return quantizeClassic(g,w,h,idx);
+  if(st==="ordered") return quantizeOrdered(g,w,h,idx,BAYER8);
+  if(st==="halftone") return quantizeOrdered(g,w,h,idx,CLUSTER8);
+  if(DIFFUSION[st]) return quantizeDiffusion(g,w,h,idx,st);
+  const smooth = st==="smooth";
   const {blur,flat}=flatField(g,w,h);
   const buf=Float32Array.from(g);
   for(let y=0;y<h;y++){
@@ -1371,10 +1505,13 @@ function encodeBmp(idx){
 function convert(f){
   let g=toGray(f.img);
   if(S.contrast) g=autoContrast(g);
-  // A per-image override (set by clicking the badge) wins over the global mode.
-  let dither = f.mode ? (f.mode==="dither")
-             : S.mode==="dither" ? true : S.mode==="threshold" ? false : autoWantsDither(g);
-  const idx=quantize(g,dither);
+  // A per-image override (set by clicking the badge) names the whole rendering and
+  // wins outright. Without one, Rendering decides dither against threshold and the
+  // global style picker says which dither.
+  const style = f.style || ((S.mode==="dither" ? true
+                           : S.mode==="threshold" ? false
+                           : autoWantsDither(g)) ? S.ditherStyle : "threshold");
+  const idx=quantize(g, style!=="threshold", style);
   const bytes = S.fmt==="pxc" ? encodePxc(idx,S.invert) : encodeBmp(idx);
   let base = f.name.replace(/\.[^.]+$/,"");
   // A .pxc carries no record of which reader it was fitted for, and the two are not
@@ -1384,7 +1521,7 @@ function convert(f){
     const target = deviceForSize(S.w,S.h);
     if(target){ base = base.replace(/_(X3|X4)$/i,"") + "_" + target; }
   }
-  return { idx, bytes, dither, filename: base+"."+S.fmt };
+  return { idx, bytes, style, filename: base+"."+S.fmt };
 }
 
 // ---------- render UI ----------
@@ -1402,9 +1539,11 @@ function drawPreview(canvas, idx){
   ctx.putImageData(im,0,0);
 }
 
-// Build one result card. The dither/threshold badge is a button: clicking it
-// flips this image's rendering and re-renders just this card, leaving others
-// (and their overrides) untouched. conv is cached on the file for Download all.
+// Build one result card. The badge is a button naming this image's rendering:
+// clicking it steps to the next entry in STYLES and re-renders just this card,
+// leaving every other card (and its own override) untouched. Eleven steps returns
+// it to where it started, so the button is safe to lean on.
+// conv is cached on the file for Download all.
 function buildCard(f){
   const conv=convert(f); f.conv=conv;
   const card=document.createElement("div"); card.className="card";
@@ -1412,10 +1551,10 @@ function buildCard(f){
   const name=document.createElement("div"); name.className="name"; name.textContent=conv.filename;
   const meta=document.createElement("div"); meta.className="meta";
   const tag=document.createElement("button"); tag.type="button"; tag.className="pill pill-toggle";
-  tag.textContent=(conv.dither?"dither":"threshold")+" ⇄";
-  tag.title="Switch rendering (dither ↔ threshold)";
+  tag.textContent=STYLE_LABEL[conv.style]+" ⇄";
+  tag.title=`Rendering for this image only — click for ${STYLE_LABEL[nextStyle(conv.style)]}`;
   tag.addEventListener("click", ()=>{
-    f.mode = conv.dither ? "threshold" : "dither";   // toggle this image only
+    f.style = nextStyle(conv.style);                 // this image only
     card.replaceWith(buildCard(f));
   });
   const dims=document.createElement("span"); dims.textContent=`${S.w}×${S.h}`;

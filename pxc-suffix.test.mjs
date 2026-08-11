@@ -11,7 +11,7 @@ const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
 function suffixRule() {
   const at = html.indexOf('if(S.fmt==="pxc"){');
   assert.notEqual(at, -1, "pxc filename suffix block not found in index.html");
-  const body = html.slice(at, html.indexOf("return { idx, bytes, dither, filename:", at));
+  const body = html.slice(at, html.indexOf("return { idx, bytes, style, filename:", at));
   // deviceForSize is the page's own size-to-device map; take it from the page too.
   const mapAt = html.indexOf("function deviceForSize(w,h){");
   assert.notEqual(mapAt, -1, "deviceForSize not found in index.html");

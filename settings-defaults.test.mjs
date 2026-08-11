@@ -4,15 +4,19 @@ import test from "node:test";
 
 const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
 
-test("converter starts with requested X3 line-art defaults", () => {
+test("converter starts with the requested X3 defaults", () => {
   assert.match(html, /data-w="528" data-h="792" class="on">X3/);
   assert.match(html, /data-fmt="pxc" class="on">PXC/);
   assert.match(html, /option value="stretch" selected/);
-  assert.match(html, /option value="threshold" selected>Threshold \(line art\)/);
+  // Rendering starts on Auto: the per-image badge is now the place a picture that
+  // Auto reads wrong gets corrected, so the global control no longer has to guess
+  // one answer for every image in the batch.
+  assert.match(html, /option value="auto" selected>Auto \(detect per image\)/);
+  assert.doesNotMatch(html, /option value="threshold" selected/);
   assert.match(html, /id="segContrast">[\s\S]*?data-v="1" class="on">On/);
   assert.match(html, /id="segInvert">[\s\S]*?data-v="0" class="on">Off/);
   assert.match(html, /id="segDither">[\s\S]*?data-v="solid" class="on">Solid/);
-  assert.match(html, /const S = \{ w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"solid"/);
+  assert.match(html, /const S = \{ w:528, h:792, fmt:"pxc", fit:"stretch", mode:"auto", contrast:1, invert:0, ditherStyle:"solid"/);
 });
 
 // Classic against Solid is the comparison Diogo asked to have on the page, so the
