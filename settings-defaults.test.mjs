@@ -13,10 +13,18 @@ test("converter starts with requested X3 line-art defaults", () => {
   assert.match(html, /id="segInvert">[\s\S]*?data-v="0" class="on">Off/);
   assert.match(html, /id="segDither">[\s\S]*?data-v="solid" class="on">Solid/);
   assert.match(html, /const S = \{ w:528, h:792, fmt:"pxc", fit:"stretch", mode:"threshold", contrast:1, invert:0, ditherStyle:"solid"/);
-  // Solid is the only style offered, but the other three stay in the page so
-  // restoring the choice is one attribute rather than a rewrite.
-  assert.match(html, /id="ctlDither" hidden/);
-  assert.match(html, /data-v="clean">Clean/);
-  assert.match(html, /data-v="smooth">Smooth/);
+});
+
+// Classic against Solid is the comparison Diogo asked to have on the page, so the
+// control must not be hidden and both buttons must be visible. Clean and Smooth
+// lost that comparison: they stay in the row as hidden buttons, which is what
+// ?dither=1 reveals, so restoring them is never a rewrite.
+test("the dither picker offers Classic against Solid, on the page by default", () => {
+  assert.match(html, /<div class="ctl" id="ctlDither">/);
+  assert.doesNotMatch(html, /id="ctlDither" hidden/);
   assert.match(html, /data-v="classic">Classic/);
+  assert.match(html, /data-v="solid" class="on">Solid/);
+  assert.match(html, /data-v="clean" hidden>Clean/);
+  assert.match(html, /data-v="smooth" hidden>Smooth/);
+  assert.match(html, /querySelectorAll\('#segDither button\[hidden\]'\)/);
 });

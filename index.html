@@ -393,18 +393,19 @@
             <option value="threshold" selected>Threshold (line art)</option>
           </select>
         </div>
-        <!-- Hidden on purpose. Solid is the only style offered: Classic everywhere it
-             matters, with the grey dots taken out of solid black and solid white areas.
-             Diogo picked Classic over Clean and Smooth by eye, so Solid keeps Classic's
-             kernel, scan and thresholds untouched and changes nothing in the midtones.
-             All four stay in the markup and in quantize(), so switching back is one
-             attribute. Open the page with ?dither=1 to reveal the picker and compare
-             them on a real image without editing anything. -->
-        <div class="ctl" id="ctlDither" hidden>
+        <!-- Two styles are offered, and the choice is on the page by default: Classic is
+             the dithering this converter shipped before 2026-08-05, and Solid is that same
+             pass with the grey dots taken out of solid black and solid white areas. They
+             differ nowhere else, so this is a straight A/B on one image and Diogo's eye
+             settles it per picture rather than once for all pictures.
+             Clean and Smooth lost that comparison and are hidden rather than deleted;
+             ?dither=1 puts them back in the row. Their code paths in quantize() are
+             untouched either way. -->
+        <div class="ctl" id="ctlDither">
           <label>Dither style</label>
           <div class="seg" id="segDither">
-            <button data-v="clean">Clean</button>
-            <button data-v="smooth">Smooth</button>
+            <button data-v="clean" hidden>Clean</button>
+            <button data-v="smooth" hidden>Smooth</button>
             <button data-v="classic">Classic</button>
             <button data-v="solid" class="on">Solid</button>
           </div>
@@ -954,10 +955,11 @@ function seg(id, on){
 seg("segSize", b=>{ S.w=+b.dataset.w; S.h=+b.dataset.h; });
 seg("segFmt", b=> S.fmt=b.dataset.fmt);
 seg("segDither", b=> S.ditherStyle=b.dataset.v);
-// The style picker is hidden by default (see the markup). ?dither=1 brings it back
-// for a side-by-side comparison; the styles themselves are always available.
+// Classic and Solid are on the page by default. Clean and Smooth lost to them and
+// are hidden buttons rather than deleted ones; ?dither=1 puts the pair back in the
+// row. The styles themselves are always available in quantize() either way.
 if(new URLSearchParams(location.search).get("dither")==="1"){
-  document.getElementById("ctlDither").hidden=false;
+  document.querySelectorAll('#segDither button[hidden]').forEach(b=>{ b.hidden=false; });
 }
 seg("segContrast", b=> S.contrast=+b.dataset.v);
 seg("segInvert", b=> S.invert=+b.dataset.v);
