@@ -120,17 +120,18 @@ byte-for-byte.
 
 ## Gallery
 
-The **Gallery** tab shares 3,190 ready-made wallpapers stored as sequentially named `.pxc` files in
-[`gallery/`](gallery/). Original X3 (528×792) and X4 (480×800) bytes are preserved exactly. The page
-shows one 24-preview page at a time to keep memory and network use bounded, offers each original master as-is,
-and re-targets to the other screen or to `.bmp` locally on demand.
+The **Gallery** tab shares ready-made wallpapers. The files themselves live in
+[diogo7dias/lector-wallpapers](https://github.com/diogo7dias/lector-wallpapers) and are fetched from that
+repo's GitHub Pages site, which sends `access-control-allow-origin: *`; the grid renders inside this page,
+nothing opens in a new tab. Keeping hundreds of MB out of this repo keeps Pages deploys and the firmware
+release workflow (which clones this repo on every stable tag) fast.
 
-Run `node scripts/import-gallery.mjs ~/Downloads` to rebuild the gallery from a folder tree. The importer
-finds `.pxc` files recursively, validates X3/X4 dimensions, removes exact byte duplicates from the import,
-sorts deterministically, copies masters as `0001.pxc` onward, and regenerates the manifest. It reports
-source duplicates but never deletes source files.
+Original X3 (528×792) and X4 (480×800) bytes are preserved exactly. The order is reshuffled on every visit
+to the tab, and one 24-preview page is shown at a time to keep memory and network use bounded. Each original
+master is offered as-is, and re-targeted to the other screen or to `.bmp` locally on demand.
 
-The gallery loads over http (the live site or a local server); the Converter tab still works fully
-offline.
+A local `gallery/` folder, if present in the checkout, takes priority over the remote, so the importer in the
+wallpapers repo and a local server still work offline. Otherwise the gallery needs http (the live site); the
+Converter tab works fully offline regardless.
 
 Offline-capable: save the page and it still works with no network.

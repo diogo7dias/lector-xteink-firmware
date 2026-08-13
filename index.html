@@ -2033,18 +2033,27 @@ const views={convert:document.getElementById("view-convert"),
              flash:document.getElementById("view-flash")};
 let galleryLoaded=false, flashLoaded=false;
 
-// The wallpaper gallery is only present when gallery/manifest.json is being served. It was
-// removed from this site (3,190 PXC files, 324 MB) because publishing it made every Pages
-// deploy slow and fragile; scripts/import-gallery.mjs puts it back whenever wanted. Hide
-// the tab rather than let it open onto an empty grid with an error in it: a tab that leads
-// nowhere reads as a broken site, and no tab at all reads as a site without a gallery.
+// The wallpapers live in their own repo, diogo7dias/lector-wallpapers, served from its own
+// GitHub Pages site. They used to sit in this repo, but 3,190 PXC files (324 MB) made every
+// Pages deploy slow and every release-workflow clone of this repo slow with it. GitHub Pages
+// answers with "access-control-allow-origin: *", so the grid still renders inside this page's
+// Gallery tab; nothing opens in a new tab. A local checkout with a gallery/ folder wins, so
+// the importer and a local server still work offline.
+const GALLERY_REMOTE="https://diogo7dias.github.io/lector-wallpapers/gallery/";
+let GALLERY_BASE="gallery/";
+const galleryUrl=file=>GALLERY_BASE+file;
+
+// Hide the tab rather than let it open onto an empty grid with an error in it: a tab that
+// leads nowhere reads as a broken site, and no tab at all reads as a site without a gallery.
 (async()=>{
   const tab=[...tabs.children].find(t=>t.dataset.view==="gallery");
   if(!tab) return;
-  try{
-    const res=await fetch("gallery/manifest.json",{method:"HEAD",cache:"no-cache"});
-    if(res.ok) return;
-  }catch(_){}
+  for(const base of ["gallery/",GALLERY_REMOTE]){
+    try{
+      const res=await fetch(base+"manifest.json",{method:"HEAD",cache:"no-cache"});
+      if(res.ok){ GALLERY_BASE=base; return; }
+    }catch(_){}
+  }
   tab.hidden=true;
   // A deep link to #gallery would otherwise land on the hidden panel with no tab lit.
   if(!views.gallery.hidden) showView("convert");
@@ -2054,7 +2063,12 @@ function showView(v){
   if(!views[v]) v="convert";
   [...tabs.children].forEach(t=>{const on=t.dataset.view===v; t.classList.toggle("on",on); t.setAttribute("aria-selected",on);});
   Object.keys(views).forEach(k=>{ views[k].hidden = k!==v; });
-  if(v==="gallery" && !galleryLoaded){ galleryLoaded=true; loadGallery(); }
+  // Every visit to the gallery reshuffles it, so 3,000-odd wallpapers do not hide behind the
+  // same first page forever. Reshuffling on re-entry (not only on first load) is the point.
+  if(v==="gallery"){
+    if(!galleryLoaded){ galleryLoaded=true; loadGallery(); }
+    else if(galleryEntries.length){ shuffleGallery(); renderGalleryBatch(0); }
+  }
   if(v==="flash" && !flashLoaded){ flashLoaded=true; initFlasher(); }
 }
 
@@ -2269,7 +2283,7 @@ function triggerDownload(bytes, filename){
 function einkFlash(el){ el.style.animation="none"; void el.offsetWidth; el.style.animation="lwc-eink .55s steps(1,end)"; }
 
 async function loadGalleryMaster(entry){
-  const response=await fetch("gallery/"+entry.file);
+  const response=await fetch(galleryUrl(entry.file));
   if(!response.ok) throw new Error(response.status);
   const parsed=parsePxc(await response.arrayBuffer());
   if(!parsed) throw new Error("Invalid PXC");
@@ -2291,7 +2305,7 @@ function galleryCard(entry, cv, w, h, i){
   if(entry.credit){ const cr=document.createElement("div"); cr.className="gcredit"; cr.textContent=entry.credit; card.append(cr); }
   // Original .pxc is served as-is (byte-for-byte the stored master).
   const main=document.createElement("a"); main.className="gdl-main";
-  main.href="gallery/"+entry.file; main.download=entry.file;
+  main.href=galleryUrl(entry.file); main.download=entry.file;
   main.textContent=`Download · ${masterDevice} PXC`;
   press(main);
   // Everything else is re-encoded on click from the decoded master.
@@ -2322,7 +2336,7 @@ async function loadGallery(){
   const showState=msg=>{ state.hidden=false; state.textContent=msg; };
   let manifest;
   try{
-    const res=await fetch("gallery/manifest.json",{cache:"no-cache"});
+    const res=await fetch(galleryUrl("manifest.json"),{cache:"no-cache"});
     if(!res.ok) throw new Error(res.status);
     manifest=await res.json();
   }catch(_){
@@ -2331,8 +2345,17 @@ async function loadGallery(){
   }
   galleryEntries=(manifest && manifest.wallpapers) || [];
   if(!galleryEntries.length){ showState("No wallpapers shared yet."); return; }
+  shuffleGallery();
   state.hidden=true;
   await renderGalleryBatch(0);
+}
+
+// Fisher-Yates, in place: an unbiased shuffle, unlike sort() with a random comparator.
+function shuffleGallery(){
+  for(let i=galleryEntries.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [galleryEntries[i],galleryEntries[j]]=[galleryEntries[j],galleryEntries[i]];
+  }
 }
 
 const GALLERY_BATCH_SIZE=24;
@@ -2348,7 +2371,7 @@ async function renderGalleryBatch(start){
   let shown=0;
   for(const entry of batch){
     try{
-      const res=await fetch("gallery/"+entry.file);
+      const res=await fetch(galleryUrl(entry.file));
       if(!res.ok) throw new Error(res.status);
       const parsed=previewPxc(await res.arrayBuffer());
       if(!parsed) continue;

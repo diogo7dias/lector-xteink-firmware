@@ -1,44 +1,35 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
-const galleryDir = new URL("./gallery/", import.meta.url);
-// The gallery is optional: its 3,190 PXC files were removed from this repo because
-// publishing 324 MB made every Pages deploy slow and fragile, and scripts/import-gallery.mjs
-// restores them on demand. The content checks below only mean something when the files are
-// present, so they skip rather than fail when they are not; the UI and importer checks that
-// follow are about index.html and the script, and always run.
-const galleryPresent = existsSync(new URL("manifest.json", galleryDir));
-const manifest = galleryPresent ? JSON.parse(readFileSync(new URL("manifest.json", galleryDir), "utf8")) : null;
-const hashFile = new URL("hashes.json", galleryDir);
-const hashSnapshot = existsSync(hashFile) ? JSON.parse(readFileSync(hashFile, "utf8")) : [];
 
-test("gallery contains every unique download as a sequential unchanged PXC",
-     { skip: galleryPresent ? false : "gallery not published in this checkout" }, () => {
-  const entries = manifest.wallpapers;
-  assert.equal(entries.length, 3190);
-  assert.deepEqual(entries.map(entry => entry.file),
-    Array.from({ length: 3190 }, (_, index) => `${String(index + 1).padStart(4, "0")}.pxc`));
-  assert.ok(entries.every(entry => Object.keys(entry).join(",") === "file"));
+// The wallpapers themselves live in diogo7dias/lector-wallpapers and are served from that
+// repo's GitHub Pages site. They were removed from here because 3,190 PXC files (324 MB)
+// made every Pages deploy slow and every release-workflow clone of this repo slow with it.
+// What is left to test here is the wiring: the grid must still render inside this page's
+// Gallery tab, reading from the remote base, and must reshuffle on every visit.
 
-  const files = readdirSync(galleryDir).filter(name => name.endsWith(".pxc")).sort();
-  assert.deepEqual(files, entries.map(entry => entry.file));
+test("gallery reads from the wallpapers repo and still renders in this page", () => {
+  assert.match(html, /const GALLERY_REMOTE="https:\/\/diogo7dias\.github\.io\/lector-wallpapers\/gallery\/";/);
+  assert.match(html, /const galleryUrl=file=>GALLERY_BASE\+file;/);
+  // A local gallery/ checkout wins over the remote, so the importer and a local server work.
+  assert.match(html, /for\(const base of \["gallery\/",GALLERY_REMOTE\]\)/);
+  // Every fetch and the master download go through galleryUrl, never a bare "gallery/" path.
+  assert.doesNotMatch(html, /fetch\("gallery\/"\+/);
+  assert.doesNotMatch(html, /href="gallery\/"\+/);
+  // Four call sites: manifest, preview fetch, master fetch, master download link.
+  assert.equal(html.match(/galleryUrl\(/g).length, 4);
+  // target="_blank" on a gallery link would take the user off the page; the tab renders here.
+  assert.doesNotMatch(html, /gdl-main[\s\S]{0,200}target="_blank"/);
+});
 
-  const hashes = new Set();
-  const dimensions = new Map();
-  for (const [index, file] of files.entries()) {
-    const bytes = readFileSync(new URL(file, galleryDir));
-    const hash = createHash("sha256").update(bytes).digest("hex");
-    hashes.add(hash);
-    assert.deepEqual(hashSnapshot[index], { file, sha256: hash });
-    const size = `${bytes.readUInt16LE(0)}x${bytes.readUInt16LE(2)}`;
-    dimensions.set(size, (dimensions.get(size) ?? 0) + 1);
-  }
-  assert.equal(hashes.size, 3190);
-  assert.equal(hashSnapshot.length, 3190);
-  assert.deepEqual(Object.fromEntries(dimensions), { "528x792": 3156, "480x800": 34 });
+test("gallery reshuffles on first load and on every re-entry", () => {
+  assert.match(html, /function shuffleGallery\(\)/);
+  // Fisher-Yates, not sort() with a random comparator, which is biased.
+  assert.match(html, /const j=Math\.floor\(Math\.random\(\)\*\(i\+1\)\);/);
+  assert.match(html, /shuffleGallery\(\);\s*\n\s*state\.hidden=true;/);
+  assert.match(html, /else if\(galleryEntries\.length\)\{ shuffleGallery\(\); renderGalleryBatch\(0\); \}/);
 });
 
 test("gallery loads only one small batch and supports mixed master sizes", () => {
@@ -53,13 +44,4 @@ test("gallery loads only one small batch and supports mixed master sizes", () =>
   assert.match(html, /loadGalleryMaster/);
   assert.match(html, /aria-live="polite"/);
   assert.doesNotMatch(html, /for\(const entry of list\)/);
-});
-
-test("importer validates full payload and swaps a complete staged gallery", () => {
-  const importer = readFileSync(new URL("./scripts/import-gallery.mjs", import.meta.url), "utf8");
-  assert.match(importer, /expectedLength=4\+Math\.ceil\(width\/4\)\*height/);
-  assert.match(importer, /existingAssignments/);
-  assert.match(importer, /stagingDir/);
-  assert.match(importer, /backupDir/);
-  assert.match(importer, /rename\(stagingDir,galleryDir\)/);
 });
