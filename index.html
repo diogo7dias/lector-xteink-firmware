@@ -767,11 +767,12 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>This build measures how long waking up takes.</strong> The bottom banner on the unlock screen
-          shows numbers instead of your footer. That is on purpose, and only in this build. It is the timing of the
-          <em>previous</em> wake, because the last number cannot be known until the book is already on screen.</p>
-        <p>It also carries the newer display SDK, already tested on both readers, and drops a half-second pause that
-          used to hold the unlock banners on screen for no reason.</p>
+        <p><strong>This build adds Night mode.</strong> Reading pages draw white-on-black. Menus, the home screen and
+          the sleep screen stay normal. Pictures inside a book keep their own polarity, so a photo still looks like a
+          photo rather than a negative. Turn it on under <strong>Settings &rarr; Reader &rarr; Night mode</strong>.</p>
+        <p>It also reads the Wi-Fi MAC address even while Wi-Fi is off, so the Wi-Fi screen stops showing zeros, and
+          the dictionary now follows StarDict <code>.syn</code> synonym files, so looking up a word form finds the
+          entry it points at.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
@@ -782,6 +783,28 @@
         </div>
         <p id="flashExperimentalMissing" class="fallback" hidden>The experimental build is not published right now.
           The Update button above works.</p>
+
+        <!-- Test list for lector.exp.17. Replace it whenever this channel gets a new payload: it
+             describes that build only, and a stale list is worse than none. -->
+        <div class="verline">What to test in lector.exp.17</div>
+        <ol class="steps">
+          <li><strong>Turn it on.</strong> Settings &rarr; Reader &rarr; Night mode &rarr; On. Open a book. Expect white
+            text on black.</li>
+          <li><strong>Menus stay normal.</strong> While Night mode is on, open the in-book menu and the home screen.
+            Expect black text on white.</li>
+          <li><strong>Pictures.</strong> Open a book with a photo or a cover image inside. Expect it to look like a
+            photo, not a negative.</li>
+          <li><strong>Sleep screen.</strong> Read in Night mode, then let the reader sleep. Expect the usual sleep
+            screen, not an inverted one.</li>
+          <li><strong>All four orientations.</strong> Rotate through Portrait, Inverted, Landscape CW and Landscape
+            CCW with Night mode on. Expect no stray white or black bands at the edges.</li>
+          <li><strong>Turn it off.</strong> Set Night mode back to Off. Expect the page to return to black on white
+            straight away.</li>
+          <li><strong>Wi-Fi MAC.</strong> With Wi-Fi off, open the Wi-Fi screen. Expect a real MAC address, not zeros
+            and not dashes.</li>
+          <li><strong>Dictionary.</strong> Look up a plural or a past-tense word in a StarDict dictionary. Expect the
+            base entry to be found.</li>
+        </ol>
       </div>
 
       <div class="rescue">
