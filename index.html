@@ -133,7 +133,7 @@
   /* ---- result card ---- */
   .card{background:var(--paper);border:3px solid var(--ink);border-radius:6px;padding:12px;
     box-shadow:4px 4px 0 0 var(--ink);}
-  .card canvas{width:100%;height:auto;image-rendering:pixelated;border:2px solid var(--ink);
+  .card canvas{width:100%;height:auto;image-rendering:auto;border:2px solid var(--ink);
     background:#fff;display:block;border-radius:2px;}
   .card .name{font-family:var(--mono);font-size:12px;margin:10px 0 6px;word-break:break-all;color:var(--text);}
   .card .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);
@@ -186,7 +186,10 @@
     transition:transform .2s cubic-bezier(.2,.9,.3,1.15),box-shadow .2s,border-color .2s;}
   .gcard:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 0 var(--ink);border-color:var(--red);}
   .gframe{position:relative;border:3px solid var(--ink);border-radius:4px;overflow:hidden;background:#fff;line-height:0;}
-  .gframe canvas{width:100%;height:auto;image-rendering:pixelated;display:block;
+  /* auto, not pixelated: these canvases are drawn at the file's own resolution and
+     shown smaller, and pixelated would pick one dither dot per screen pixel and drop
+     the rest. Smoothing averages the dots into the grey they stand for on the panel. */
+  .gframe canvas{width:100%;height:auto;image-rendering:auto;display:block;
     transition:transform .5s cubic-bezier(.2,.7,.3,1);}
   .gcard:hover .gframe canvas{transform:scale(1.05);}
   .gsize{position:absolute;top:10px;left:10px;background:var(--yellow);color:var(--accent-ink);
@@ -1216,20 +1219,25 @@ function parsePxc(buf){
   return { w, h, dataURL:c.toDataURL() };
 }
 
-const GALLERY_PREVIEW_WIDTH=240;
+// The gallery preview is drawn at the file's own resolution, one canvas pixel
+// per stored pixel, and left to the browser to fit the card. Sampling it down
+// here instead threw away most of the dither: a nearest-neighbour pick keeps
+// whichever dot happens to land under each sample and drops the rest, so an
+// area the device renders as a mid grey came out as noise, and the regular dot
+// grid beat against the sample grid into moire. Scaling the full-resolution
+// image instead averages the dots back into the tone they stand for, which is
+// what the eye does with them on the panel.
 function previewPxc(buf){
   if(buf.byteLength<4) return null;
   const dv=new DataView(buf),bytes=new Uint8Array(buf);
   const w=dv.getUint16(0,true),h=dv.getUint16(2,true),stride=(w+3)>>2;
   if(w<1||h<1||buf.byteLength<4+stride*h) return null;
-  const pw=Math.min(w,GALLERY_PREVIEW_WIDTH),ph=Math.round(h*pw/w);
-  const canvas=document.createElement("canvas"); canvas.width=pw; canvas.height=ph;
-  const ctx=canvas.getContext("2d"),image=ctx.createImageData(pw,ph),data=image.data;
-  for(let y=0;y<ph;y++){
-    const sy=Math.min(h-1,Math.floor(y*h/ph)),row=4+sy*stride;
-    for(let x=0;x<pw;x++){
-      const sx=Math.min(w-1,Math.floor(x*w/pw));
-      const q=(bytes[row+(sx>>2)]>>(6-((sx&3)<<1)))&3,v=LEVELS[q],p=(y*pw+x)*4;
+  const canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext("2d"),image=ctx.createImageData(w,h),data=image.data;
+  for(let y=0;y<h;y++){
+    const row=4+y*stride;
+    for(let x=0;x<w;x++){
+      const q=(bytes[row+(x>>2)]>>(6-((x&3)<<1)))&3,v=LEVELS[q],p=(y*w+x)*4;
       data[p]=data[p+1]=data[p+2]=v; data[p+3]=255;
     }
   }
