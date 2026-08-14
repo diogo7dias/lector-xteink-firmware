@@ -171,6 +171,21 @@
   .hero p{color:var(--hero-sub);font-size:14.5px;max-width:60ch;margin:14px 0 0;}
   .hero .k{font-family:var(--mono);color:var(--hero-text);}
 
+  /* ---- gallery search ---- */
+  .gsearch{margin-top:24px;}
+  .gsearch-label{display:block;font-family:var(--mono);font-size:11px;font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--sub);margin-bottom:7px;}
+  .gsearch-row{display:flex;gap:10px;align-items:stretch;}
+  .gsearch input{flex:1;min-width:0;font-family:var(--mono);font-size:16px;font-weight:700;
+    letter-spacing:.08em;background:var(--panel);color:var(--text);
+    border:3px solid var(--ink);border-radius:4px;padding:11px 13px;}
+  .gsearch input:focus{outline:none;border-color:var(--red);}
+  .gsearch input::placeholder{color:var(--sub);font-weight:400;letter-spacing:.04em;}
+  /* The browser's own clear cross is drawn in its own colours and sits beside our
+     Clear button, so the row would show two of the same control. */
+  .gsearch input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;}
+  .gsearch-hint{font-family:var(--mono);font-size:11px;color:var(--sub);margin-top:7px;line-height:1.5;}
+
   /* ---- gallery grid ---- */
   .gstate{margin-top:22px;color:var(--sub);font-size:14px;text-align:center;padding:34px 12px;
     border:3px dashed var(--dash);border-radius:6px;background:var(--panel);}
@@ -546,6 +561,16 @@
           in your browser for <span class="k">X3</span>, <span class="k">X4</span>, or
           <span class="k">BMP</span>. Nothing leaves your machine.</p>
       </div>
+    </div>
+    <div class="gsearch">
+      <label class="gsearch-label" for="gquery">Find a number</label>
+      <div class="gsearch-row">
+        <input id="gquery" type="search" inputmode="numeric" autocomplete="off"
+               placeholder="e.g. 2181" aria-describedby="gsearchHint" />
+        <button class="btn btn-ghost" id="gclear" type="button" hidden>Clear</button>
+      </div>
+      <div class="gsearch-hint" id="gsearchHint">Every wallpaper has a number. Type the whole number for one
+        wallpaper, or any part of it to narrow the list.</div>
     </div>
     <div class="gstate" id="gstate" hidden></div>
     <div class="ggrid" id="ggrid"></div>
@@ -2118,7 +2143,9 @@ function showView(v){
   // same first page forever. Reshuffling on re-entry (not only on first load) is the point.
   if(v==="gallery"){
     if(!galleryLoaded){ galleryLoaded=true; loadGallery(); }
-    else if(galleryEntries.length){ shuffleGallery(); renderGalleryBatch(0); }
+    // A search in progress outranks the reshuffle: coming back to a filtered list and
+    // finding it replaced by a random page would look like the search had been lost.
+    else if(galleryEntries.length && !galleryQuery){ shuffleGallery(); applyGalleryQuery(); renderGalleryBatch(0); }
   }
   if(v==="flash" && !flashLoaded){ flashLoaded=true; initFlasher(); }
 }
@@ -2399,6 +2426,7 @@ async function loadGallery(){
   galleryEntries=(manifest && manifest.wallpapers) || [];
   if(!galleryEntries.length){ showState("No wallpapers shared yet."); return; }
   shuffleGallery();
+  applyGalleryQuery();
   state.hidden=true;
   await renderGalleryBatch(0);
 }
@@ -2411,18 +2439,55 @@ function shuffleGallery(){
   }
 }
 
+// The number under each wallpaper is its file name without the extension, so a search
+// is a match against that. Digits typed anywhere in it count, which is what makes a
+// partial number narrow the list rather than miss: 21 finds 0021, 0210 and 1215 alike.
+// An exact match is pulled to the front so that typing a whole number lands on it, and
+// the rest are numbered order rather than the shuffle, so a narrowed list reads as a list.
+const galleryName=entry=>entry.file.replace(/\.[^.]+$/,"");
+function filterGallery(query){
+  const digits=query.replace(/\D/g,"");
+  if(!digits) return galleryEntries;
+  const exact=String(Number(digits)).padStart(4,"0");
+  const hits=galleryEntries.filter(e=>galleryName(e).includes(digits));
+  return hits.sort((a,b)=>{
+    const an=galleryName(a), bn=galleryName(b);
+    if(an===exact) return -1;
+    if(bn===exact) return 1;
+    return Number(an)-Number(bn);
+  });
+}
+function applyGalleryQuery(){
+  galleryView=filterGallery(galleryQuery);
+}
+
 const GALLERY_BATCH_SIZE=24;
-let galleryEntries=[], galleryCursor=0, galleryPageStart=0, galleryRendered=0, galleryFailures=0, galleryBusy=false;
+let galleryEntries=[], galleryView=[], galleryQuery="";
+let galleryCursor=0, galleryPageStart=0, galleryRendered=0, galleryFailures=0, galleryBusy=false;
+// Every render takes a ticket. A render whose ticket is no longer the current one stops
+// where it is and touches nothing: a search typed while a page is still fetching would
+// otherwise keep appending the old page's cards underneath the new one's.
+let galleryRun=0;
 async function renderGalleryBatch(start){
-  if(galleryBusy) return;
+  const run=++galleryRun;
   const grid=document.getElementById("ggrid"), state=document.getElementById("gstate");
   const actions=document.getElementById("gactions"), more=document.getElementById("gloadMore"), prev=document.getElementById("gprev");
   const count=document.getElementById("gcount");
   galleryPageStart=start; galleryCursor=start; galleryRendered=0; galleryFailures=0; grid.replaceChildren();
-  const batch=galleryEntries.slice(galleryCursor,galleryCursor+GALLERY_BATCH_SIZE);
+  state.hidden=true;
+  if(!galleryView.length){
+    galleryBusy=false; actions.hidden=true;
+    state.hidden=false;
+    state.textContent=galleryQuery
+      ? `No wallpaper numbered ${galleryQuery}. There are ${galleryEntries.length}, numbered up to ${galleryName(galleryEntries.reduce((m,e)=>Number(galleryName(e))>Number(galleryName(m))?e:m))}.`
+      : "No wallpapers shared yet.";
+    return;
+  }
+  const batch=galleryView.slice(galleryCursor,galleryCursor+GALLERY_BATCH_SIZE);
   galleryBusy=true; more.disabled=true; more.textContent="Loading…"; actions.hidden=false;
   let shown=0;
   for(const entry of batch){
+    if(run!==galleryRun) return;
     try{
       const res=await fetch(galleryUrl(entry.file));
       if(!res.ok) throw new Error(res.status);
@@ -2431,15 +2496,31 @@ async function renderGalleryBatch(start){
       grid.appendChild(galleryCard(entry,parsed.canvas,parsed.w,parsed.h,shown)); shown++; galleryRendered++;
     }catch(_){ galleryFailures++; }
   }
+  if(run!==galleryRun) return;
   galleryCursor+=batch.length;
   galleryBusy=false; more.disabled=false; more.textContent="Load more";
-  count.textContent=`${galleryPageStart+1}–${galleryCursor} of ${galleryEntries.length}`;
-  prev.hidden=galleryPageStart===0; more.hidden=galleryCursor>=galleryEntries.length;
+  count.textContent=`${galleryPageStart+1}–${galleryCursor} of ${galleryView.length}`;
+  prev.hidden=galleryPageStart===0; more.hidden=galleryCursor>=galleryView.length;
   if(galleryFailures){state.hidden=false;state.textContent=`Skipped ${galleryFailures} unreadable wallpaper${galleryFailures===1?"":"s"}.`;}
   if(!grid.children.length){ state.hidden=false; state.textContent="Couldn't load the shared wallpapers."; }
 }
 document.getElementById("gloadMore").addEventListener("click",()=>renderGalleryBatch(galleryCursor));
 document.getElementById("gprev").addEventListener("click",()=>renderGalleryBatch(Math.max(0,galleryPageStart-GALLERY_BATCH_SIZE)));
+
+const gquery=document.getElementById("gquery"), gclear=document.getElementById("gclear");
+let gqueryTimer=0;
+function runGalleryQuery(){
+  galleryQuery=gquery.value.replace(/\D/g,"");
+  if(gquery.value!==galleryQuery) gquery.value=galleryQuery;   // letters never match a number
+  gclear.hidden=!galleryQuery;
+  if(!galleryEntries.length) return;
+  applyGalleryQuery();
+  renderGalleryBatch(0);
+}
+// A keystroke costs a page of downloads, so wait for the typing to stop first.
+gquery.addEventListener("input",()=>{ clearTimeout(gqueryTimer); gqueryTimer=setTimeout(runGalleryQuery,220); });
+gquery.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); clearTimeout(gqueryTimer); runGalleryQuery(); } });
+gclear.addEventListener("click",()=>{ gquery.value=""; clearTimeout(gqueryTimer); runGalleryQuery(); gquery.focus(); });
 </script>
 </body>
 </html>
