@@ -865,6 +865,34 @@
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
       <details class="relnote">
+        <summary>lector 0.21.0</summary>
+      <p>The settings screen is sorted into named sections, the reader gained a night mode and a much better dictionary, and the sleep screen can now be a see-through overlay.</p>
+      <ul>
+        <li><strong>Settings is grouped.</strong> Every tab was a flat run of rows with nothing to say where one subject ended and the next began — fifteen of them on Display, seventeen on System. Each tab is now split into named sections with a heading above each group, so Sleep Screen and Wallpaper read as different subjects, and Wi-Fi no longer sits next to Clear Reading Cache as though they were the same kind of thing. Headings are dividers, not options: the cursor steps over them. A heading only appears when it has rows under it, so a section that is empty on your device is not shown at all.</li>
+        <li><strong>The settings list scrolls.</strong> It used to move a whole page at a time, so one step past the last visible row replaced the entire screen and you lost your place. It now slides by a single row, and the rows around the cursor stay where they are. Arrows at the right edge tell you whether there is more above or more below, separately. Only the System tab is long enough to need this; the rest gained their headings without moving.</li>
+        <li><strong>Night mode.</strong> A white-on-black page, set in Settings · Reader. Pictures keep their own polarity rather than being inverted along with the text, so a photograph still looks like a photograph.</li>
+        <li><strong>Dictionary definitions are laid out properly.</strong> They are rendered through the same engine that draws your books, so a definition with headings, lists or emphasis reads as it was written instead of as one run of plain text. StarDict synonym files are also read now, so a lookup finds a word through its alternative spellings.</li>
+        <li><strong>See-through sleep screens.</strong> Drop a picture with transparency at <code>/sleep-overlay.png</code> or <code>/sleep-overlay.bmp</code>, or a folder of them at <code>/.sleep-overlay</code>, and it is drawn over the page you were reading rather than replacing it. Soft edges are stippled, because the panel has no grey. Night mode is baked into the picture first, so a page that was white-on-black stays that way when the reader sleeps.</li>
+        <li><strong>The boot screen is skipped</strong> on startup, and a custom sleep screen is now kept during wake instead of being redrawn.</li>
+        <li><strong>Ruby annotations no longer push the words under them around.</strong> The space an annotation needs is now reserved on both edges of the line, so a wide one cannot spill past the right margin when the line is justified, and Chinese, Japanese and Korean lines stop breaking early to leave room for it.</li>
+        <li><strong>Fixes.</strong> Your place in a book could roll backwards; it no longer does. Settings did not redraw after you changed the language. A button hint too wide for its button now wraps instead of overflowing. Reading the reader's MAC address with Wi-Fi switched off worked incorrectly.</li>
+      </ul>
+      <p><strong>Every book re-reads its layout once</strong> after this update, because the ruby fix changes where lines break — so the first time you open each book it is slower than usual. Your place in every book, and any settings you set per book, are kept.</p>
+      <p><strong>Worth checking after you update.</strong> This build has not been run on a device yet, so if something here is wrong, these are the places it will show.</p>
+      <ol>
+        <li>Open Settings · expect a heading above each run of rows, on all four tabs.</li>
+        <li>Press Next through a tab · expect the cursor to jump over every heading and never land on one.</li>
+        <li>Go to System and hold Next to the bottom · expect the list to slide one row at a time, not flip.</li>
+        <li>Watch the right edge of System · expect the up arrow to appear only once you have scrolled down.</li>
+        <li>Set Controls · Short Power Button Click to Footnotes · expect Quick-return to appear under the POWER BUTTON heading.</li>
+        <li>Long-press Next to change tab · expect the new tab to open on its first real row, scrolled to the top.</li>
+        <li>Turn on Reader · Night mode, open a book with a picture in it · expect white text on black and the picture still readable.</li>
+        <li>Look up a word · expect the definition laid out with its headings and lists, not as one block.</li>
+        <li>Open the first book · expect it to be slow once, then normal, and to open at the page you left.</li>
+        <li>Change the language in Settings · expect the screen to redraw in the new language straight away.</li>
+      </ol>
+      </details>
+      <details class="relnote">
         <summary>lector 0.20.2</summary>
       <p>Two fixes for faults 0.20.1 introduced, and one change to the shortcut pop-up.</p>
       <ul>
