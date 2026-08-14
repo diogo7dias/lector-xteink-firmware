@@ -189,10 +189,20 @@
   /* auto, not pixelated: these canvases are drawn at the file's own resolution and
      shown smaller, and pixelated would pick one dither dot per screen pixel and drop
      the rest. Smoothing averages the dots into the grey they stand for on the panel. */
-  .gframe canvas{width:100%;height:auto;image-rendering:auto;display:block;
-    transition:transform .5s cubic-bezier(.2,.7,.3,1);}
-  .gcard:hover .gframe canvas{transform:scale(1.05);}
-  .gsize{position:absolute;top:10px;left:10px;background:var(--yellow);color:var(--accent-ink);
+  .gframe canvas{width:100%;height:auto;image-rendering:auto;display:block;}
+  .gcard:hover .gframe{border-color:var(--red);}
+  /* Register marks, as on a printed sheet: the picture itself never moves, so hovering
+     cannot mislead about what the file looks like. They sit under the size chip, which
+     keeps its own place and stays readable. */
+  .gmarks{position:absolute;inset:0;z-index:2;pointer-events:none;}
+  .gmarks i{position:absolute;width:0;height:0;border:0 solid var(--red);opacity:0;
+    transition:width .28s cubic-bezier(.2,.7,.3,1),height .28s cubic-bezier(.2,.7,.3,1),opacity .12s;}
+  .gmarks i:nth-child(1){top:6px;left:6px;border-top-width:3px;border-left-width:3px;}
+  .gmarks i:nth-child(2){top:6px;right:6px;border-top-width:3px;border-right-width:3px;}
+  .gmarks i:nth-child(3){bottom:6px;left:6px;border-bottom-width:3px;border-left-width:3px;}
+  .gmarks i:nth-child(4){bottom:6px;right:6px;border-bottom-width:3px;border-right-width:3px;}
+  .gcard:hover .gmarks i{width:30px;height:30px;opacity:1;}
+  .gsize{position:absolute;z-index:3;top:10px;left:10px;background:var(--yellow);color:var(--accent-ink);
     font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.02em;line-height:1.5;
     padding:5px 11px;border:2px solid var(--accent-ink);border-radius:999px;}
   .gtitle{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:-.01em;color:var(--ink);margin:12px 0 1px;}
@@ -256,6 +266,7 @@
     .gcard{opacity:1;}
     .gcard:hover{transform:none;}
     .gframe canvas,.gcard:hover .gframe canvas{transform:none;}
+    .gmarks i{transition:none;}
     .download-progress-fill{transition:none;}
   }
   @media (max-width:700px){
@@ -2338,7 +2349,9 @@ function galleryCard(entry, cv, w, h, i){
   card.style.animationDelay=(i*70)+"ms";
   const frame=document.createElement("div"); frame.className="gframe";
   const sz=document.createElement("div"); sz.className="gsize"; sz.textContent=`${w}×${h}`;
-  frame.append(cv,sz);
+  const marks=document.createElement("div"); marks.className="gmarks";
+  marks.innerHTML="<i></i><i></i><i></i><i></i>";
+  frame.append(cv,marks,sz);
   const title=document.createElement("div"); title.className="gtitle"; title.textContent=entry.title||base;
   card.append(frame,title);
   if(entry.credit){ const cr=document.createElement("div"); cr.className="gcredit"; cr.textContent=entry.credit; card.append(cr); }

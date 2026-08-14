@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gallery hover options — Lector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff; --panel:#ffffff; --ink:#111111; --text:#1a1a1a;
+    --sub:#666666; --soft:#e5e5e5; --dash:#cfcfcf;
+    --red:#8a1c1c; --yellow:#ededed; --on-red:#ffffff; --accent-ink:#111111;
+    --sans:'Archivo','Helvetica Neue',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+    --black:'Archivo Black','Archivo',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper);color:var(--text);font-family:var(--sans);line-height:1.45;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 22px 90px;}
+  h1{font-family:var(--black);font-size:clamp(30px,6vw,52px);line-height:.95;margin:0 0 10px;}
+  .lede{color:var(--sub);font-size:15px;max-width:60ch;margin:0 0 6px;}
+  .hint{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--sub);
+    border:2px dashed var(--dash);border-radius:4px;padding:10px 12px;margin:18px 0 30px;}
+
+  .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:26px;}
+
+  /* ---- card shell, same as the live gallery ---- */
+  .gcard{background:var(--panel);border:3px solid var(--ink);border-radius:6px;padding:12px;
+    box-shadow:4px 4px 0 0 var(--ink);
+    transition:transform .2s cubic-bezier(.2,.9,.3,1.15),box-shadow .2s,border-color .2s;}
+  .gframe{position:relative;border:3px solid var(--ink);border-radius:4px;overflow:hidden;
+    background:#fff;line-height:0;}
+  .gframe canvas{width:100%;height:auto;image-rendering:auto;display:block;}
+  .gname{font-family:var(--black);font-size:19px;margin:12px 0 2px;letter-spacing:.01em;}
+  .gdesc{font-family:var(--mono);font-size:11px;color:var(--sub);line-height:1.5;min-height:46px;}
+  .grow{display:flex;gap:8px;margin-top:10px;}
+  .gbtn{flex:1;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;
+    background:var(--red);color:var(--on-red);border:3px solid var(--ink);border-radius:4px;
+    padding:9px 8px;cursor:pointer;}
+  .gbtn:active{transform:translate(2px,2px);}
+  .tag{position:absolute;top:9px;left:9px;z-index:3;background:var(--yellow);color:var(--accent-ink);
+    font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 7px;border-radius:999px;
+    border:2px solid var(--ink);line-height:1.4;}
+
+  /* =========================================================
+     Option 1 — CURRENT: slow push-in, card lifts
+     ========================================================= */
+  .v1 .gframe canvas{transition:transform .5s cubic-bezier(.2,.7,.3,1);}
+  .v1.on{transform:translate(-3px,-3px);box-shadow:8px 8px 0 0 var(--ink);border-color:var(--red);}
+  .v1.on .gframe canvas{transform:scale(1.05);}
+
+  /* =========================================================
+     Option 2 — E-INK REFRESH: one hard invert flash, then settle,
+     the way the panel clears itself before a new picture
+     ========================================================= */
+  .v2.on{border-color:var(--red);}
+  .v2.on .gframe canvas{animation:eink .55s steps(1,end);}
+  @keyframes eink{
+    0%{filter:none}
+    18%{filter:invert(1)}
+    38%{filter:invert(1) brightness(.2)}
+    58%{filter:none}
+    72%{filter:invert(1)}
+    100%{filter:none}
+  }
+
+  /* =========================================================
+     Option 3 — REDRAW SWEEP: a band travels down the picture,
+     like a partial refresh painting the screen in rows
+     ========================================================= */
+  .v3.on{border-color:var(--red);}
+  .v3 .sweep{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;
+    background:linear-gradient(to bottom,
+      rgba(255,255,255,0) 0%, rgba(255,255,255,0) 40%,
+      rgba(17,17,17,.92) 46%, rgba(17,17,17,.92) 50%,
+      rgba(255,255,255,.55) 56%, rgba(255,255,255,0) 66%, rgba(255,255,255,0) 100%);
+    transform:translateY(-100%);}
+  .v3.on .sweep{opacity:1;animation:sweep .75s cubic-bezier(.4,0,.2,1) forwards;}
+  @keyframes sweep{from{transform:translateY(-100%)}to{transform:translateY(100%)}}
+
+  /* =========================================================
+     Option 4 — PAPER LIFT: nothing moves inside the frame.
+     Only the card rises, the shadow deepens, the frame reddens
+     ========================================================= */
+  .v4{transition:transform .18s cubic-bezier(.2,.9,.3,1.15),box-shadow .18s,border-color .18s;}
+  .v4.on{transform:translate(-6px,-6px);box-shadow:14px 14px 0 0 var(--ink);border-color:var(--red);}
+  .v4.on .gframe{border-color:var(--red);}
+
+  /* =========================================================
+     Option 5 — CONTRAST SNAP: the four greys harden toward pure
+     black and white, the way a thresholded page looks
+     ========================================================= */
+  .v5 .gframe canvas{transition:filter .35s ease, transform .35s ease;}
+  .v5.on{border-color:var(--red);}
+  .v5.on .gframe canvas{filter:contrast(2.1) brightness(1.04);transform:scale(1.02);}
+
+  /* =========================================================
+     Option 6 — FRAME BLOOM: the image holds still and the frame
+     draws itself in red, corner marks and all
+     ========================================================= */
+  .v6 .gframe{transition:border-color .2s;}
+  .v6 .marks{position:absolute;inset:0;z-index:2;pointer-events:none;}
+  .v6 .marks i{position:absolute;width:0;height:0;border:0 solid var(--red);opacity:0;
+    transition:width .28s cubic-bezier(.2,.7,.3,1),height .28s cubic-bezier(.2,.7,.3,1),opacity .12s;}
+  .v6 .marks i:nth-child(1){top:6px;left:6px;border-top-width:3px;border-left-width:3px;}
+  .v6 .marks i:nth-child(2){top:6px;right:6px;border-top-width:3px;border-right-width:3px;}
+  .v6 .marks i:nth-child(3){bottom:6px;left:6px;border-bottom-width:3px;border-left-width:3px;}
+  .v6 .marks i:nth-child(4){bottom:6px;right:6px;border-bottom-width:3px;border-right-width:3px;}
+  .v6.on .marks i{width:30px;height:30px;opacity:1;}
+  .v6.on{border-color:var(--red);}
+  .v6.on .gframe{border-color:var(--red);}
+
+  @media(hover:hover){
+    .gcard:hover{cursor:pointer;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .gframe canvas,.sweep,.marks i{animation:none!important;transition:none!important;transform:none!important;}
+  }
+  footer{margin-top:46px;padding-top:18px;border-top:3px solid var(--ink);color:var(--sub);
+    font-size:12.5px;text-align:center;font-family:var(--mono);letter-spacing:.04em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Gallery hover<br>options.</h1>
+  <p class="lede">Six ways a wallpaper card can answer a pointer. Same image in every card, so the only difference is the motion.</p>
+  <div class="hint">On a desktop: hover a card. On a phone: tap <strong>PLAY</strong>. Option 1 is what the site does today.</div>
+
+  <div class="ggrid" id="grid"></div>
+
+  <footer>Mockup for the Lector wallpaper gallery · not the live site.</footer>
+</div>
+
+<script>
+"use strict";
+const LEVELS=[0,85,170,255];
+const REMOTE="https://diogo7dias.github.io/lector-wallpapers/gallery/";
+
+// Same decoder the site uses: 4-byte LE width/height header, then 2 bits per
+// pixel, MSB first, four grey levels. Drawn at the file's own resolution.
+function previewPxc(buf){
+  const dv=new DataView(buf),bytes=new Uint8Array(buf);
+  const w=dv.getUint16(0,true),h=dv.getUint16(2,true),stride=(w+3)>>2;
+  if(w<1||h<1||buf.byteLength<4+stride*h) return null;
+  const canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext("2d"),image=ctx.createImageData(w,h),data=image.data;
+  for(let y=0;y<h;y++){
+    const row=4+y*stride;
+    for(let x=0;x<w;x++){
+      const q=(bytes[row+(x>>2)]>>(6-((x&3)<<1)))&3,v=LEVELS[q],p=(y*w+x)*4;
+      data[p]=data[p+1]=data[p+2]=v; data[p+3]=255;
+    }
+  }
+  ctx.putImageData(image,0,0);
+  return {w,h,canvas};
+}
+
+const OPTIONS=[
+  {cls:"v1",name:"1 · Push in",     tag:"current",
+   desc:"Card lifts, frame turns red, picture creeps 5% closer over half a second."},
+  {cls:"v2",name:"2 · E-ink flash", tag:"device",
+   desc:"One hard invert, a dark beat, then settle. What the panel does clearing itself."},
+  {cls:"v3",name:"3 · Redraw sweep",tag:"device",
+   desc:"A dark band travels top to bottom once, like a row-by-row refresh."},
+  {cls:"v4",name:"4 · Paper lift",  tag:"calm",
+   desc:"Nothing inside the frame moves. The card rises further and the shadow deepens."},
+  {cls:"v5",name:"5 · Contrast snap",tag:"punch",
+   desc:"The greys harden toward black and white, as a thresholded page would look."},
+  {cls:"v6",name:"6 · Corner marks",tag:"calm",
+   desc:"Picture holds still. Red register marks grow into the four corners."},
+];
+
+const SAMPLE="3249.pxc";
+const grid=document.getElementById("grid");
+
+(async()=>{
+  let parsed=null;
+  try{
+    const res=await fetch(REMOTE+SAMPLE,{cache:"force-cache"});
+    parsed=previewPxc(await res.arrayBuffer());
+  }catch(e){}
+
+  OPTIONS.forEach(opt=>{
+    const card=document.createElement("div");
+    card.className="gcard "+opt.cls;
+
+    const frame=document.createElement("div"); frame.className="gframe";
+    const tag=document.createElement("span"); tag.className="tag"; tag.textContent=opt.tag;
+    frame.appendChild(tag);
+
+    if(parsed){
+      const cv=parsed.canvas.cloneNode();
+      cv.getContext("2d").drawImage(parsed.canvas,0,0);
+      frame.appendChild(cv);
+    }
+    if(opt.cls==="v3"){ const s=document.createElement("div"); s.className="sweep"; frame.appendChild(s); }
+    if(opt.cls==="v6"){
+      const m=document.createElement("div"); m.className="marks";
+      m.innerHTML="<i></i><i></i><i></i><i></i>"; frame.appendChild(m);
+    }
+
+    const name=document.createElement("div"); name.className="gname"; name.textContent=opt.name;
+    const desc=document.createElement("div"); desc.className="gdesc"; desc.textContent=opt.desc;
+
+    const row=document.createElement("div"); row.className="grow";
+    const play=document.createElement("button"); play.className="gbtn"; play.textContent="PLAY";
+    row.appendChild(play);
+
+    card.append(frame,name,desc,row);
+    grid.appendChild(card);
+
+    // Hover drives it on a pointer; the button drives it on a touch screen, where
+    // there is no hover at all. Both use the same class, so what a phone shows is
+    // exactly what a desktop shows.
+    card.addEventListener("mouseenter",()=>card.classList.add("on"));
+    card.addEventListener("mouseleave",()=>card.classList.remove("on"));
+    play.addEventListener("click",e=>{
+      e.stopPropagation();
+      card.classList.remove("on");
+      void card.offsetWidth;            // restart any running animation
+      card.classList.add("on");
+      setTimeout(()=>card.classList.remove("on"),1100);
+    });
+  });
+})();
+</script>
+</body>
+</html>
