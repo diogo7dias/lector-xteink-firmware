@@ -258,9 +258,10 @@
 
   /* ---- motion ---- */
   @keyframes lwc-rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
-  @keyframes lwc-eink{0%{filter:none}10%{filter:invert(1)}22%{filter:invert(1) brightness(.15)}
-    34%{filter:brightness(0)}46%{filter:invert(1)}58%{filter:brightness(0)}
-    70%{filter:invert(1) contrast(1.4)}82%{filter:none}100%{filter:none}}
+  /* One inversion, held for the whole (short) duration by the single step, then gone.
+     The panel's own clearing pass is a run of beats, and a run of them on hover read
+     as a fault rather than as a flourish. */
+  @keyframes lwc-eink{from{filter:invert(1)}to{filter:none}}
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms!important;}
     .gcard{opacity:1;}
@@ -2330,7 +2331,7 @@ function triggerDownload(bytes, filename){
 }
 
 // Re-trigger the e-ink refresh flash on a canvas (restart the animation).
-function einkFlash(el){ el.style.animation="none"; void el.offsetWidth; el.style.animation="lwc-eink .55s steps(1,end)"; }
+function einkFlash(el){ el.style.animation="none"; void el.offsetWidth; el.style.animation="lwc-eink .1s steps(1,end)"; }
 
 async function loadGalleryMaster(entry){
   const response=await fetch(galleryUrl(entry.file));
