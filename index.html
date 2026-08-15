@@ -1105,7 +1105,10 @@
     Firmware repository and releases:
     <a href="https://github.com/diogo7dias/lector" target="_blank" rel="noopener">github.com/diogo7dias/lector</a>
     <span class="support">If the firmware or the wallpapers are useful to you, consider supporting the work:
-    <a href="https://ko-fi.com/d7d7m" target="_blank" rel="noopener">ko-fi.com/d7d7m</a></span></footer>
+    <a href="https://ko-fi.com/d7d7m" target="_blank" rel="noopener">ko-fi.com/d7d7m</a></span>
+    <span class="support">Page views are counted by
+    <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>: no cookies, no
+    tracking between sites. Your images are still converted here in the browser and never uploaded.</span></footer>
 </div>
 
 <script>
@@ -2526,5 +2529,12 @@ gquery.addEventListener("input",()=>{ clearTimeout(gqueryTimer); gqueryTimer=set
 gquery.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); clearTimeout(gqueryTimer); runGalleryQuery(); } });
 gclear.addEventListener("click",()=>{ gquery.value=""; clearTimeout(gqueryTimer); runGalleryQuery(); gquery.focus(); });
 </script>
+
+<!-- Visitor counting. Loaded last and async, so a blocked or slow request cannot hold up
+     the page, and the page keeps working with the script absent — which is also what an
+     ad blocker produces, and what happens when the file is opened from disk. It counts a
+     page view and nothing else: no cookies, no identifier that outlives the day. -->
+<script data-goatcounter="https://d7d7m.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
