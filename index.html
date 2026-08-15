@@ -2492,6 +2492,10 @@ async function renderGalleryBatch(start){
       const res=await fetch(galleryUrl(entry.file));
       if(!res.ok) throw new Error(res.status);
       const parsed=previewPxc(await res.arrayBuffer());
+      // Checked again after the wait, not only before it: a newer render can start and
+      // clear the grid while this one is still fetching, and appending afterwards would
+      // put a stale card beside the new render's copy of the same wallpaper.
+      if(run!==galleryRun) return;
       if(!parsed) continue;
       grid.appendChild(galleryCard(entry,parsed.canvas,parsed.w,parsed.h,shown)); shown++; galleryRendered++;
     }catch(_){ galleryFailures++; }
