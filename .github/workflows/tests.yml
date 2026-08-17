@@ -1,0 +1,33 @@
+name: Tests
+
+# The suite existed for a long time without anything running it, so a test could
+# fail for weeks unnoticed. That is how the page ended up naming a firmware version
+# it had not served since 0.11.1: site-text.test.mjs would have caught it, had
+# anything been running the tests.
+#
+# This also runs after the firmware repository publishes a release here, since that
+# push writes flash/version.txt and flash/manifest-*.json into this repository. If
+# the release notes on the page still describe the previous build, this goes red.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # No dependencies and no package.json: the suite is plain node:test.
+      - name: Run tests
+        run: node --test

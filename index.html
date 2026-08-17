@@ -591,7 +591,7 @@
 
       <h3>Lector</h3>
       <p>Lector firmware for your Xteink X3 / X4, re-based onto the upstream CrossPoint reader with a thin
-        layer of reading niceties on top. The build on this site is <strong>lector 0.11.1</strong>. Use
+        layer of reading niceties on top. The build on this site is <strong id="flashVersionInline">…</strong>. Use
         <strong>Update my reader</strong> if your reader already runs Lector, or the
         <strong>full install</strong> further down if it does not.</p>
 
@@ -606,26 +606,44 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <strong>What's new — lector 0.20.2:</strong> two fixes for faults 0.20.1 introduced, and one change to the shortcut pop-up. Reports version <strong>lector 0.20.2</strong> on device.
+        <strong>What's new — lector 0.24.0:</strong> two readers can now talk straight to each other, with no
+        Wi-Fi network, server, account, or computer in between. Reports version <strong>lector 0.24.0</strong> on device.
+        <ul>
+          <li><strong>Carry your page between two readers.</strong> Open the same book on both, then pick
+            <em>Nearby Sync</em> from the in-book menu on each. Both screens show both pages and say which one is
+            further along, and either reader can take the other's page or send its own. Nothing moves until you
+            confirm it on the reader it would move. It works a few metres apart and needs no network at all, so it
+            is not the same thing as KOSync, which still talks to a server as before.</li>
+          <li><strong>Send a book to the reader next to you.</strong> From inside a book, the in-book menu now has
+            <em>Send to Nearby Reader</em>; from the file browser, hold Confirm on a file and pick the same. On the
+            receiving reader choose <em>File Transfer</em> then <em>Nearby Reader</em>. It carries books and images
+            (.epub, .txt, .md, .xtc, .xtch, .pxc, .png, .bmp). A file that is already on the card is never
+            overwritten: the new one arrives as "Book (2).epub". A transfer you cancel, or one that arrives
+            damaged, leaves nothing behind.</li>
+          <li><strong>Your reader has a name.</strong> <em>Settings, System, Device Name</em>. Left empty it names
+            itself from its own hardware, so two readers on a table are told apart without you doing anything.</li>
+          <li><strong>Tall images no longer run off the bottom of the page.</strong> A full-height image could be
+            placed so low that the panel refused to draw it. Because this changes where lines fall, each book
+            rebuilds its page cache once the first time you open it on this version, so that first open is slower
+            than usual.</li>
+          <li><strong>Titles and authors read correctly in more books.</strong> Some publishers label those fields
+            in a way the reader did not recognise, which left a book showing the wrong name or none.</li>
+        </ul>
+        <p><strong>Worth knowing:</strong> the two nearby features are brand new and had no testing on a real
+        device before this build went out. Keep a USB cable handy, as ever.</p>
+        <details class="oldrel">
+        <summary>Earlier releases (0.20.2 and back)</summary>
+        <strong>Also in 0.20.2:</strong>
         <ul>
           <li><strong>An X3 could stop starting after updating to 0.20.1.</strong> It reached the SD card and then
-            reset, over and over, before it painted anything — so the panel just kept whatever picture was already
-            on it and the reader looked dead. The settings list had grown one entry too many. It was being built
-            all at once, which needed 15,584 bytes of working space against the 16,376 the reader has, and the
-            reader stopped itself the moment it ran past the end. The list is now built one row at a time and needs
-            272 bytes. Nothing about the settings themselves changed.</li>
-          <li><strong>The screen no longer speckles while the reader sits idle.</strong> An X3 left alone for a few
-            seconds could go from a clean screen to a grey, mottled one with older text faintly showing through, all
-            without being touched. The screen keeps its picture with no power at all, but the reader was leaving the
-            panel powered after every draw, and a powered panel left with nothing to do lets its picture drift. The
-            reader now switches the panel off shortly after you stop using it, and switches it back on by itself the
-            next time it draws. You will not see it happen: no flash, and the picture stays put.</li>
-          <li><strong>The shortcut pop-up can hold every action at once.</strong> The limit was eight of the twelve.
-            The pop-up now tightens its spacing when it needs to rather than running off the screen, so the limit is
-            gone.</li>
+            reset, over and over, before it painted anything, so the reader looked dead. The settings list needed
+            more working space than the reader has; it is now built one row at a time.</li>
+          <li><strong>The screen no longer speckles while the reader sits idle.</strong> The panel was left powered
+            after every draw, and a powered panel with nothing to do lets its picture drift. It now switches off
+            shortly after you stop using it and back on by itself for the next draw.</li>
+          <li><strong>The shortcut pop-up can hold every action at once.</strong> The limit was eight of twelve; it
+            now tightens its spacing instead of running off the screen.</li>
         </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.20.1 and back)</summary>
         <strong>Also in 0.20.1:</strong>
         <ul>
           <li><strong>Closing the pop-up no longer throws you out of the book.</strong> Opening the double-click
@@ -825,27 +843,13 @@
         <p id="flashExperimentalMissing" class="fallback" hidden>The experimental build is not published right now.
           The Update button above works.</p>
 
-        <!-- Test list for lector.exp.17. Replace it whenever this channel gets a new payload: it
-             describes that build only, and a stale list is worse than none. -->
-        <div class="verline">What to test in lector.exp.17</div>
-        <ol class="steps">
-          <li><strong>Turn it on.</strong> Settings &rarr; Reader &rarr; Night mode &rarr; On. Open a book. Expect white
-            text on black.</li>
-          <li><strong>Menus stay normal.</strong> While Night mode is on, open the in-book menu and the home screen.
-            Expect black text on white.</li>
-          <li><strong>Pictures.</strong> Open a book with a photo or a cover image inside. Expect it to look like a
-            photo, not a negative.</li>
-          <li><strong>Sleep screen.</strong> Read in Night mode, then let the reader sleep. Expect the usual sleep
-            screen, not an inverted one.</li>
-          <li><strong>All four orientations.</strong> Rotate through Portrait, Inverted, Landscape CW and Landscape
-            CCW with Night mode on. Expect no stray white or black bands at the edges.</li>
-          <li><strong>Turn it off.</strong> Set Night mode back to Off. Expect the page to return to black on white
-            straight away.</li>
-          <li><strong>Wi-Fi MAC.</strong> With Wi-Fi off, open the Wi-Fi screen. Expect a real MAC address, not zeros
-            and not dashes.</li>
-          <li><strong>Dictionary.</strong> Look up a plural or a past-tense word in a StarDict dictionary. Expect the
-            base entry to be found.</li>
-        </ol>
+        <!-- No hand-written test list here. One was kept for lector.exp.17, whose publish was
+             later reverted, so the page described a build that was never served. The channel
+             moves often; its notes live with its own tag instead. -->
+        <p class="note">What this build changes is listed on its
+          <a href="https://github.com/diogo7dias/lector/releases" rel="noopener">release page</a>, under the
+          <span id="flashExperimentalVersionInline">experimental</span> tag. Experimental builds are not tested on a
+          device before publishing.</p>
       </div>
 
       <div class="rescue">
@@ -905,6 +909,53 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.24.0</summary>
+      <p>Two readers can talk straight to each other over their radios, with no Wi-Fi network, server, account or computer in between.</p>
+      <ul>
+        <li><strong>Nearby Sync.</strong> Open the same book on two readers, pick Nearby Sync from the in-book menu on both, and each screen shows both pages and says which is further along. Either reader can take the other's page or send its own, and nothing moves until it is confirmed on the reader it would move.</li>
+        <li><strong>Nearby file transfer.</strong> Send the book you are reading straight from the in-book menu, or any supported file by holding Confirm on it in the file browser. The receiving reader waits under File Transfer, Nearby Reader. Books and images are carried (.epub, .txt, .md, .xtc, .xtch, .pxc, .png, .bmp); a file already on the card is never overwritten, and a cancelled or damaged transfer leaves nothing behind.</li>
+        <li><strong>Device Name</strong> in Settings, System, so a sync screen can say which reader it is talking to. Left empty it names itself from its own hardware.</li>
+        <li><strong>Tall images no longer run off the bottom of the page,</strong> and titles and authors read correctly in books whose publishers label those fields unusually. The image fix moves lines, so every book rebuilds its page cache once on first open.</li>
+      </ul>
+      <p>Both nearby features were untested on a real device when this build went out.</p>
+      </details>
+
+      <details class="relnote">
+        <summary>lector 0.23.1</summary>
+      <p>Two faults 0.23.0 introduced.</p>
+      <ul>
+        <li><strong>Buttons stopped responding.</strong> The change that made buttons act on the press could leave them armed for a release that never came, so the reader ignored them entirely.</li>
+        <li><strong>The status bar rearranged itself</strong> on books whose settings were saved before this version.</li>
+      </ul>
+      </details>
+
+      <details class="relnote">
+        <summary>lector 0.23.0</summary>
+      <p>Buttons act the moment you press them, the in-book menu is sorted into sections, and the status bar belongs to the book rather than the device.</p>
+      <ul>
+        <li><strong>Page turns and menus fire on the press,</strong> not on the release, so the reader feels immediate. Hold actions fire the moment the threshold passes rather than waiting for you to let go.</li>
+        <li><strong>The in-book menu is grouped into sections</strong> with filled headers, and Auto Page Turn, Go Home and Book Info left it.</li>
+        <li><strong>The whole status bar is per book,</strong> layout included, so one book can carry a different bar from the next.</li>
+        <li><strong>A wallpaper added while the card was in the reader</strong> is no longer missed when it reuses a freed directory slot.</li>
+      </ul>
+      </details>
+
+      <details class="relnote">
+        <summary>lector 0.22.1</summary>
+      <p>Fix: an empty <code>/.sleep</code> folder no longer hides every wallpaper in <code>/sleep</code>.</p>
+      </details>
+
+      <details class="relnote">
+        <summary>lector 0.22.0</summary>
+      <p>The wallpaper index is patched in place, so deleting a wallpaper or adding a single file no longer triggers a scan of the whole folder. Sleeping and waking are quicker on a card with many wallpapers.</p>
+      </details>
+
+      <details class="relnote">
+        <summary>lector 0.21.1</summary>
+      <p>Fix: a custom wallpaper is cleared on wake instead of lingering under the page.</p>
+      </details>
+
       <details class="relnote">
         <summary>lector 0.21.0</summary>
       <p>The settings screen is sorted into named sections, the reader gained a night mode and a much better dictionary, and the sleep screen can now be a see-through overlay.</p>
@@ -2172,8 +2223,17 @@ const flashState={busy:false};
 function initFlasher(){
   fetch("flash/version.txt",{cache:"no-cache"})
     .then(r=>r.ok?r.text():Promise.reject(r.status))
-    .then(t=>{document.getElementById("flashVersion").textContent=t.trim()||"?";})
-    .catch(()=>{document.getElementById("flashVersion").textContent="unknown";});
+    .then(t=>{
+      // Both the headline number and the sentence above it read this one file, so
+      // the prose cannot drift out of date the way a hardcoded version did.
+      const v=t.trim()||"?";
+      document.getElementById("flashVersion").textContent=v;
+      document.getElementById("flashVersionInline").textContent=v;
+    })
+    .catch(()=>{
+      document.getElementById("flashVersion").textContent="unknown";
+      document.getElementById("flashVersionInline").textContent="unknown";
+    });
   fetch("flash/firmware/latest/bootloader.bin",{method:"HEAD"})
     .then(r=>{if(!r.ok) throw 0;})
     .catch(()=>{document.getElementById("flashRescueMissing").hidden=false;});
@@ -2183,7 +2243,10 @@ function initFlasher(){
   fetch("flash/experimental-version.txt",{cache:"no-cache"})
     .then(r=>r.ok?r.text():Promise.reject(r.status))
     .then(t=>{
-      document.getElementById("flashExperimentalVersion").textContent=t.trim()||"?";
+      const ev=t.trim()||"?";
+      document.getElementById("flashExperimentalVersion").textContent=ev;
+      const evInline=document.getElementById("flashExperimentalVersionInline");
+      if(evInline) evInline.textContent=ev;
       // The panel ships hidden and is revealed only once a build is actually published,
       // so an empty channel shows nothing rather than a button that would fail on click.
       // Without this it stayed hidden forever and the build was unreachable.

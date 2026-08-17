@@ -28,8 +28,10 @@ test("gallery reshuffles on first load and on every re-entry", () => {
   assert.match(html, /function shuffleGallery\(\)/);
   // Fisher-Yates, not sort() with a random comparator, which is biased.
   assert.match(html, /const j=Math\.floor\(Math\.random\(\)\*\(i\+1\)\);/);
-  assert.match(html, /shuffleGallery\(\);\s*\n\s*state\.hidden=true;/);
-  assert.match(html, /else if\(galleryEntries\.length\)\{ shuffleGallery\(\); renderGalleryBatch\(0\); \}/);
+  // A reshuffle on first load, ahead of the first render.
+  assert.match(html, /shuffleGallery\(\);\s*\n\s*applyGalleryQuery\(\);/);
+  // And another on every re-entry, unless a search is in progress.
+  assert.match(html, /else if\(galleryEntries\.length && !galleryQuery\)\{ shuffleGallery\(\);/);
 });
 
 test("gallery loads only one small batch and supports mixed master sizes", () => {
@@ -39,7 +41,6 @@ test("gallery loads only one small batch and supports mixed master sizes", () =>
   assert.match(html, /Download · \$\{masterDevice\} PXC/);
   assert.match(html, /renderGalleryBatch/);
   assert.match(html, /async function renderGalleryBatch\(start\)[\s\S]*?grid\.replaceChildren\(\)/);
-  assert.match(html, /const GALLERY_PREVIEW_WIDTH=240;/);
   assert.match(html, /previewPxc/);
   assert.match(html, /loadGalleryMaster/);
   assert.match(html, /aria-live="polite"/);
