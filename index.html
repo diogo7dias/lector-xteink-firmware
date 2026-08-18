@@ -52,6 +52,8 @@
     font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub);font-weight:500;
     padding-bottom:8px;}
   .topline-right{display:flex;align-items:center;gap:14px;}
+  .topline-right a{color:var(--sub);text-underline-offset:3px;}
+  .topline-right a:hover{color:var(--ink);}
   .theme-toggle{appearance:none;display:grid;place-items:center;width:30px;height:30px;padding:0;
     border:2px solid var(--ink);border-radius:50%;background:var(--panel);color:var(--ink);
     cursor:pointer;box-shadow:2px 2px 0 var(--ink);}
@@ -366,6 +368,7 @@
     <div class="topline">
       <span>Local only — nothing uploaded</span>
       <span class="topline-right">
+        <a href="./guide.html">Firmware guide</a>
         <span>Est. 2026 · Lector</span>
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode">
           <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z"/></svg>

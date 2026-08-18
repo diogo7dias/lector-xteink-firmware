@@ -40,6 +40,21 @@ jobs:
       - name: Disable Jekyll processing
         run: touch .nojekyll
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The firmware guide has one home: USER_GUIDE.md in the firmware repository,
+      # edited alongside the change it describes. It is fetched and rendered here so
+      # this repository never holds a second copy that can drift. The build fails when
+      # the guide is stamped for a different version than flash/version.txt serves.
+      - name: Build the firmware guide
+        run: |
+          curl -fsSL -o USER_GUIDE.md \
+            https://raw.githubusercontent.com/diogo7dias/lector/main/USER_GUIDE.md
+          node scripts/build-guide.mjs USER_GUIDE.md guide.html
+          rm USER_GUIDE.md
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
