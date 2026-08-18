@@ -826,12 +826,24 @@
            payload. -->
       <div class="rescue" id="experimentalPanel" hidden>
         <h3>Experimental build</h3>
-        <p><strong>This build adds Night mode.</strong> Reading pages draw white-on-black. Menus, the home screen and
-          the sleep screen stay normal. Pictures inside a book keep their own polarity, so a photo still looks like a
-          photo rather than a negative. Turn it on under <strong>Settings &rarr; Reader &rarr; Night mode</strong>.</p>
-        <p>It also reads the Wi-Fi MAC address even while Wi-Fi is off, so the Wi-Fi screen stops showing zeros, and
-          the dictionary now follows StarDict <code>.syn</code> synonym files, so looking up a word form finds the
-          entry it points at.</p>
+        <p><strong>This build brings back the old crest.</strong> The reader no longer shows the CrossPoint mark when
+          it starts, sleeps or unlocks. One of six engraved crests is drawn instead, picked at random each time the
+          reader sleeps, and waking shows you the same one rather than swapping it under you.</p>
+        <p><strong>Check for updates was looking at the wrong firmware.</strong> It read another project's releases,
+          so it could offer you a different reader's build and install it over this one. It now reads this firmware's
+          own releases, and the version comparison behind it, which never worked, has been rewritten.</p>
+        <p><strong>The power button no longer fights itself.</strong> With a short click set to Sleep, binding an
+          action to a double click did nothing at all, because the first of the two presses put the reader to sleep.
+          A bound double click now wins, and sleeping goes back to the normal hold. How long you hold to
+          <em>wake</em> the reader is its own setting now, <strong>Settings &rarr; Controls &rarr; Wake Hold</strong>,
+          instead of being decided for you by the short-click choice. A double click also works in <code>.txt</code>
+          and <code>.xtc</code> books, where it used to be silently dead.</p>
+        <p>Korean, Chinese and Japanese books and file lists are faster: the letters a screen needs are now read from
+          the card in one pass instead of one at a time. You can also choose which tab the in-book menu opens on,
+          under <strong>Settings &rarr; Reader &rarr; Book Menu Opens On</strong>.</p>
+        <p><strong>Every book re-reads its layout once</strong> after this update, because a fix to ruby annotations
+          changes where lines break. The first time you open each book it is slower than usual. Your place in every
+          book, and any settings you set per book, are kept.</p>
         <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
           reader in and re-flash it. Your books on the SD card are never touched.
           <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
