@@ -1220,33 +1220,27 @@ const LEVELS = [0,85,170,255];
 //   Halftone   A clustered 8x8 matrix rather than a scattered one, so tone is carried
 //              by the size of a blob. A newspaper screen. Coarse on purpose.
 //
-// The six that follow are the same idea with the four knobs a real screen has
-// turned: angle, dot spacing, dot shape, and where the screen is allowed to fall.
+// The three that follow are the same idea with the knobs a real screen has
+// turned: angle, dot spacing, and dot shape.
 //   Halftone 45      The same dot at 45 degrees. A straight grid reads as a
 //                    pattern; the identical dots turned 45 read as texture. This
 //                    is the screen print has used for a century.
 //   Halftone fine    45 degrees with the dots close together, for a picture whose
 //                    subject IS detail — foliage, crowds, brickwork.
-//   Line screen …    Not dots. Bands that thicken as the picture darkens, in three
-//                    directions: diagonal, vertical, horizontal. Graphic rather
-//                    than photographic; strong on posters and logos. The direction
-//                    is a compositional choice — a vertical band suits a standing
-//                    figure, a horizontal one suits a landscape or a horizon.
-//   Halftone subject The fine 45 dot, but only where there is detail: a flat sky
-//                    or backdrop takes its level solid and never gets a screen.
+//   Line screen      Not dots. Diagonal bands that thicken as the picture darkens.
+//                    Graphic rather than photographic; strong on posters and logos.
 //
 // Removed on 2026-08-11, both at Diogo's word: a coarse 45 variant, and the whole
 // diffusion set past Smooth (Jarvis, Stucki, Burkes, Sierra) together with Ordered.
+// Removed on 2026-08-18, also at Diogo's word: the vertical and horizontal line
+// screens, and Halftone subject.
 // A stale per-image override naming any of them falls through knownStyle() to the
 // first entry rather than blanking the card.
 const STYLES = ["threshold","solid","classic","clean","smooth","halftone",
-                "halftone45","halftonefine",
-                "linescreen","linescreenv","linescreenh","halftonesubject"];
+                "halftone45","halftonefine","linescreen"];
 const STYLE_LABEL = { threshold:"Threshold", solid:"Solid", classic:"Classic", clean:"Clean",
   smooth:"Smooth", halftone:"Halftone", halftone45:"Halftone 45",
-  halftonefine:"Halftone fine", linescreen:"Line screen diagonal",
-  linescreenv:"Line screen vertical", linescreenh:"Line screen horizontal",
-  halftonesubject:"Halftone subject" };
+  halftonefine:"Halftone fine", linescreen:"Line screen diagonal" };
 // An unknown style lands on the first entry, so a stale override can never leave a
 // card's picker showing a blank.
 function knownStyle(s){ return STYLES.includes(s) ? s : STYLES[0]; }
@@ -1617,8 +1611,7 @@ function screenMatrix(n, spot){
 // A 45-degree cell carries TWO dots, so the dot spacing is n/sqrt(2), not n. The
 // sizes below are chosen by that spacing, not by n:
 //   ROUND45  n=12 -> ~8.5 px, about the dot the straight Halftone already draws
-//   FINE45   n=6  -> ~4.2 px, for pictures whose subject is all detail, and the
-//                    screen Halftone subject lays on its subjects
+//   FINE45   n=6  -> ~4.2 px, for pictures whose subject is all detail
 const spot45 = (x,y,n)=> Math.cos(2*Math.PI*(x+y)/n) + Math.cos(2*Math.PI*(x-y)/n);
 // A line screen is the one case that must NOT be a permutation. Every cell on a
 // band has to share one threshold, or the ranking hands the cells along a band
@@ -1629,9 +1622,7 @@ const spot45 = (x,y,n)=> Math.cos(2*Math.PI*(x+y)/n) + Math.cos(2*Math.PI*(x-y)/
 // The cost is real and inherent: n thresholds between levels instead of n*n, so a
 // line screen steps more coarsely than a dot screen. That is what a line screen is.
 //
-// `band` picks which cells share a threshold, and that is the only difference
-// between the three directions. (x+y) counts diagonals, x alone counts columns and
-// draws vertical lines, y alone counts rows and draws horizontal ones.
+// `band` picks which cells share a threshold: (x+y) counts diagonals.
 function lineMatrix(n, band){
   const cells=n*n, m=new Array(cells);
   const bands=[];
@@ -1646,99 +1637,8 @@ function lineMatrix(n, band){
 const SCREEN_ROUND45 = screenMatrix(12, spot45);
 const SCREEN_FINE45 = screenMatrix(6, spot45);
 // Sizes are chosen by the spacing the eye sees, not by n. A diagonal band repeats
-// every n/sqrt(2) pixels measured across the band, so n=10 diagonal gives ~7 px; a
-// straight band repeats every n, so n=7 puts the three screens at the same weight.
-// The straight pair pay for it with 7 tone steps between levels instead of 10.
+// every n/sqrt(2) pixels measured across the band, so n=10 gives ~7 px.
 const SCREEN_LINE = lineMatrix(10, (x,y,n)=> (x+y)%n);
-const SCREEN_LINE_V = lineMatrix(7, (x)=> x);
-const SCREEN_LINE_H = lineMatrix(7, (x,y)=> y);
-
-// Halftone where there is something to describe, and nowhere else.
-//
-// A screen laid over a whole picture also lays itself over the sky, the studio
-// backdrop and the black border, which is where a halftone looks least like a
-// halftone and most like a texture someone forgot to remove. flatField() already
-// knows which pixels sit in a settled area — it is the same test Solid uses — so
-// those take their level straight from the blurred tone and come out clean. The
-// screen falls only on the parts that carry detail.
-//
-// Uniform-field test over a WIDE window, which is what tells a backdrop apart
-// from a sky. Both look flat across three pixels: a sky drifting a fraction of a
-// grey per pixel has almost no local spread. Across nine pixels they separate —
-// a gradient has moved several greys by then, a real backdrop has not. Separable
-// min/max (a row pass, then a column pass) so the cost is ~2*R per pixel rather
-// than the (2R+1)^2 a naive window would pay.
-const WIDE_R = 4;    // 9x9
-const WIDE_TOL = 8;  // a 255-over-90px sky spans ~23 across nine pixels; a backdrop, ~3
-function uniformField(blur,w,h){
-  const rlo=new Float32Array(w*h), rhi=new Float32Array(w*h), out=new Uint8Array(w*h);
-  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
-    let lo=Infinity,hi=-Infinity;
-    for(let d=-WIDE_R;d<=WIDE_R;d++){ const xx=x+d; if(xx<0||xx>=w) continue;
-      const v=blur[y*w+xx]; if(v<lo)lo=v; if(v>hi)hi=v; }
-    rlo[y*w+x]=lo; rhi[y*w+x]=hi;
-  }
-  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
-    let lo=Infinity,hi=-Infinity;
-    for(let d=-WIDE_R;d<=WIDE_R;d++){ const yy=y+d; if(yy<0||yy>=h) continue;
-      const j=yy*w+x; if(rlo[j]<lo)lo=rlo[j]; if(rhi[j]>hi)hi=rhi[j]; }
-    out[y*w+x]=(hi-lo)<=WIDE_TOL?1:0;
-  }
-  return out;
-}
-
-// A settled area gets one of two treatments, not one. Snapping every flat pixel
-// to its nearest level was the obvious first version and it is wrong: a sky
-// reads as flat everywhere across three pixels, so the whole sky stepped into
-// hard bands. On a synthetic ramp that version degenerated into plain
-// thresholding, which is how the fault was caught. Endpoint-only snapping was the
-// second try; it fades a sky properly but leaves fine grain over a mid-grey
-// backdrop, which is the very thing this style exists to remove.
-//
-// So the wide test decides. Truly uniform (a wall, a studio backdrop, a black
-// border) takes its level solid, at ANY level. Settled but drifting (a sky, a
-// slow vignette) gets Atkinson: quiet, fine, no visible screen, and it fades
-// rather than banding. Everything carrying real detail gets the dots.
-//
-// The error a screened pixel owes stops at that pixel. An ordered screen has no
-// memory by design, so there is nothing to hand on, and diffusion resumes at the
-// next settled pixel from whatever the buffer holds.
-function quantizeHalftoneSubject(g, w, h, idx){
-  const {blur,flat}=flatField(g,w,h);
-  const uniform=uniformField(blur,w,h);
-  // The FINE dot, at Diogo's request. It is the right pairing: this style only
-  // ever screens the detailed parts of a picture, and a detailed part is exactly
-  // where a wide dot loses the most. The backdrop it would have suited is being
-  // painted solid here anyway.
-  const n=6, cells=n*n;
-  const buf=Float32Array.from(g);
-  for(let y=0;y<h;y++){
-    const ltr=(y&1)===0, fwd=ltr?1:-1;
-    for(let k=0;k<w;k++){
-      const x=ltr?k:w-1-k, i=y*w+x;
-      if(!flat[i]){
-        const t=(SCREEN_FINE45[(y%n)*n+(x%n)]+0.5)/cells - 0.5;
-        idx[i]=screenedLevel(g[i]+t*LEVEL_STEP);
-        continue;
-      }
-      if(uniform[i]){
-        idx[i]=nearestLevel(blur[i]);   // a real backdrop: take the level, drop the error
-        continue;
-      }
-      const old=buf[i], q=nearestLevel(old); idx[i]=q;
-      const e=(old-LEVELS[q])/8;  // Atkinson: 1/8 to each of six neighbours
-      const x1=x+fwd, x2=x+fwd*2, xb=x-fwd;
-      if(x1>=0&&x1<w) buf[i+fwd]+=e;
-      if(x2>=0&&x2<w) buf[i+fwd*2]+=e;
-      if(y+1<h){ const nx=i+w;
-        if(xb>=0&&xb<w) buf[nx-fwd]+=e;
-        buf[nx]+=e;
-        if(x1>=0&&x1<w) buf[nx+fwd]+=e; }
-      if(y+2<h) buf[i+2*w]+=e;
-    }
-  }
-  return idx;
-}
 
 // Quantise gray -> level indices 0..3 (w*h Uint8).
 //
@@ -1777,9 +1677,6 @@ function quantize(g, dither, style){
   if(st==="halftone45") return quantizeOrdered(g,w,h,idx,SCREEN_ROUND45,12);
   if(st==="halftonefine") return quantizeOrdered(g,w,h,idx,SCREEN_FINE45,6);
   if(st==="linescreen") return quantizeOrdered(g,w,h,idx,SCREEN_LINE,10);
-  if(st==="linescreenv") return quantizeOrdered(g,w,h,idx,SCREEN_LINE_V,7);
-  if(st==="linescreenh") return quantizeOrdered(g,w,h,idx,SCREEN_LINE_H,7);
-  if(st==="halftonesubject") return quantizeHalftoneSubject(g,w,h,idx);
   const smooth = st==="smooth";
   const {blur,flat}=flatField(g,w,h);
   const buf=Float32Array.from(g);
