@@ -609,31 +609,28 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <strong>What's new — lector 0.24.0:</strong> two readers can now talk straight to each other, with no
-        Wi-Fi network, server, account, or computer in between. Reports version <strong>lector 0.24.0</strong> on device.
+        <strong>What's new — lector 0.24.1:</strong> the two nearby features from 0.24.0 now work on real
+        readers, and installing a font copes with a patchy connection. Reports version <strong>lector 0.24.1</strong>
+        on device.
         <ul>
-          <li><strong>Carry your page between two readers.</strong> Open the same book on both, then pick
-            <em>Nearby Sync</em> from the in-book menu on each. Both screens show both pages and say which one is
-            further along, and either reader can take the other's page or send its own. Nothing moves until you
-            confirm it on the reader it would move. It works a few metres apart and needs no network at all, so it
-            is not the same thing as KOSync, which still talks to a server as before.</li>
-          <li><strong>Send a book to the reader next to you.</strong> From inside a book, the in-book menu now has
-            <em>Send to Nearby Reader</em>; from the file browser, hold Confirm on a file and pick the same. On the
-            receiving reader choose <em>File Transfer</em> then <em>Nearby Reader</em>. It carries books and images
-            (.epub, .txt, .md, .xtc, .xtch, .pxc, .png, .bmp). A file that is already on the card is never
-            overwritten: the new one arrives as "Book (2).epub". A transfer you cancel, or one that arrives
-            damaged, leaves nothing behind.</li>
-          <li><strong>Your reader has a name.</strong> <em>Settings, System, Device Name</em>. Left empty it names
-            itself from its own hardware, so two readers on a table are told apart without you doing anything.</li>
-          <li><strong>Tall images no longer run off the bottom of the page.</strong> A full-height image could be
-            placed so low that the panel refused to draw it. Because this changes where lines fall, each book
-            rebuilds its page cache once the first time you open it on this version, so that first open is slower
-            than usual.</li>
-          <li><strong>Titles and authors read correctly in more books.</strong> Some publishers label those fields
-            in a way the reader did not recognise, which left a book showing the wrong name or none.</li>
+          <li><strong>Sending a book to another reader finishes.</strong> A transfer reached 100% and then said it
+            had failed, every time. The sending reader was not building the checksum the receiver is asked to match,
+            so a book that arrived whole was thrown away at the last step.</li>
+          <li><strong>Two readers find each other on Nearby Sync.</strong> Both sat on "Looking for another reader"
+            until they gave up. Whichever reader noticed the other first stopped announcing itself and began talking
+            straight to it, and the other reader was only listening for announcements, so neither side ever heard
+            the one thing it was waiting for.</li>
+          <li><strong>A synced page lands where you were reading.</strong> The paragraph that travelled was the last
+            one on the page before the one on screen, so the other reader opened a paragraph behind. It now carries
+            the last paragraph on the page you can see. This also applies to the position sent to KOSync.</li>
+          <li><strong>Text on the nearby screens stays on the screen.</strong> The line under the heading ran off
+            both edges instead of wrapping.</li>
+          <li><strong>Installing a font survives a stuttering connection.</strong> Each file is fetched up to three
+            times, and a file that arrives corrupted is fetched again rather than ending the install. The font list
+            itself retries the same way. <em>Download all</em> and <em>Update all</em> now carry on past a family
+            that will not install and name the ones that failed at the end, and a failed update leaves the copy
+            already on your card in place.</li>
         </ul>
-        <p><strong>Worth knowing:</strong> the two nearby features are brand new and had no testing on a real
-        device before this build went out. Keep a USB cable handy, as ever.</p>
         <details class="oldrel">
         <summary>Earlier releases (0.20.2 and back)</summary>
         <strong>Also in 0.20.2:</strong>
@@ -912,6 +909,25 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.24.1</summary>
+      <p>The nearby features of 0.24.0 tested on real readers, plus steadier font downloads.</p>
+      <ul>
+        <li><strong>Nearby file transfer completes.</strong> The sending reader never built the checksum the receiver
+          checks against, so every transfer failed at 100%. It also accepted an acknowledgement for a chunk already
+          past, which could skip a chunk the receiver never got.</li>
+        <li><strong>Nearby Sync pairs.</strong> The reader that paired first stopped announcing itself, and an
+          unpaired reader accepted announcements only, so both sides searched until they timed out. A reader now
+          pairs on any packet that names the book.</li>
+        <li><strong>A synced position points at the last paragraph on the page you see,</strong> not the last one on
+          the page before it. The same applies to the position pushed to KOSync.</li>
+        <li><strong>Font downloads retry.</strong> Up to three attempts per file and for the font list, with a
+          corrupted file counting as a reason to fetch again. A batch carries on past a family that fails, and a
+          failed update no longer deletes the font already installed.</li>
+        <li><strong>The hint text on the nearby screens wraps</strong> instead of running off both edges.</li>
+      </ul>
+      </details>
+
       <details class="relnote">
         <summary>lector 0.24.0</summary>
       <p>Two readers can talk straight to each other over their radios, with no Wi-Fi network, server, account or computer in between.</p>
