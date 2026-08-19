@@ -609,9 +609,37 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <strong>What's new — lector 0.24.1:</strong> the two nearby features from 0.24.0 now work on real
-        readers, and installing a font copes with a patchy connection. Reports version <strong>lector 0.24.1</strong>
-        on device.
+        <strong>What's new — lector 0.25.0:</strong> the power button does what its settings say, the in-book
+        menu opens where you want it, and Korean and Japanese books stop crawling in the lists. Reports version
+        <strong>lector 0.25.0</strong> on device.
+        <ul>
+          <li><strong>A single power press sleeps the reader again.</strong> Binding an action to the power double
+            click quietly took the single press with it, so the only way to sleep was through a menu. The two are
+            separate now: one press sleeps, two do whatever you bound.</li>
+          <li><strong>The power double click works in TXT and comic books,</strong> not only in EPUBs. It was
+            offered in the settings for every book type and silently did nothing in two of them.</li>
+          <li><strong>Waking up has its own hold setting.</strong> How long you hold the power button to wake the
+            reader is no longer tied to how long you hold it to sleep it.</li>
+          <li><strong>Buttons answer faster when a double click is bound.</strong> The reader held every power
+            press back to see whether a second one was coming. It now only waits when the action you bound could
+            actually fire.</li>
+          <li><strong>The in-book menu opens on the tab you choose.</strong> Pick it once in Settings and every
+            book opens the menu there.</li>
+          <li><strong>Korean, Japanese and Chinese titles stop the lists crawling.</strong> The file browser, the
+            home screen and the chapter list were reading each title's characters off the card one at a time, every
+            time the screen redrew. Each screen now loads them in a single pass.</li>
+          <li><strong>Update checks point at this fork.</strong> The reader was asking upstream CrossPoint whether
+            a newer build existed, and comparing version names it could not read. It reads them properly and asks
+            the right place.</li>
+          <li><strong>Furigana no longer breaks the line it sits on.</strong> A ruby annotation split across a line
+            end dropped the text under it.</li>
+          <li><strong>The boot screen carries the lector crests again.</strong></li>
+          <li>Smaller fixes: a button hint that wraps keeps its second line, the version line in Settings no longer
+            hides under the Down hint, and a transparent sleep overlay stops painting a white crest on black.</li>
+        </ul>
+        <details class="oldrel">
+        <summary>Earlier releases (0.24.1 and back)</summary>
+        <strong>Also in 0.24.1:</strong>
         <ul>
           <li><strong>Sending a book to another reader finishes.</strong> A transfer reached 100% and then said it
             had failed, every time. The sending reader was not building the checksum the receiver is asked to match,
@@ -631,8 +659,6 @@
             that will not install and name the ones that failed at the end, and a failed update leaves the copy
             already on your card in place.</li>
         </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.20.2 and back)</summary>
         <strong>Also in 0.20.2:</strong>
         <ul>
           <li><strong>An X3 could stop starting after updating to 0.20.1.</strong> It reached the SD card and then
@@ -921,6 +947,33 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.25.0</summary>
+      <p>The power button obeys its own settings, and Korean and Japanese titles stop slowing the lists down.</p>
+      <ul>
+        <li><strong>A single power press sleeps the reader again.</strong> Binding the power double click disabled
+          the single press along with it. The two are independent now.</li>
+        <li><strong>The power double click fires in TXT and comic books.</strong> The setting was offered for every
+          book type but only wired up for EPUBs.</li>
+        <li><strong>The wake hold has its own setting,</strong> separate from the hold that puts the reader to
+          sleep.</li>
+        <li><strong>Power presses are only held back when the bound double click could run,</strong> so an
+          unbound reader answers the first press immediately.</li>
+        <li><strong>The in-book menu opens on a tab you choose</strong> in Settings.</li>
+        <li><strong>CJK titles load in one pass per screen.</strong> The file browser, home lists and chapter list
+          were faulting each character off the card separately on every redraw. Partial port of upstream #3071,
+          plus #3026 for UI text.</li>
+        <li><strong>Update checks query this fork</strong> instead of upstream CrossPoint, and compare version
+          names they can actually parse.</li>
+        <li><strong>Ruby annotations no longer flush mid-group,</strong> which dropped the text under furigana at a
+          line end (#3102).</li>
+        <li><strong>The boot screen shows the lector crests</strong> in place of the CrossPoint mark.</li>
+        <li>Wrapped button hints keep their second line; the Settings version line clears the Down hint; a
+          transparent sleep overlay stops drawing a white crest on black; XHTML comments are stripped in the EPUB
+          optimizer (#3028); the SD font cache is released before a transparent sleep overlay renders (#3093).</li>
+      </ul>
+      </details>
+
       <details class="relnote">
         <summary>lector 0.24.1</summary>
       <p>The nearby features of 0.24.0 tested on real readers, plus steadier font downloads.</p>
