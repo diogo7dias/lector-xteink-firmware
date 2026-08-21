@@ -609,9 +609,46 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <strong>What's new — lector 0.25.0:</strong> the power button does what its settings say, the in-book
-        menu opens where you want it, and Korean and Japanese books stop crawling in the lists. Reports version
-        <strong>lector 0.25.0</strong> on device.
+        <strong>What's new — lector 0.26.2:</strong> page turns are faster on the X3 and the ghosting is gone,
+        settings can no longer be lost when you save them, and lists fill the screen again. Reports version
+        <strong>lector 0.26.2</strong> on device.
+        <ul>
+          <li><strong>The X3 stops leaving ghosts behind.</strong> Coming back from the reader settings, or
+            changing line height, left the old page faintly under the new one. The reader was starting a refresh
+            while the screen was still busy finishing the last one, so the new page was drawn over ink that had
+            not settled.</li>
+          <li><strong>X3 page turns are 22% quicker,</strong> 638 ms down to 500 ms, by running the panel's clock
+            at the fastest rate that still prints cleanly. Five rates were measured on a device; the one above
+            this leaves a grey haze, so it is not used.</li>
+          <li><strong>Waking is quicker on both readers.</strong> The screen now powers up during the half second
+            the buttons need to settle rather than after it, and the panel clears itself during that same wait
+            instead of afterwards.</li>
+          <li><strong>Faster page turns on the X4,</strong> in Settings > System > Fast Page Turns, on by default.
+            Page turns and menu moves use the panel's cheapest waveform. Every eighth turn runs the normal one so
+            the panel never works from a stale temperature.</li>
+          <li><strong>A setting can no longer be lost while being saved.</strong> If the reader ran short of
+            memory mid-save it deleted your settings file and wrote nothing in its place, reported success, and
+            did the same on every save after that. Settings are now written to a temporary file and swapped in
+            only once they are safely on the card.</li>
+          <li><strong>Lists use the whole screen.</strong> A folder listing stopped two thirds of the way down and
+            left the rest blank. Scrolling past the last visible row also lost the highlight, so you could not see
+            what you were about to open.</li>
+          <li><strong>Favoriting a wallpaper is instant.</strong> The viewer closes straight away and the rename
+            happens later, when you open a book or lock the device, so you can work through a folder at button
+            speed.</li>
+          <li><strong>Reading progress leads each row in the file browser,</strong> in front of the title, the way
+            the home screen has always shown it.</li>
+          <li><strong>An experimental build can update itself to a stable release.</strong> Check for Updates used
+            to refuse, because it could not read an experimental version number, which left the web flasher as the
+            only way back.</li>
+          <li><strong>Deleting or pausing a wallpaper you just favorited works.</strong> It failed, because the
+            rename it waited for was what made the name it then used stop existing.</li>
+          <li><strong>Refresh and wake costs can be measured on any build,</strong> in Settings > System >
+            Performance Timings. Off by default and free while off. Every number above was established with it.</li>
+        </ul>
+        <details class="oldrel">
+        <summary>Earlier releases (0.25.0 and back)</summary>
+        <strong>Also in 0.25.0:</strong>
         <ul>
           <li><strong>A single power press sleeps the reader again.</strong> Binding an action to the power double
             click quietly took the single press with it, so the only way to sleep was through a menu. The two are
@@ -638,7 +675,7 @@
             hides under the Down hint, and a transparent sleep overlay stops painting a white crest on black.</li>
         </ul>
         <details class="oldrel">
-        <summary>Earlier releases (0.24.1 and back)</summary>
+        <summary>Earlier still (0.24.1 and back)</summary>
         <strong>Also in 0.24.1:</strong>
         <ul>
           <li><strong>Sending a book to another reader finishes.</strong> A transfer reached 100% and then said it
@@ -947,6 +984,28 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.26.2</summary>
+      <p>Faster, ghost-free page turns on the X3, and a settings file that cannot be lost while saving.</p>
+      <ul>
+        <li><strong>The X3 stops leaving ghosts behind.</strong> A refresh was being started while the screen was
+          still finishing the previous one, so a new page was drawn over ink that had not settled.</li>
+        <li><strong>X3 page turns are 22% quicker,</strong> 638 ms down to 500 ms.</li>
+        <li><strong>Waking is quicker on both readers.</strong> The screen powers up and clears itself during the
+          half second the buttons need to settle, instead of afterwards.</li>
+        <li><strong>Faster page turns on the X4,</strong> in Settings > System > Fast Page Turns.</li>
+        <li><strong>A setting can no longer be lost while being saved.</strong> Running short of memory mid-save
+          used to delete the settings file and write nothing in its place, then report success.</li>
+        <li><strong>Lists use the whole screen,</strong> and the highlight no longer disappears when you scroll
+          past the last visible row.</li>
+        <li><strong>Favoriting a wallpaper is instant,</strong> and deleting or pausing one you just favorited
+          works.</li>
+        <li><strong>Reading progress leads each row in the file browser.</strong></li>
+        <li><strong>An experimental build can update itself to a stable release.</strong></li>
+        <li><strong>Refresh and wake costs can be measured on any build,</strong> in Settings > System >
+          Performance Timings.</li>
+      </ul>
+      </details>
       <details class="relnote">
         <summary>lector 0.25.0</summary>
       <p>The power button obeys its own settings, and Korean and Japanese titles stop slowing the lists down.</p>
