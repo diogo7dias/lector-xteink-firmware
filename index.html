@@ -609,42 +609,40 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <strong>What's new — lector 0.26.2:</strong> page turns are faster on the X3 and the ghosting is gone,
-        settings can no longer be lost when you save them, and lists fill the screen again. Reports version
-        <strong>lector 0.26.2</strong> on device.
+        <strong>What's new — lector 0.26.3:</strong> Text Settings is one long list with a live preview, Embedded
+        Style splits into text and layout, fonts can be managed offline and sent reader to reader, and your
+        per-book settings survive the update. Reports version <strong>lector 0.26.3</strong> on device.
         <ul>
-          <li><strong>The X3 stops leaving ghosts behind.</strong> Coming back from the reader settings, or
-            changing line height, left the old page faintly under the new one. The reader was starting a refresh
-            while the screen was still busy finishing the last one, so the new page was drawn over ink that had
-            not settled.</li>
-          <li><strong>X3 page turns are 22% quicker,</strong> 638 ms down to 500 ms, by running the panel's clock
-            at the fastest rate that still prints cleanly. Five rates were measured on a device; the one above
-            this leaves a grey haze, so it is not used.</li>
-          <li><strong>Waking is quicker on both readers.</strong> The screen now powers up during the half second
-            the buttons need to settle rather than after it, and the panel clears itself during that same wait
-            instead of afterwards.</li>
-          <li><strong>Faster page turns on the X4,</strong> in Settings > System > Fast Page Turns, on by default.
-            Page turns and menu moves use the panel's cheapest waveform. Every eighth turn runs the normal one so
-            the panel never works from a stale temperature.</li>
-          <li><strong>A setting can no longer be lost while being saved.</strong> If the reader ran short of
-            memory mid-save it deleted your settings file and wrote nothing in its place, reported success, and
-            did the same on every save after that. Settings are now written to a temporary file and swapped in
-            only once they are safely on the card.</li>
-          <li><strong>Lists use the whole screen.</strong> A folder listing stopped two thirds of the way down and
-            left the rest blank. Scrolling past the last visible row also lost the highlight, so you could not see
-            what you were about to open.</li>
-          <li><strong>Favoriting a wallpaper is instant.</strong> The viewer closes straight away and the rename
-            happens later, when you open a book or lock the device, so you can work through a folder at button
-            speed.</li>
-          <li><strong>Reading progress leads each row in the file browser,</strong> in front of the title, the way
-            the home screen has always shown it.</li>
-          <li><strong>An experimental build can update itself to a stable release.</strong> Check for Updates used
-            to refuse, because it could not read an experimental version number, which left the web flasher as the
-            only way back.</li>
-          <li><strong>Deleting or pausing a wallpaper you just favorited works.</strong> It failed, because the
-            rename it waited for was what made the name it then used stop existing.</li>
-          <li><strong>Refresh and wake costs can be measured on any build,</strong> in Settings > System >
-            Performance Timings. Off by default and free while off. Every number above was established with it.</li>
+          <li><strong>Text Settings is one long list</strong> with a true-page preview. The tabs and the pop-up
+            sliders are gone; every row sits in one scroll, and the preview under it is the real page, so a
+            margin or a line height shows itself before you leave the screen.</li>
+          <li><strong>Embedded Style is now two switches.</strong> Embedded Text Style keeps the book's fonts and
+            emphasis; Embedded Layout Style keeps its margins, indents and spacing. A book with beautiful type and
+            cramped margins no longer forces you to choose both or neither.</li>
+          <li><strong>Installed fonts can be managed offline,</strong> and a whole font family can be sent to
+            another reader nearby, face by face, without either device going online.</li>
+          <li><strong>Your per-book settings and reading presets survive this update.</strong> Splitting Embedded
+            Style changed the shape of the file each customised book keeps beside it without saying so, which
+            would have dropped every per-book setting the first time you opened the book. Both old shapes are now
+            read and converted, and presets carry their margins and their style choice across too.</li>
+          <li><strong>Chapters that go nowhere are gone from the table of contents,</strong> and picking a chapter
+            no longer does nothing at all.</li>
+          <li><strong>Books whose contents point at files through a different folder index quickly.</strong> Every
+            chapter row used to re-read the whole book list from the card to place itself, which on a long book
+            meant a stall of well over a hundred thousand card reads.</li>
+          <li><strong>Reset Reader Settings restores your real global settings,</strong> not the shipped
+            defaults.</li>
+          <li><strong>Queued favorites appear in the file browser,</strong> and row paths no longer carry a
+            doubled slash.</li>
+          <li><strong>A stray reader nearby can no longer break a font family transfer.</strong> A third device in
+            range is answered directly and ignored, and an offer is only ever answered to the device that sent
+            it.</li>
+          <li><strong>The settings file is no longer rewritten on every press</strong> while you hold a value.
+            Sweeping a margin from 0 to 60 used to rewrite the whole file sixty times.</li>
+          <li><strong>Bar outlines stay inside their own bounds,</strong> and the X3 panel runs on stock timing
+            again, like every sibling firmware.</li>
+          <li><strong>Text Settings can no longer be bound to a gesture</strong> or put in the pop-up. A binding
+            that pointed at it reads as Disabled; pick another action for that gesture.</li>
         </ul>
         <details class="oldrel">
         <summary>Earlier releases (0.25.0 and back)</summary>
@@ -984,6 +982,33 @@
     <div class="panel whatsnew">
       <h3>Release history</h3>
       <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
+      <details class="relnote">
+        <summary>lector 0.26.3</summary>
+      <p>Text Settings is one long list with a live preview, Embedded Style splits in two, and fonts travel
+        reader to reader.</p>
+      <ul>
+        <li><strong>Text Settings is one long list</strong> with a true-page preview, instead of tabs and pop-up
+          sliders.</li>
+        <li><strong>Embedded Style is now two switches,</strong> one for the book's fonts and emphasis, one for
+          its margins, indents and spacing.</li>
+        <li><strong>Installed fonts can be managed offline,</strong> and a whole family can be sent to another
+          reader nearby.</li>
+        <li><strong>Per-book settings and reading presets survive the update.</strong> The Embedded Style split
+          changed the per-book file's shape without saying so.</li>
+        <li><strong>Chapters that go nowhere are gone from the table of contents,</strong> and picking a chapter
+          always works.</li>
+        <li><strong>Books whose contents point at files through a different folder index quickly</strong> instead
+          of stalling.</li>
+        <li><strong>Reset Reader Settings restores your real global settings.</strong></li>
+        <li><strong>Queued favorites appear in the file browser,</strong> without a doubled slash in the
+          path.</li>
+        <li><strong>A stray reader nearby can no longer break a font family transfer.</strong></li>
+        <li><strong>The settings file is no longer rewritten on every press</strong> while a value is held.</li>
+        <li><strong>Bar outlines stay inside their own bounds,</strong> and the X3 panel runs on stock timing
+          again.</li>
+        <li><strong>Text Settings can no longer be bound to a gesture</strong> or put in the pop-up.</li>
+      </ul>
+      </details>
       <details class="relnote">
         <summary>lector 0.26.2</summary>
       <p>Faster, ghost-free page turns on the X3, and a settings file that cannot be lost while saving.</p>
