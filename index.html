@@ -595,8 +595,9 @@
       <h3>Lector</h3>
       <p>Lector firmware for your Xteink X3 / X4, re-based onto the upstream CrossPoint reader with a thin
         layer of reading niceties on top. The build on this site is <strong id="flashVersionInline">…</strong>. Use
-        <strong>Update my reader</strong> if your reader already runs Lector, or the
-        <strong>full install</strong> further down if it does not.</p>
+        <strong>Update my reader</strong> if your reader already runs Lector, the
+        <strong>full install</strong> further down if it does not, and the
+        <strong>SD card download</strong> if it cannot be flashed over USB.</p>
 
       <div class="verline">Current build on this site</div>
       <div class="verval"><span id="flashVersion">…</span></div>
@@ -609,299 +610,61 @@
         running Lector</strong>. Takes about 30–60 seconds.
         <br><strong>New device?</strong> If your reader does not have Lector yet, use the
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
-        <strong>What's new — lector 0.26.6:</strong> locking with a wallpaper no longer ghosts the page underneath
-        on the X3, and "Entering sleep" now shows for every sleep face. Reports version
-        <strong>lector 0.26.6</strong> on device.
-        <ul>
-          <li><strong>Locking with a wallpaper no longer ghosts the page underneath on the X3.</strong> The
-            reader ran a full-screen clean immediately before painting the sleep face, which leaves the panel in
-            a charge state the grayscale waveform that follows is not calibrated for, so the page it had just
-            wiped came back faintly under the wallpaper. The clean is gone, which is how CrossPoint has always
-            done it. Only the grayscale sleep faces were affected; the crest face was always clean.</li>
-          <li><strong>"Entering sleep" now appears for every sleep face,</strong> wallpapers included. It used to
-            be skipped there because the clean was about to wipe it, and a wallpaper lock is the slowest one, so
-            it is the one that most wants a progress note.</li>
-        </ul>
-        <details class="oldrel">
-        <summary>Earlier releases (0.25.0 and back)</summary>
-        <strong>Also in 0.25.0:</strong>
-        <ul>
-          <li><strong>A single power press sleeps the reader again.</strong> Binding an action to the power double
-            click quietly took the single press with it, so the only way to sleep was through a menu. The two are
-            separate now: one press sleeps, two do whatever you bound.</li>
-          <li><strong>The power double click works in TXT and comic books,</strong> not only in EPUBs. It was
-            offered in the settings for every book type and silently did nothing in two of them.</li>
-          <li><strong>Waking up has its own hold setting.</strong> How long you hold the power button to wake the
-            reader is no longer tied to how long you hold it to sleep it.</li>
-          <li><strong>Buttons answer faster when a double click is bound.</strong> The reader held every power
-            press back to see whether a second one was coming. It now only waits when the action you bound could
-            actually fire.</li>
-          <li><strong>The in-book menu opens on the tab you choose.</strong> Pick it once in Settings and every
-            book opens the menu there.</li>
-          <li><strong>Korean, Japanese and Chinese titles stop the lists crawling.</strong> The file browser, the
-            home screen and the chapter list were reading each title's characters off the card one at a time, every
-            time the screen redrew. Each screen now loads them in a single pass.</li>
-          <li><strong>Update checks point at this fork.</strong> The reader was asking upstream CrossPoint whether
-            a newer build existed, and comparing version names it could not read. It reads them properly and asks
-            the right place.</li>
-          <li><strong>Furigana no longer breaks the line it sits on.</strong> A ruby annotation split across a line
-            end dropped the text under it.</li>
-          <li><strong>The boot screen carries the lector crests again.</strong></li>
-          <li>Smaller fixes: a button hint that wraps keeps its second line, the version line in Settings no longer
-            hides under the Down hint, and a transparent sleep overlay stops painting a white crest on black.</li>
-        </ul>
-        <details class="oldrel">
-        <summary>Earlier still (0.24.1 and back)</summary>
-        <strong>Also in 0.24.1:</strong>
-        <ul>
-          <li><strong>Sending a book to another reader finishes.</strong> A transfer reached 100% and then said it
-            had failed, every time. The sending reader was not building the checksum the receiver is asked to match,
-            so a book that arrived whole was thrown away at the last step.</li>
-          <li><strong>Two readers find each other on Nearby Sync.</strong> Both sat on "Looking for another reader"
-            until they gave up. Whichever reader noticed the other first stopped announcing itself and began talking
-            straight to it, and the other reader was only listening for announcements, so neither side ever heard
-            the one thing it was waiting for.</li>
-          <li><strong>A synced page lands where you were reading.</strong> The paragraph that travelled was the last
-            one on the page before the one on screen, so the other reader opened a paragraph behind. It now carries
-            the last paragraph on the page you can see. This also applies to the position sent to KOSync.</li>
-          <li><strong>Text on the nearby screens stays on the screen.</strong> The line under the heading ran off
-            both edges instead of wrapping.</li>
-          <li><strong>Installing a font survives a stuttering connection.</strong> Each file is fetched up to three
-            times, and a file that arrives corrupted is fetched again rather than ending the install. The font list
-            itself retries the same way. <em>Download all</em> and <em>Update all</em> now carry on past a family
-            that will not install and name the ones that failed at the end, and a failed update leaves the copy
-            already on your card in place.</li>
-        </ul>
-        <strong>Also in 0.20.2:</strong>
-        <ul>
-          <li><strong>An X3 could stop starting after updating to 0.20.1.</strong> It reached the SD card and then
-            reset, over and over, before it painted anything, so the reader looked dead. The settings list needed
-            more working space than the reader has; it is now built one row at a time.</li>
-          <li><strong>The screen no longer speckles while the reader sits idle.</strong> The panel was left powered
-            after every draw, and a powered panel with nothing to do lets its picture drift. It now switches off
-            shortly after you stop using it and back on by itself for the next draw.</li>
-          <li><strong>The shortcut pop-up can hold every action at once.</strong> The limit was eight of twelve; it
-            now tightens its spacing instead of running off the screen.</li>
-        </ul>
-        <strong>Also in 0.20.1:</strong>
-        <ul>
-          <li><strong>Closing the pop-up no longer throws you out of the book.</strong> Opening the double-click
-            pop-up and pressing Back to dismiss it sent the reader to the home screen instead of back to the page.
-            The reader pairs a button press with its release so a screen that closed under your thumb cannot leave
-            a stray release behind. The pop-up was closing on the press, but the pairing had already been recorded,
-            so the release that followed looked exactly like a deliberate Back on the page — and Back on a page
-            means go home. The pop-up is now offered the press first, so a press it takes is never recorded, and
-            the release is discarded the same way every other screen's is.</li>
-          <li><strong>Bookmarks and View Quotes can now be put on a shortcut.</strong> The saved bookmark list, next
-            to Toggle Bookmark that adds to it, and the saved quotes viewer, next to Grab Quote that writes to it.
-            Neither is offered when there is nothing to show.</li>
-          <li><strong>Select Chapter and Go to Percent left the list.</strong> A shortcut still set to one of them
-            switches itself off.</li>
-        </ul>
-        <strong>Also in 0.20.0:</strong>
-        <ul>
-          <li><strong>Double-click the power button to do one thing you choose.</strong> Pick it in Settings ·
-            Controls · Double-click power. It can select a chapter, jump to a percentage or a paragraph, toggle a
-            bookmark, open a footnote, open the text settings or this book's own reader settings, look a word up,
-            grab a quote, hide the status bar, sync, or hold the current wallpaper. It only works inside a book,
-            where those actions mean something.</li>
-          <li><strong>Or make it open a small menu of your own.</strong> Choose <em>Menu Pop-up</em> and then tick
-            up to eight of those actions in Settings · Controls · Pop-up Items. A double-click then shows just
-            those, over the page you are reading, and the page underneath is never redrawn. An action that cannot
-            run right now — a footnote on a page that has none — stays in the list marked <strong>[X]</strong>
-            rather than disappearing, so nothing ever moves under your thumb.</li>
-          <li><strong>The two older button shortcuts gained the same list.</strong> Long press while reading, and
-            hold inside the in-book menu, used to offer five actions between them. They now offer all fourteen.</li>
-          <li><strong>One thing this costs you.</strong> Nothing can tell a single click from the first half of a
-            double click until a moment has passed, so while a double-click action is set, a single press of the
-            power button waits about a quarter of a second before it acts. That wait only happens inside a book,
-            and only while you have an action set. Leave it off and nothing changes anywhere.</li>
-          <li><strong>Paragraph numbers are per chapter only.</strong> Whole-book numbering had to learn each
-            chapter's length by drawing it, so a chapter you had never opened counted as nothing and every number
-            after it shifted as you read more. A number written down one day could point somewhere else the next.
-            A book set to whole book now numbers per chapter.</li>
-          <li><strong>Number settings are sliders.</strong> They used to step up by one per press and wrap round
-            past the top. Reading Idle Limit alone could take fifty-seven presses to cross. The side buttons now
-            jump five at a time, Back cancels, and Reading Idle Limit shows as <em>5 min</em> instead of
-            <em>30</em>.</li>
-          <li><strong>Back on the home screen can open your reading statistics.</strong> Settings · Controls ·
-            Home back action gained a third choice next to Resume and None.</li>
-          <li><strong>Options removed.</strong> Sleep screen lost <em>None</em> and <em>Freeze</em> — Freeze drew a
-            frame that never actually appeared on the screen. Also gone: hide battery percentage, the three
-            wallpaper bulk-move rows, and the placeholder and suppress choices for images. Anything set to one of
-            those falls back to the ordinary setting.</li>
-          <li><strong>Hold Wallpaper moved.</strong> It left Settings · Display for the in-book menu, where it
-            already was, and the button shortcuts. Both act on the wallpaper the lock screen actually showed, which
-            the old settings row could not.</li>
-        </ul>
-        <strong>Also in 0.9.1:</strong>
-        <ul>
-          <li><strong>Unlocking takes half as long.</strong> Waking the reader meant holding the power button for four
-            tenths of a second. It is now two tenths. The wait exists so a knock in a pocket cannot switch the reader
-            on, and two tenths is still far longer than any accidental brush, but short enough that the reader answers
-            a hand that has already decided. You still never need to let go: the reader wakes under your finger the
-            moment the time passes. Holding power to send the reader to sleep uses the same measure, so that is now
-            quicker by the same amount.</li>
-          <li><strong>The wake screen passes twice as quickly.</strong> The banners shown while a book loads were held
-            on screen for a full second at minimum. That is now half a second. It was never an added wait — a book
-            that took a while to load already counted towards it — so this only affects the books that were ready
-            early and left you looking at the banner with nothing happening.</li>
-          <li><strong>"Open a random book on boot" now names the book it is about to open.</strong> The wake screen
-            showed the title of the book you read last, then opened a different one. The reader was choosing the
-            random book after it had already drawn the banner, so the banner could only report what it knew at the
-            time. It now chooses first and draws second, and the choice it draws is the same one it opens. Holding
-            Back to go Home instead still works exactly as before.</li>
-        </ul>
-        <strong>Also in 0.9.0:</strong>
-        <div class="warn"><strong>Your books re-read their layout once</strong> on first open after updating from 0.8.3
-          or earlier, which makes that one open slower. Reading positions and per-book settings are kept.</div>
-        <ul>
-          <li><strong>Twenty-four changes taken from upstream CrossPoint in one go.</strong> This firmware had drifted
-            almost a month behind. Everything upstream had fixed in that time is now here: a dictionary that no longer
-            runs out of memory on compressed definitions, the SD card's power rails shutting down properly on an X3,
-            spaces between Korean words surviving, and the rest. Sixteen files collided during the merge, nearly all of
-            them because the same upstream fix had already been applied here by hand; each was settled by keeping this
-            firmware's feature and folding upstream's mechanism around it.</li>
-          <li><strong>Reading positions are now anchored to the words, not the page number.</strong> Upstream changed
-            how a position is stored so it survives the page being laid out differently — a font change, a margin
-            change, a different reader entirely. Syncing with other reading apps lands in the right place because of
-            it. This is what makes your books re-read their layout once.</li>
-          <li><strong>Touchscreen support, carried in full.</strong> Neither the X3 nor the X4 has a touch panel, so
-            none of it does anything on your reader today. It is here, complete and kept in step with upstream, so that
-            a reader with a touch screen works the day it arrives rather than months later.</li>
-          <li><strong>A folder with thousands of images no longer crashes the reader.</strong> Opening one built a list
-            holding every filename in memory at once, ran the reader out of memory, and killed it outright — a sleep
-            folder full of wallpapers was enough. Names are now held packed together in one block with a hard ceiling
-            on the whole thing, so a folder too large to list in full shows what fits and says "partial" in its title
-            instead of taking the reader down. The image viewer built its list the same way and would have crashed one
-            step later; it was fixed too.</li>
-          <li><strong>Confirming something no longer carries the button press into the book.</strong> A confirmation
-            acts the moment you press, so the button is often still down when it closes. The reader took over
-            mid-press, read it as a long hold it never saw begin, and ran whatever your long-press button is set to —
-            which, on the sync setting, quietly switched on Wi-Fi and started syncing after deleting a wallpaper. A
-            press now only acts where it started.</li>
-          <li><strong>Banners no longer leave a mark on the page.</strong> The repaint that removed one was the quick
-            kind, which cannot clear what the banner left behind, so its outline stayed faintly on the page. Removing a
-            banner now does the thorough repaint that clears it. Refresh Frequency set to Never still wins.</li>
-        </ul>
-        <strong>Also in 0.8.3:</strong>
-        <ul>
-          <li><strong>The numbers are drawn in a different font.</strong> They used the menu font, which is a pixel font being drawn at 1.6 times its own grid — every stroke landed between pixels and smeared, until 8, 9 and 0 filled in and looked alike. On a real page 128 could read as 12B. They now use Spleen, drawn on its own grid exactly, so each stroke is one clean pixel.</li>
-          <li><strong>A Number Size control, Small or Double.</strong> Small is the font's own size; Double is that same size with every pixel doubled, so the shapes are identical and simply larger. There is nothing offered in between because a pixel font has nothing to draw there: half a pixel rounds unevenly and the smearing comes back.</li>
-          <li><strong>Double is the default, and your books adopt it.</strong> Set it in Settings &rarr; Reader &rarr; Number Size for newly opened books, or per book in the in-book menu under Paragraph Numbers. Books you have already opened take Double on this update; everything else you chose for them is left alone.</li>
-          <li><strong>The numbers sit on the line now, not above it.</strong> They were being centred against the text's line box rather than the text itself, which left them riding high — and by a different amount at each reading size. They are now centred on the letters themselves, measured from the shapes in the font, so they stay put whether you read at 12pt or 18pt.</li>
-        </ul>
-        <strong>Also in 0.8.2:</strong>
-        <ul>
-          <li><strong>One paragraph spacing control instead of two.</strong> Extra Paragraph Spacing and a separate Paragraph Spacing percentage both added a gap, so they fought over the same result. The percentage is gone. Extra Paragraph Spacing is now the whole control: on gives half a line of air between paragraphs, off gives none.</li>
-          <li><strong>Every paragraph starts indented.</strong> The first line of a paragraph always steps in, whether the spacing is on or off, and whatever the book's own styling says. A paragraph at the top of a page has no gap above it to read, so the indent is the cue that has to be there.</li>
-          <li><strong>First Line Indent still yours to set.</strong> It can widen that indent as much as you like, per book or globally. It just cannot take it away.</li>
-          <li><strong>Extra Paragraph Spacing is switched back on once.</strong> Your reader and every book you have already opened adopt the new pair of settings on this update. Everything else you chose is left alone. Each book re-lays out once on its first open, and you land back on the paragraph you were reading.</li>
-        </ul>
-        <strong>Also in 0.8.1:</strong>
-        <ul>
-          <li><strong>Changing a setting no longer loses your page.</strong> A page number is a product of the layout, so a new font, indent, paragraph spacing or rotation used to leave you on a page that no longer meant anything. The reader now remembers the <em>paragraph</em> you were on and finds it again afterwards. A paragraph belongs to the book; a page number belongs to the font.</li>
-          <li><strong>It lands you at the paragraph's start.</strong> If a paragraph runs onto your page from the one before, you land at its beginning, so slightly earlier than you were and never later. Re-reading a line costs nothing; skipping one is a spoiler.</li>
-          <li><strong>New reading look, applied everywhere.</strong> First line of each paragraph indented 20%, half a line of air between paragraphs, and paragraph numbers counting per chapter. Your reader and every book you have already opened adopt these once.</li>
-          <li><strong>Nothing you set yourself is lost.</strong> Books with their own settings keep every other choice; only those three values are re-seeded. A book you have already read re-lays out once on its first open, and you land back on the paragraph you were reading.</li>
-        </ul>
-        <strong>Also in 0.8.0:</strong>
-        <ul>
-          <li><strong>Delete Book, from inside the book.</strong> It sits in the in-book menu under This Book, below Remove from Recents. Remove only unfiles a book; Delete erases the file itself, together with its cache and its place in the recent list. It asks first, and it cannot be undone.</li>
-          <li><strong>Plain text files have a menu now.</strong> They had none at all. Press the confirm button while reading a .txt and a small panel opens with Font, Size and Delete Book.</li>
-          <li><strong>Text files open at the smallest size.</strong> A .txt is usually a dump rather than a typeset book, so it reads best packed small. Its font and size are kept apart from the reader font your EPUBs use, so changing one never moves the other.</li>
-          <li><strong>Changing a text file's font keeps your place.</strong> The page count changes with the font, so the reader lands on the page holding the words you were on, not on the same page number. Each text file re-reads its layout once after this update, which shows the Indexing screen briefly.</li>
-          <li><strong>Your EPUBs are untouched.</strong> Books, places and settings all carry over; nothing re-reads its layout.</li>
-        </ul>
-        <strong>Also in 0.7.4:</strong>
-        <ul>
-          <li><strong>A font size set inside a book is saved at once.</strong> It used to be recorded against the book only when you left the Reader Settings screen, so switching the reader off while still on that screen lost it. Every row of that screen now writes to the book as you change it.</li>
-          <li><strong>Paragraph numbers and Paperback Look survive a font change.</strong> Those are set from the in-book menu, and changing a book's font could previously drag your global values onto the book instead of keeping its own.</li>
-        </ul>
-        <strong>Also in 0.5.1:</strong>
-        <ul>
-          <li><strong>Text Settings opens on the tab bar again.</strong> Since 0.5.0 the screen opened with a font already highlighted, so reaching the Layout or Style tab meant scrolling back up past the font list every time.</li>
-        </ul>
-        <strong>Also in 0.5.0:</strong> twelve changes merged from CrossPoint upstream, each checked against this firmware's own source before being applied. Your books re-read their details once on first open after updating from 0.4.0 or earlier, which makes that one open slower; reading positions and per-book settings are kept.
-        <ul>
-          <li><strong>Font size is now a real point size.</strong> Settings &rarr; Reader &rarr; Font Size offered Small, Medium, Large and X Large. It now lists the actual sizes — 12 pt, 14 pt, 16 pt, 18 pt — and a font family installed on the SD card offers exactly the sizes you installed for it instead of four fixed slots. Your existing choice carries over: Small becomes 12 pt, Medium 14 pt, Large 16 pt, X Large 18 pt — in the global settings, in every book you had customised, and in every saved Reading Theme.</li>
-          <li><strong>Changing font family no longer leaves you on a size that does not exist.</strong> Move to a family that does not ship your current size and it snaps to the nearest size that family does ship.</li>
-          <li><strong>Books open at the right place again.</strong> Some EPUBs name their starting point so vaguely that it could send you to the wrong chapter.</li>
-          <li><strong>Dictionary lookups say what actually went wrong.</strong> Every failure read "Not found", whether the word was genuinely missing, memory ran out, or the dictionary file could not be decompressed.</li>
-          <li><strong>Custom fonts keep their ligatures.</strong> The font converter was discarding the joined letter pairs (fi, fl and the like) that a font ships.</li>
-          <li><strong>Book sync over Wi-Fi needs less free memory.</strong> The secure-connection floor dropped to 35 KB, so sync now succeeds where it used to give up.</li>
-          <li><strong>Translation and message fixes.</strong> Corrections to several languages, and the image viewer's error messages are translated instead of always appearing in English.</li>
-        </ul>
-        <strong>Also in 0.4.0:</strong>
-        <ul>
-          <li><strong>Books with a long comment attached no longer refuse to open.</strong> A ZIP file keeps its index near the end, and we only looked in the last kilobyte for it, so any EPUB carrying a longer trailing comment simply would not open.</li>
-          <li><strong>Books with a thin chapter list get a real one.</strong> Some converted books carry a short modern contents list alongside a complete old-style one; we always trusted the modern one. Whichever lists more chapters now wins.</li>
-          <li><strong>Long footnote links work again.</strong> Footnote addresses were capped at 96 characters and Calibre routinely makes them about 150, so those footnotes could not be followed.</li>
-          <li><strong>The home Back button is yours to set.</strong> It used to open your last book with no warning and no way to stop it. Under Settings &rarr; Controls it is now None, Resume, or Recent Books, and the on-screen hint follows what you chose. Resume stays the default, so nothing changes unless you change it.</li>
-          <li><strong>About 1.5 KB of memory handed back.</strong> Two parts of the text-direction code each kept an identical scratch pad; they now share one. Measured on the build, not estimated.</li>
-          <li><strong>The XML reader stops keeping notes nobody reads.</strong> It retained a kilobyte of parse history per parser for a lookup this firmware never performs.</li>
-        </ul>
-        <strong>Also in 0.3.1:</strong>
-        <ul>
-          <li><strong>Chapter titles are no longer numbered as paragraph 1.</strong> With Paragraph Numbers on, the little 1 landed on the chapter title and the first real paragraph got 2. Version 0.3.0 claimed to fix this and did not: the fix was written but could never run.</li>
-        </ul>
-        <strong>Also in 0.3.0:</strong>
-        <ul>
-          <li><strong>One text size across the whole interface.</strong> The battery percentage was drawn smaller than the version and page count beside it, and screen titles, tabs and pop-up headings were drawn larger. Everything now matches the home screen.</li>
-          <li><strong>The top banner is thinner.</strong> The black band that appears when the device wakes, and every message pop-up, lost eight pixels of padding.</li>
-          <li><strong>The home screen no longer has a hole in it.</strong> The "N more above" and "N more below" chips were pinned to the top and bottom of the list area while the books floated in the middle. Chips and books are now centred together as one block.</li>
-          <li><strong>Session Pages is now in Customise Status Bar.</strong> The setting always worked and the web settings page always had it; the on-device screen was simply missing the row.</li>
-          <li><strong>Paragraph Numbers, Paperback Look and Paperback Status are now in Settings &rarr; Reader.</strong> They set what a newly opened book starts with. Books you have already customised keep their own settings, and the in-book menu still overrides any of them per book.</li>
-          <li><strong>Wrapped book titles line up.</strong> A title too long for one line used to drop back to the far left, under the percentage chip. Every line now starts under the first line.</li>
-          <li><strong>Sleep-screen ghosting.</strong> The cause was found by comparing against the older Lector, which never ghosted: it limits how many quick screen updates can run in a row before forcing a clean one. That limit was lost in the rebuild and is now back. It costs one flash roughly every thirteen page turns.</li>
-          <li><strong>The in-book menu is grouped.</strong> Its rows now sit under Navigate, This Book, Look, Sleep Screen and Device headings instead of one long undivided list.</li>
-        </ul>
-        </details>
       </div>
 
-      <!-- Hide this panel again (add the hidden attribute back) whenever the channel is empty. The
-           button, its handler and its manifest all stay wired up either way, so putting a build
-           back on this channel is a matter of removing the hidden attribute and publishing the
-           payload. -->
-      <div class="rescue" id="experimentalPanel" hidden>
-        <h3>Experimental build</h3>
-        <p><strong>This build brings back the old crest.</strong> The reader no longer shows the CrossPoint mark when
-          it starts, sleeps or unlocks. One of six engraved crests is drawn instead, picked at random each time the
-          reader sleeps, and waking shows you the same one rather than swapping it under you.</p>
-        <p><strong>Check for updates was looking at the wrong firmware.</strong> It read another project's releases,
-          so it could offer you a different reader's build and install it over this one. It now reads this firmware's
-          own releases, and the version comparison behind it, which never worked, has been rewritten.</p>
-        <p><strong>The power button no longer fights itself.</strong> With a short click set to Sleep, binding an
-          action to a double click did nothing at all, because the first of the two presses put the reader to sleep.
-          A bound double click now wins, and sleeping goes back to the normal hold. How long you hold to
-          <em>wake</em> the reader is its own setting now, <strong>Settings &rarr; Controls &rarr; Wake Hold</strong>,
-          instead of being decided for you by the short-click choice. A double click also works in <code>.txt</code>
-          and <code>.xtc</code> books, where it used to be silently dead.</p>
-        <p>Korean, Chinese and Japanese books and file lists are faster: the letters a screen needs are now read from
-          the card in one pass instead of one at a time. You can also choose which tab the in-book menu opens on,
-          under <strong>Settings &rarr; Reader &rarr; Book Menu Opens On</strong>.</p>
-        <p><strong>Every book re-reads its layout once</strong> after this update, because a fix to ruby annotations
-          changes where lines break. The first time you open each book it is slower than usual. Your place in every
-          book, and any settings you set per book, are kept.</p>
-        <div class="warn"><strong>When a build is here, it is experimental.</strong> Flash it only if you can plug the
-          reader in and re-flash it. Your books on the SD card are never touched.
-          <br><br>To go back, press <strong>Update my reader</strong> above — that reinstalls the stable build.</div>
-        <div class="verline">Experimental build on this site</div>
-        <div class="verval"><span id="flashExperimentalVersion">…</span></div>
+      <div class="note"><strong>What lector 0.27.0 does</strong>
+
+        <p><strong>New</strong></p>
+        <ul>
+          <li><strong>Share Wi-Fi and OPDS logins with another reader.</strong> Settings, System, Share WiFi and
+            OPDS sends them over the Nearby radio, so a second reader does not have to be typed in by hand. The
+            other reader receives it from File Transfer, Nearby Reader. Both ask first: the bundle carries the
+            passwords in the clear over a radio that is not encrypted, and both readers delete it straight after.</li>
+          <li><strong>Pages to Paragraph, a new status bar item.</strong> Shows <code>&gt;P.0</code> on most pages,
+            meaning the paragraph you are in ends before the next one starts. <code>&gt;P.2</code> means it runs two
+            more pages.</li>
+          <li><strong>Never is back as a Refresh Frequency.</strong> It turns off the page-counted refresh only. The
+            panel is still cleaned when enough ink has moved to need it, so a long session does not end up smeared.</li>
+        </ul>
+
+        <p><strong>Fixed</strong></p>
+        <ul>
+          <li><strong>Font downloads finish.</strong> A font file arrives over TLS from a server that sends 16 KB
+            records, and the reader ran a few kilobytes short of the memory that needs, every time. It now borrows
+            the framebuffer for the length of the transfer. The progress bar holds still while a file is in flight;
+            that is the price of the file arriving at all.</li>
+          <li><strong>A download that was making progress no longer gives up.</strong> A transfer stopping part way
+            used to spend its attempts and quit while it was still moving forward, and a partial was thrown away
+            whenever the server answered a resumed request with the whole file.</li>
+          <li><strong>OPDS says when the server refused the login,</strong> instead of "Failed to fetch feed", which
+            reads as a connection problem and sends you looking in the wrong place. The catalog that ships with the
+            reader has no password set, so it needs yours.</li>
+        </ul>
+
+        <p><strong>Changed</strong></p>
+        <ul>
+          <li><strong>The Caret selection style lost its underline</strong> and sits beside the row's first line, so
+            a row that wraps is marked where reading starts. Brackets are finer.</li>
+          <li><strong>The status bar's progress bar reaches the edge of the screen</strong> instead of stopping short
+            of the bezel.</li>
+        </ul>
+
+        <p class="note">Reports version <strong>lector 0.27.0</strong> on device. Earlier releases are on the
+          <a href="https://github.com/diogo7dias/lector/releases" target="_blank" rel="noopener">releases page</a>.</p>
+      </div>
+
+      <div class="note"><strong>No USB, or a reader that will not take a flash?</strong> Download the app image and
+        put it on the SD card, then on the reader open <strong>Settings, System, Firmware from SD card</strong> and
+        pick the file. Any filename works.
+        <br>This needs a reader <strong>already running Lector</strong>: the SD picker is part of Lector itself. It
+        cannot install onto a stock reader, and it cannot revive one that does not boot — those need the full
+        install below, over USB.
         <div class="actions">
-          <button class="btn btn-ghost" id="btnExperimental" type="button">Flash the experimental build</button>
+          <a class="btn btn-ghost" id="btnDownloadBin" href="flash/firmware/latest/firmware.bin"
+             download="lector-firmware.bin">Download firmware.bin for the SD card</a>
         </div>
-        <p id="flashExperimentalMissing" class="fallback" hidden>The experimental build is not published right now.
-          The Update button above works.</p>
-
-        <!-- No hand-written test list here. One was kept for lector.exp.17, whose publish was
-             later reverted, so the page described a build that was never served. The channel
-             moves often; its notes live with its own tag instead. -->
-        <p class="note">What this build changes is listed on its
-          <a href="https://github.com/diogo7dias/lector/releases" rel="noopener">release page</a>, under the
-          <span id="flashExperimentalVersionInline">experimental</span> tag. Experimental builds are not tested on a
-          device before publishing.</p>
       </div>
+
 
       <div class="rescue">
         <h3>Install on a new device — or full rescue</h3>
@@ -957,393 +720,6 @@
       </ul>
     </details>
 
-    <div class="panel whatsnew">
-      <h3>Release history</h3>
-      <p class="relnote-lead">Every earlier release, newest first. Open one to read what changed.</p>
-      <details class="relnote">
-        <summary>lector 0.26.6</summary>
-      <p>Locking with a wallpaper no longer ghosts the page underneath on the X3.</p>
-      <ul>
-        <li><strong>Locking with a wallpaper no longer ghosts the page underneath on the X3.</strong> A
-          full-screen clean ran before the sleep face and left the panel in a charge state the grayscale
-          waveform that follows is not calibrated for.</li>
-        <li><strong>"Entering sleep" now appears for every sleep face,</strong> wallpapers included.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.26.5</summary>
-      <p>Settings becomes one long list, a firmware update survives a dropped connection, and Wi-Fi connects more
-        reliably.</p>
-      <ul>
-        <li><strong>Settings is one long list,</strong> the four categories run together and a held step button
-          jumps between sections.</li>
-        <li><strong>The in-book menu can open on its Sleep Screen tab.</strong></li>
-        <li><strong>A firmware update survives a dropped connection,</strong> retrying up to three times and
-          carrying on from where it stopped.</li>
-        <li><strong>A failed Wi-Fi connection no longer offers to forget the network.</strong></li>
-        <li><strong>Connecting is steadier, worst on the X4.</strong></li>
-        <li><strong>Downloads hold the radio at full power for their duration.</strong></li>
-        <li><strong>A section jump opens the section at its heading.</strong></li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.26.4</summary>
-      <p>The selection highlight can be styled, one margin covers all four sides again, and the X3 stops ghosting
-        its sleep screen.</p>
-      <ul>
-        <li><strong>The selection highlight has a style:</strong> Solid, Brackets or Caret, in Display.</li>
-        <li><strong>One margin for all four sides is back,</strong> under Link Margins: Off, Top+Bottom or All
-          Sides.</li>
-        <li><strong>Downloadable fonts come in nine sizes,</strong> 10 through 18 point.</li>
-        <li><strong>Five more font families:</strong> ChareInk, XCharter, Newsreader, LexendDeca and
-          AnonymousPro.</li>
-        <li><strong>Tables with merged cells read correctly,</strong> and an alignment set on the table or the row
-          reaches its cells.</li>
-        <li><strong>Sleep screens no longer ghost on the X3.</strong></li>
-        <li><strong>No white band above the status bar on the X3.</strong></li>
-        <li><strong>The Continue Reading cover no longer fills solid black</strong> once the selector moves off
-          it.</li>
-        <li><strong>The nearby reader list, the OPDS browser and the XTC chapter list</strong> follow the
-          selection style.</li>
-        <li><strong>Favoriting a wallpaper from the image viewer shows up in the file browser.</strong></li>
-        <li><strong>Chapters that carry stray data after the closing tag open again.</strong></li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.26.3</summary>
-      <p>Text Settings is one long list with a live preview, Embedded Style splits in two, and fonts travel
-        reader to reader.</p>
-      <ul>
-        <li><strong>Text Settings is one long list</strong> with a true-page preview, instead of tabs and pop-up
-          sliders.</li>
-        <li><strong>Embedded Style is now two switches,</strong> one for the book's fonts and emphasis, one for
-          its margins, indents and spacing.</li>
-        <li><strong>Installed fonts can be managed offline,</strong> and a whole family can be sent to another
-          reader nearby.</li>
-        <li><strong>Per-book settings and reading presets survive the update.</strong> The Embedded Style split
-          changed the per-book file's shape without saying so.</li>
-        <li><strong>Chapters that go nowhere are gone from the table of contents,</strong> and picking a chapter
-          always works.</li>
-        <li><strong>Books whose contents point at files through a different folder index quickly</strong> instead
-          of stalling.</li>
-        <li><strong>Reset Reader Settings restores your real global settings.</strong></li>
-        <li><strong>Queued favorites appear in the file browser,</strong> without a doubled slash in the
-          path.</li>
-        <li><strong>A stray reader nearby can no longer break a font family transfer.</strong></li>
-        <li><strong>The settings file is no longer rewritten on every press</strong> while a value is held.</li>
-        <li><strong>Bar outlines stay inside their own bounds,</strong> and the X3 panel runs on stock timing
-          again.</li>
-        <li><strong>Text Settings can no longer be bound to a gesture</strong> or put in the pop-up.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.26.2</summary>
-      <p>Faster, ghost-free page turns on the X3, and a settings file that cannot be lost while saving.</p>
-      <ul>
-        <li><strong>The X3 stops leaving ghosts behind.</strong> A refresh was being started while the screen was
-          still finishing the previous one, so a new page was drawn over ink that had not settled.</li>
-        <li><strong>X3 page turns are 22% quicker,</strong> 638 ms down to 500 ms.</li>
-        <li><strong>Waking is quicker on both readers.</strong> The screen powers up and clears itself during the
-          half second the buttons need to settle, instead of afterwards.</li>
-        <li><strong>Faster page turns on the X4,</strong> in Settings > System > Fast Page Turns.</li>
-        <li><strong>A setting can no longer be lost while being saved.</strong> Running short of memory mid-save
-          used to delete the settings file and write nothing in its place, then report success.</li>
-        <li><strong>Lists use the whole screen,</strong> and the highlight no longer disappears when you scroll
-          past the last visible row.</li>
-        <li><strong>Favoriting a wallpaper is instant,</strong> and deleting or pausing one you just favorited
-          works.</li>
-        <li><strong>Reading progress leads each row in the file browser.</strong></li>
-        <li><strong>An experimental build can update itself to a stable release.</strong></li>
-        <li><strong>Refresh and wake costs can be measured on any build,</strong> in Settings > System >
-          Performance Timings.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.25.0</summary>
-      <p>The power button obeys its own settings, and Korean and Japanese titles stop slowing the lists down.</p>
-      <ul>
-        <li><strong>A single power press sleeps the reader again.</strong> Binding the power double click disabled
-          the single press along with it. The two are independent now.</li>
-        <li><strong>The power double click fires in TXT and comic books.</strong> The setting was offered for every
-          book type but only wired up for EPUBs.</li>
-        <li><strong>The wake hold has its own setting,</strong> separate from the hold that puts the reader to
-          sleep.</li>
-        <li><strong>Power presses are only held back when the bound double click could run,</strong> so an
-          unbound reader answers the first press immediately.</li>
-        <li><strong>The in-book menu opens on a tab you choose</strong> in Settings.</li>
-        <li><strong>CJK titles load in one pass per screen.</strong> The file browser, home lists and chapter list
-          were faulting each character off the card separately on every redraw. Partial port of upstream #3071,
-          plus #3026 for UI text.</li>
-        <li><strong>Update checks query this fork</strong> instead of upstream CrossPoint, and compare version
-          names they can actually parse.</li>
-        <li><strong>Ruby annotations no longer flush mid-group,</strong> which dropped the text under furigana at a
-          line end (#3102).</li>
-        <li><strong>The boot screen shows the lector crests</strong> in place of the CrossPoint mark.</li>
-        <li>Wrapped button hints keep their second line; the Settings version line clears the Down hint; a
-          transparent sleep overlay stops drawing a white crest on black; XHTML comments are stripped in the EPUB
-          optimizer (#3028); the SD font cache is released before a transparent sleep overlay renders (#3093).</li>
-      </ul>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.24.1</summary>
-      <p>The nearby features of 0.24.0 tested on real readers, plus steadier font downloads.</p>
-      <ul>
-        <li><strong>Nearby file transfer completes.</strong> The sending reader never built the checksum the receiver
-          checks against, so every transfer failed at 100%. It also accepted an acknowledgement for a chunk already
-          past, which could skip a chunk the receiver never got.</li>
-        <li><strong>Nearby Sync pairs.</strong> The reader that paired first stopped announcing itself, and an
-          unpaired reader accepted announcements only, so both sides searched until they timed out. A reader now
-          pairs on any packet that names the book.</li>
-        <li><strong>A synced position points at the last paragraph on the page you see,</strong> not the last one on
-          the page before it. The same applies to the position pushed to KOSync.</li>
-        <li><strong>Font downloads retry.</strong> Up to three attempts per file and for the font list, with a
-          corrupted file counting as a reason to fetch again. A batch carries on past a family that fails, and a
-          failed update no longer deletes the font already installed.</li>
-        <li><strong>The hint text on the nearby screens wraps</strong> instead of running off both edges.</li>
-      </ul>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.24.0</summary>
-      <p>Two readers can talk straight to each other over their radios, with no Wi-Fi network, server, account or computer in between.</p>
-      <ul>
-        <li><strong>Nearby Sync.</strong> Open the same book on two readers, pick Nearby Sync from the in-book menu on both, and each screen shows both pages and says which is further along. Either reader can take the other's page or send its own, and nothing moves until it is confirmed on the reader it would move.</li>
-        <li><strong>Nearby file transfer.</strong> Send the book you are reading straight from the in-book menu, or any supported file by holding Confirm on it in the file browser. The receiving reader waits under File Transfer, Nearby Reader. Books and images are carried (.epub, .txt, .md, .xtc, .xtch, .pxc, .png, .bmp); a file already on the card is never overwritten, and a cancelled or damaged transfer leaves nothing behind.</li>
-        <li><strong>Device Name</strong> in Settings, System, so a sync screen can say which reader it is talking to. Left empty it names itself from its own hardware.</li>
-        <li><strong>Tall images no longer run off the bottom of the page,</strong> and titles and authors read correctly in books whose publishers label those fields unusually. The image fix moves lines, so every book rebuilds its page cache once on first open.</li>
-      </ul>
-      <p>Both nearby features were untested on a real device when this build went out.</p>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.23.1</summary>
-      <p>Two faults 0.23.0 introduced.</p>
-      <ul>
-        <li><strong>Buttons stopped responding.</strong> The change that made buttons act on the press could leave them armed for a release that never came, so the reader ignored them entirely.</li>
-        <li><strong>The status bar rearranged itself</strong> on books whose settings were saved before this version.</li>
-      </ul>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.23.0</summary>
-      <p>Buttons act the moment you press them, the in-book menu is sorted into sections, and the status bar belongs to the book rather than the device.</p>
-      <ul>
-        <li><strong>Page turns and menus fire on the press,</strong> not on the release, so the reader feels immediate. Hold actions fire the moment the threshold passes rather than waiting for you to let go.</li>
-        <li><strong>The in-book menu is grouped into sections</strong> with filled headers, and Auto Page Turn, Go Home and Book Info left it.</li>
-        <li><strong>The whole status bar is per book,</strong> layout included, so one book can carry a different bar from the next.</li>
-        <li><strong>A wallpaper added while the card was in the reader</strong> is no longer missed when it reuses a freed directory slot.</li>
-      </ul>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.22.1</summary>
-      <p>Fix: an empty <code>/.sleep</code> folder no longer hides every wallpaper in <code>/sleep</code>.</p>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.22.0</summary>
-      <p>The wallpaper index is patched in place, so deleting a wallpaper or adding a single file no longer triggers a scan of the whole folder. Sleeping and waking are quicker on a card with many wallpapers.</p>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.21.1</summary>
-      <p>Fix: a custom wallpaper is cleared on wake instead of lingering under the page.</p>
-      </details>
-
-      <details class="relnote">
-        <summary>lector 0.21.0</summary>
-      <p>The settings screen is sorted into named sections, the reader gained a night mode and a much better dictionary, and the sleep screen can now be a see-through overlay.</p>
-      <ul>
-        <li><strong>Settings is grouped.</strong> Every tab was a flat run of rows with nothing to say where one subject ended and the next began — fifteen of them on Display, seventeen on System. Each tab is now split into named sections with a heading above each group, so Sleep Screen and Wallpaper read as different subjects, and Wi-Fi no longer sits next to Clear Reading Cache as though they were the same kind of thing. Headings are dividers, not options: the cursor steps over them. A heading only appears when it has rows under it, so a section that is empty on your device is not shown at all.</li>
-        <li><strong>The settings list scrolls.</strong> It used to move a whole page at a time, so one step past the last visible row replaced the entire screen and you lost your place. It now slides by a single row, and the rows around the cursor stay where they are. Arrows at the right edge tell you whether there is more above or more below, separately. Only the System tab is long enough to need this; the rest gained their headings without moving.</li>
-        <li><strong>Night mode.</strong> A white-on-black page, set in Settings · Reader. Pictures keep their own polarity rather than being inverted along with the text, so a photograph still looks like a photograph.</li>
-        <li><strong>Dictionary definitions are laid out properly.</strong> They are rendered through the same engine that draws your books, so a definition with headings, lists or emphasis reads as it was written instead of as one run of plain text. StarDict synonym files are also read now, so a lookup finds a word through its alternative spellings.</li>
-        <li><strong>See-through sleep screens.</strong> Drop a picture with transparency at <code>/sleep-overlay.png</code> or <code>/sleep-overlay.bmp</code>, or a folder of them at <code>/.sleep-overlay</code>, and it is drawn over the page you were reading rather than replacing it. Soft edges are stippled, because the panel has no grey. Night mode is baked into the picture first, so a page that was white-on-black stays that way when the reader sleeps.</li>
-        <li><strong>The boot screen is skipped</strong> on startup, and a custom sleep screen is now kept during wake instead of being redrawn.</li>
-        <li><strong>Ruby annotations no longer push the words under them around.</strong> The space an annotation needs is now reserved on both edges of the line, so a wide one cannot spill past the right margin when the line is justified, and Chinese, Japanese and Korean lines stop breaking early to leave room for it.</li>
-        <li><strong>Fixes.</strong> Your place in a book could roll backwards; it no longer does. Settings did not redraw after you changed the language. A button hint too wide for its button now wraps instead of overflowing. Reading the reader's MAC address with Wi-Fi switched off worked incorrectly.</li>
-      </ul>
-      <p><strong>Every book re-reads its layout once</strong> after this update, because the ruby fix changes where lines break — so the first time you open each book it is slower than usual. Your place in every book, and any settings you set per book, are kept.</p>
-      <p><strong>Worth checking after you update.</strong> This build has not been run on a device yet, so if something here is wrong, these are the places it will show.</p>
-      <ol>
-        <li>Open Settings · expect a heading above each run of rows, on all four tabs.</li>
-        <li>Press Next through a tab · expect the cursor to jump over every heading and never land on one.</li>
-        <li>Go to System and hold Next to the bottom · expect the list to slide one row at a time, not flip.</li>
-        <li>Watch the right edge of System · expect the up arrow to appear only once you have scrolled down.</li>
-        <li>Set Controls · Short Power Button Click to Footnotes · expect Quick-return to appear under the POWER BUTTON heading.</li>
-        <li>Long-press Next to change tab · expect the new tab to open on its first real row, scrolled to the top.</li>
-        <li>Turn on Reader · Night mode, open a book with a picture in it · expect white text on black and the picture still readable.</li>
-        <li>Look up a word · expect the definition laid out with its headings and lists, not as one block.</li>
-        <li>Open the first book · expect it to be slow once, then normal, and to open at the page you left.</li>
-        <li>Change the language in Settings · expect the screen to redraw in the new language straight away.</li>
-      </ol>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.20.2</summary>
-      <p>Two fixes for faults 0.20.1 introduced, and one change to the shortcut pop-up.</p>
-      <ul>
-        <li><strong>An X3 could stop starting after updating to 0.20.1.</strong> It got as far as finding the SD card and then reset, over and over, before it painted anything — so the panel kept the last picture it had been given and the reader looked dead rather than stuck. The cause was the settings list, which had grown one entry too many. It was built all in one go, which needed 15,584 bytes of working space against the 16,376 the reader has, and the reader halted itself the moment it ran past the end. The list is now built a row at a time and needs 272 bytes. The settings themselves are unchanged.</li>
-        <li><strong>The screen no longer speckles while the reader sits idle.</strong> An X3 could go from a clean screen to a grey, mottled one — with older text faintly showing through — within seconds of being set down, untouched. The screen holds its picture with no power at all, but the reader was leaving the panel powered after every draw, and a powered panel with nothing to do lets its picture drift. That had been true for a long time; it turned into a visible fault when the reader started power-napping a second after your last press, which was tested on the X4 and not the X3. The reader now switches the panel off shortly after you stop using it, and switches it on again by itself the next time it draws. Nothing is visible while it happens: no flash, and the picture stays where it is.</li>
-        <li><strong>The shortcut pop-up can hold every action at once.</strong> The limit was eight of the twelve. It existed because the pop-up grows with the number of rows and would have run off the screen; it now tightens its spacing instead, so the limit is gone. A tap and the row it lands on are also now measured the same way, which they were not before.</li>
-      </ul>
-      <p>Nothing re-reads its layout. Your books, your places in them, and their settings are untouched.</p>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.20.1</summary>
-      <p>One fix on top of 0.20.0, and two changes to what a button shortcut can be set to.</p>
-      <ul>
-        <li><strong>Closing the double-click pop-up with Back went home instead of back to the page.</strong> The reader pairs a button press with its release, so that a screen closing under your thumb cannot leave a stray release behind. The pop-up closed on the press, but the pairing had already been recorded, so the release that followed was indistinguishable from a deliberate Back on the page — which goes home. The pop-up now gets the press before it is recorded, and the release is discarded like any other screen's. Confirm had the same hole and would have opened the reader menu behind the pop-up.</li>
-        <li><strong>Bookmarks and View Quotes added</strong> to the actions a shortcut can run, beside Toggle Bookmark and Grab Quote. Neither is offered when there is nothing to show.</li>
-        <li><strong>Select Chapter and Go to Percent removed.</strong> A shortcut still set to one of them switches itself off.</li>
-      </ul>
-      <p>Nothing re-reads its layout. Your books, your places in them, and their settings are untouched.</p>
-      </details>
-      <details class="relnote">
-        <summary>lector 0.20.0</summary>
-      <p>A double-click of the power button became a shortcut you choose, and the settings screens lost a pile of options that were not earning their place.</p>
-      <ul>
-        <li><strong>Double-click power.</strong> Set it in Settings · Controls. Fourteen actions to choose from, all of them things you could already do from the in-book menu. It only works inside a book.</li>
-        <li><strong>Menu Pop-up.</strong> Tick up to eight actions and the double-click shows just those, over the page, without redrawing it. Actions that cannot run right now keep their place in the list marked [X], so the rows never move.</li>
-        <li><strong>The cost.</strong> With an action set, a single power press waits about a quarter of a second, because nothing can tell one click from the first half of two until the moment has passed. Inside a book only, and only while it is set.</li>
-        <li><strong>Long press while reading</strong> and <strong>hold inside the in-book menu</strong> now offer the same fourteen actions instead of five.</li>
-        <li><strong>Paragraph numbers are per chapter only.</strong> Whole-book numbering counted a chapter by drawing it, so unread chapters counted as nothing and the numbers moved as you read. It is gone.</li>
-        <li><strong>Number settings are sliders</strong>, with the side buttons jumping five at a time and Back cancelling. Reading Idle Limit now reads as a time rather than as a raw number.</li>
-        <li><strong>Back on the home screen</strong> can open your reading statistics.</li>
-        <li><strong>Removed:</strong> the None and Freeze sleep screens, hide battery percentage, the three wallpaper bulk-move rows, and the placeholder and suppress image options. Hold Wallpaper moved to the in-book menu and the button shortcuts.</li>
-      </ul>
-      <p>Only books that were set to show images as placeholders or to suppress them re-read their layout, once. Every other book, your place in it, and its settings are untouched.</p>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.7.4</summary>
-      <p>One fix. A book now keeps the text settings you give it the moment you give them, instead of at the moment you leave the screen.</p>
-      <ul>
-        <li><strong>What was wrong.</strong> Open a book, open its Reader Settings, change the font size. The page changed at once, so the change looked done. It was not recorded against the book until you pressed Back to leave that screen. Switch the reader off while still on the screen and the book forgot it. Your global default kept the new size; the book you were actually reading went back to what it had.</li>
-        <li><strong>What changed.</strong> Every row of that screen — font, size, line spacing, paragraph spacing, alignment, margins, indent, hyphenation, the lot — is written against the book at the instant you change it. The screen already saved your global settings on every row; it simply never told the book.</li>
-        <li><strong>Your paragraph numbers and Paperback Look are safe.</strong> Those three are set from the in-book menu, not from that screen, and the settings screen reports the global values for them. Changing a book's font used to be able to drag the global values onto the book. It takes the book's own now.</li>
-        <li><strong>Changing your mind costs nothing.</strong> Change a row and change it straight back, and a book that was following your global settings goes on following them. It does not quietly become a book with settings of its own.</li>
-      </ul>
-      <p>Nothing re-reads its layout after this update. Your books, your places in them, and their settings are untouched. Tested on an X4.</p>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.7.3</summary>
-      <p>Two fixes from upstream, both of which had to be applied by hand because this firmware had already changed the same code.</p>
-      <ul>
-        <li><strong>Spaces between Korean words are back.</strong> The layout engine is allowed to break a line between almost any two Chinese or Japanese characters, and it was treating that permission as a sign the two words were joined, so it closed the gap between them. That is correct for Chinese and Japanese, which are written without spaces, and wrong for Korean, which is not. A gap is now only closed when the book's own markup genuinely runs the two words together.</li>
-        <li><strong>An image page after a sync is clean.</strong> Pages with an image on them skip the normal screen-refresh cycle and paint in two quick passes instead. Coming back from a KOReader sync the reader restarts quietly, and those two quick passes then ran over whatever the screen was still holding, leaving the old view mixed into the picture. Image pages now clear to a proper base first.</li>
-      </ul>
-      <p><strong>Every book re-reads its layout once</strong> after this update, so the first time you open each book it is slower than usual. Your place in every book, and any settings you set per book, are kept.</p>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.7.2</summary>
-      <p>The hardware kit this firmware sits on had been left fourteen versions behind since 0.7.0, held there by a single disagreement about one pin. That is now settled and the kit is current.</p>
-      <ul>
-        <li><strong>The disagreement, and why it mattered.</strong> Pin GPIO13 is the battery latch on an X4 — hold it high and the reader stays alive, drop it and it switches off. The kit says that on an X3 the same pin switches the SD card's power instead. Both cannot be true, and being wrong meant either a reader that would not switch off or a card that lost power at the wrong moment. It was settled by building a firmware that simply stopped touching the pin on an X3 and trying it: the reader still switched off, so the pin is not the off switch there. The kit was right.</li>
-        <li><strong>But the kit cannot own that pin by itself.</strong> Two builds proved it, both by drawing the sleep picture half-finished or almost blank. That pin is a flash pad, and the chip pulls unused flash pads low every time the reader dozes. Only a deliberate hold survives that, and only this firmware knows to apply one — the kit has no reason to suspect the pin is special. The sleep picture is read from the SD card, so the card losing power mid-doze is exactly what a half-drawn picture looks like. The hold now stays on both readers, under both meanings.</li>
-        <li><strong>What the kit brings.</strong> A ghosting fix and partial-refresh support for the UC8179 panel, revised greyscale waveforms for it, an on-demand memory reclaim, and display-controller detection that probes the panel over its own bus rather than trusting a factory value in flash — that value can be overwritten by a full flash from another unit, and then names the wrong screen.</li>
-        <li><strong>Tested on both readers</strong> before release: sleep picture, switching off from the menu and by holding the power button on battery, reading from the card, waking, and a book with images in it.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.7.1</summary>
-      <p>The home screen had a Recent Books button sitting between Browse Files and OPDS Browser. It opened a list of the books you have in progress — which is what the home screen was already showing above it, with the same titles, the same authors and the same percentages. It is gone, and the space it was using now belongs to the list that was doing its job.</p>
-      <ul>
-        <li><strong>The book list fills the screen.</strong> It was drawn into a fixed-height tile with the menu pinned below it, so a shorter menu simply left a blank band. The menu is now anchored to the bottom, the list runs from the header down to it, and the list will draw as many books as fit — up to the thirteen the reader remembers, rather than the eight it was silently capped at.</li>
-        <li><strong>The Back button on the home screen.</strong> It could be set to open Recent Books. That option is gone with the screen. If you had it set that way, Back now resumes your last book instead. Nothing else you have set changes.</li>
-        <li><strong>Settings &rarr; Display &rarr; Author On Home.</strong> Titles are followed by the author's initials — "by GW". Set this to Full Name and you get "by Gene Wolfe". Initials stays the default.</li>
-        <li><strong>A dictionary lookup no longer runs out of memory.</strong> Compressed dictionaries (the <code>.dict.dz</code> kind) had their whole definition block read into memory at once. Index files are also opened once per lookup now instead of repeatedly, which makes every lookup quicker.</li>
-        <li><strong>Text settings save the moment you change them.</strong> They were written when you left the screen, so a reader that ran out of battery on that screen lost the change. One gap remains, and it is worth knowing: a font or size changed from <em>inside a book</em> belongs to that book alone, and is still only written when you close the settings screen normally. Changed from the Settings menu, it saves immediately.</li>
-        <li><strong>Book text no longer needs one unbroken block of memory.</strong> It was held in a structure that must sit in a single run; on a reader whose memory has been chopped into small pieces by a long session, a large chapter could fail to find one. It now uses many small blocks instead.</li>
-        <li><strong>Smaller things.</strong> The language list is ordered by each language's own name rather than by its internal code, so it reads in a sensible order. The update screen printed "Cancel" and "Update" twice — once as touch targets, which no Xteink has.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.7.0</summary>
-      <p>The reader used to stay fully awake between your button presses, spinning through a loop that did nothing but ask "has a button been pressed yet?" thousands of times a second. It now sleeps in that gap and wakes on the press. The change comes from upstream CrossPoint, where its author measured it on an X3 with a power meter: about <strong>three times longer active reading</strong>, an idle draw of roughly 2.93 mA on a page, and about 30.24 mC per page turn.</p>
-      <p>This build spent three days in the experimental channel and did not survive the first one intact. What follows is the whole of it, including the part that went wrong.</p>
-      <ul>
-        <li><strong>The first attempt dropped roughly one press in three.</strong> Sleeping between presses is safe. This also slept <em>during</em> a screen refresh, in 20 ms slices — and the front and side buttons are not simple on/off pins the chip can wake on. They are resistor-ladder inputs on a single analogue pin, which can only be read by asking. A tap that began and ended inside one sleeping slice was never asked about, so it never happened. Every screen update is a refresh, so menus dropped presses exactly like books did.</li>
-        <li><strong>It was reported upstream with the mechanism, and fixed there.</strong> Three builds were flashed to an X4 to isolate it — the full change, the change with in-refresh sleeping removed, and the stable build as a control — and the result went to the change's author as a comparison table. He reproduced it, disagreed with the first guess at the cause, found two deeper reasons, and fixed both. Sleeping halts the operating system's clock without telling it, so a pause written as "wait 10 ms" was really lasting about 210 ms; and the reader was handed back too little time to finish even one pass of its own loop between slices. Both are corrected upstream, and he reports no measurable energy cost for the correction.</li>
-        <li><strong>Tested on both readers before it came here.</strong> Eight rapid taps give eight page turns in a book and eight moves in a menu, on an X4 and on an X3. Powering off from the menu and by holding the power button both work on battery with nothing plugged in — that last one matters more than it sounds, because sleeping holds a pin high that the battery latch also uses, and getting it wrong means a reader that will not switch off.</li>
-        <li><strong>Tilt page turn is gone.</strong> The X3 has a motion sensor and could turn pages by tilting; the X4 has none, so the setting was invisible there. It went unused, and its driver, its setting, and its text in all 31 languages are removed. Your other settings are untouched.</li>
-        <li><strong>Five more fixes merged from upstream.</strong> Wi-Fi file transfer picks its second port from the first rather than assuming one; ruby text (the small pronunciation glosses above Japanese and Chinese characters) stops reserving memory for glosses that are not there; the reading-position extension is offered only to the official sync server instead of to every server; the motion sensor is powered down properly on readers that have one; and the unbricking instructions are written down.</li>
-        <li><strong>The hardware kit underneath moved up.</strong> Detecting whether a reader is an X3 or an X4 was done here with a hand-written probe; that job now belongs to the shared kit upstream, and 134 lines of ours came out. This is why the X3 was tested separately before release rather than trusted to be fine.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.6.1</summary>
-      <p>0.6.0's tabbed menu went onto a device and came back with two faults, both of which were mine. The five tab labels measured 531 pixels against the 460 the bar has, so "Device" was painted past the right edge and shown as "De"; and holding Up or Down walked into the tab's rows rather than moving between tabs, which is the natural thing to try when a bar of tabs is in front of you.</p>
-      <ul>
-        <li><strong>Shorter labels, and a bar that cannot overrun.</strong> "This Book" is now "Book" and "Sleep Screen" is now "Sleep" — neither word was doing any work, and the set drops to 392 pixels. Independently of that, the tab bar now measures itself before drawing: it never paints past its right edge, and if the labels ever do outgrow the bar it scrolls so that the selected tab is the one guaranteed to be readable. That second part is a guard rather than a fix — measured across all 31 translations and both built-in interface fonts, nothing overflows today.</li>
-        <li><strong>Holding Up or Down switches tab.</strong> A tap moves one step along the ring as before. This is the same split Text Settings and Settings use, so it is not a new gesture, and it is why row movement here now happens on release rather than on press: that is what lets a tap and a hold mean two different things without the hold also stepping the cursor when you let go.</li>
-        <li><strong>Arriving at a tab by holding leaves you on the tab bar.</strong> Tabs still remember their own row, but a switch made from the tab bar lands on the tab bar. Without this the bar stopped drawing as focused half way through a hold, the Confirm hint reverted from the next tab's name to "Select", and a Confirm meant as "next tab" would have fired whatever row the new tab was parked on — in the Sleep tab, that can be Delete Wallpaper. The confirmation screen would still have caught it, but the row is placed last precisely so a stray press cannot reach it.</li>
-        <li><strong>Two code reviews, and what they found.</strong> Both were run against the first fix before it shipped. The cursor-parking fault above is theirs. So is a correction to three comments I had written into the code: one of them justified a layout decision with measurements taken through a settings key that does not exist, which had sized the name of the key rather than the text. Remeasured properly, the widest tab bar in any language is Portuguese (PT) Text Settings at 446 pixels. The decision was right; the reason given for it was not. Both reviews also found ways the shared button-hold timer can misbehave in sequences involving two buttons at once. Those are older than this change, shared by every screen, and the obvious one-line fix breaks the volume-style sliders, so they are written down rather than patched in next to a UI change.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.6.0</summary>
-      <p>The in-book menu had grown to about twenty-eight rows in a single list, with five headings printed inside it to mark where one group ended and the next began. Those headings were rows: they took a slot, they could not be selected, and the Up/Down handler had to step over them. The groups are now tabs, and each tab draws only its own rows. This is a rearrangement, not a cull — every option is still present, in the group it was already in.</p>
-      <ul>
-        <li><strong>Five tabs, and one of them comes and goes.</strong> Navigate, This Book, Look, Sleep Screen and Device. The Sleep Screen group was always conditional — it acts on the wallpaper the lock screen last showed, so it is meaningless when the last sleep screen was not a wallpaper, or when that file has since left the card. As a tab it is simply not built in that case, so there is never an empty tab to land on, and the bar shows four.</li>
-        <li><strong>Navigation reuses the Text Settings idiom.</strong> The tab bar is position 0 of the Up/Down ring, so walking off either end of a tab's rows lands on it. Switching tab is Confirm while the tab bar is selected, which wraps. It is not a direction press, and that is a hardware constraint rather than a preference: on this device Left and Right are the same logical axis as Down and Up (<code>NavNext</code> is Down or Right, <code>NavPrevious</code> is Up or Left), so there is no spare direction to spend. Text Settings switches tabs on Confirm from its tab bar too, so the gesture is not a new one to learn.</li>
-        <li><strong>Each tab keeps its own cursor.</strong> Leave a tab part-way down its list, visit another, come back, and the selection is where you left it rather than reset to the top.</li>
-        <li><strong>The menu opens on the tab it should.</strong> Focus starts on the tab bar, and the active tab is Sleep Screen whenever a wallpaper is in play — this menu is normally reached by waking the device, and the wallpaper rows are the only ones here about that moment rather than about the book. Otherwise it opens on Navigate. Delete Wallpaper stays last in its tab and is never the row selected on arrival.</li>
-        <li><strong>Row movement is unchanged.</strong> It stays on press-plus-hold-repeat, like every other list in the firmware. Text Settings moves on release because it spends the hold gesture on tab switching; this menu does not, and its press/release behaviour was left exactly as it was rather than quietly re-tuned.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.5.1</summary>
-      <ul>
-        <li><strong>The Text Settings screen opens with the tab bar focused, not a font.</strong> 0.5.0 made the Family and Size tabs open on whatever is currently selected, which is right — but the same code also ran for the tab you actually opened the screen on, so a font row came up highlighted and any trip to Layout or Style started by scrolling back out of the list. Reported against upstream's release candidate and fixed in one line; taken here because 0.5.0 shipped the change that caused it.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.5.0</summary>
-      <p>This release is a merge rather than a hand-picked set: twelve commits that had already landed on CrossPoint's development branch were taken in one go. Eleven files collided, and every one of them collided over the same upstream change — the reader's font size stopped being an abstract Small/Medium/Large/X&nbsp;Large slot and became a real point size. Half of that change touched files this fork had barely modified and merged itself automatically, so declining the other half was never actually an option; the choice was between adopting it properly and leaving the firmware in two minds about what a font size is. It was adopted properly. The rule used to settle every collision is the one this fork has used since its first upstream merge: our feature stays, their mechanism is folded around it. The light-sleep work that would roughly triple reading time per charge is still open upstream, still unreviewed, and still not taken here for the same reason as last time — it changes when the device is awake and listening, and that can only be proven on real hardware over several days.</p>
-      <ul>
-        <li><strong>Font size is a point size now, and your existing setting survives it.</strong> The reader stored a number from 0 to 3 meaning Small, Medium, Large or X&nbsp;Large, and mapped it to a font at render time. That mapping had broken more than once, and it forced every font family — including one you installed yourself at whatever sizes you chose — into exactly four slots. The setting now holds the point size itself, the menu lists what the active family actually ships, and switching to a family without your current size snaps to the nearest size it does have. The migration is the delicate part, and it is deliberate: no font is renderable at 0, 1, 2 or 3, so that range is unambiguously an old value and is folded up to 12, 14, 16 and 18 wherever it appears. That includes two stores upstream does not have and therefore did not migrate — the per-book override each customised book keeps beside it, and every saved Reading Theme. The per-book file's version was raised, but the old version is deliberately still accepted and converted rather than rejected: rejecting it is the normal way this fork retires an old format, and here it would have silently discarded every per-book setting the first time the device booted. Two tests were added that fail if that ever regresses.</li>
-        <li><strong>A book reading at its own font settings can no longer overwrite your global ones.</strong> Upstream's version of the font loader persists a size correction whenever the loaded font differs from the setting, which is right when the global selection is what is being loaded. This fork also loads fonts on behalf of a single customised book, and on that path the same code would have written that book's size back into your global settings. Every write to the global settings is now behind the flag that distinguishes the two paths.</li>
-        <li><strong>Books open where they should.</strong> An EPUB may name a starting location, and some name it so ambiguously that the reader resolved it to the wrong chapter. Ambiguous references are now ignored in favour of the ordinary starting point. The stored book details change shape for this, so every book re-reads them once on first open; reading positions are not affected.</li>
-        <li><strong>A failed dictionary lookup tells you which failure it was.</strong> Missing word, out of memory, and a file that could not be decompressed all reported "Not found", which made a broken dictionary file indistinguishable from a word that simply is not in it.</li>
-        <li><strong>Custom fonts keep their ligatures.</strong> The converter that turns a desktop font into one this device can use was discarding the joined letter pairs — fi, fl and their relatives — that the source font ships.</li>
-        <li><strong>Reading-position sync needs 5&nbsp;KB less free memory.</strong> The floor the secure connection insists on before it will start dropped to 35&nbsp;KB, which is the difference between syncing and giving up on a device that has a book open.</li>
-        <li><strong>Interface text fixes.</strong> Corrections across several translations, and the image viewer's error messages now go through the translation system instead of always appearing in English.</li>
-        <li><strong>One upstream fix was examined and deliberately not taken.</strong> A change that binds each settings label to its stored value fixes, among other things, a status-bar clock whose labels were listed in a different order than the values behind them. That fault cannot occur in this firmware: the status bar here was rebuilt around per-item positions and has no such setting. The half that does apply — binding the sleep-screen labels — was taken, and this fork's two extra sleep screens were bound along with it.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.4.0</summary>
-      <p>Upstream CrossPoint has around sixty open pull requests and no approvals among them, so every candidate here was read against this firmware's own source rather than trusted from its description. Six were small enough to verify end to end, and all six are genuinely absent from this build; the larger ones were deliberately left alone. The one being watched but not taken is upstream's light-sleep work, which claims roughly three times the reading time per charge: this fork is unusually not blocked on it, because the display driver hook it depends on already sits in our vendored SDK while upstream still waits. It was skipped because it changes exactly when the device is awake and listening, which is the behaviour this firmware has already spent several releases getting right, and it cannot be proven anywhere but on a real device over several days.</p>
-      <ul>
-        <li><strong>An EPUB with a trailing comment no longer fails to open.</strong> A ZIP archive stores its directory at the end, preceded by an optional comment of up to 65,535 bytes, so the record can sit as far as 65,557 bytes from the end of the file. The scan looked only at the final kilobyte, so any book packed with a longer comment was rejected outright. The scan now walks backwards from the end in four-kilobyte windows, each overlapping the last by twenty-one bytes so a record straddling a boundary is never missed, and stops at the first match — which, searched in that order, is guaranteed to be the real record rather than a stray signature inside the comment. Two other faults went with it: the old code read a four-byte value through a pointer cast that is undefined behaviour on this processor when the address is not aligned, and it allocated its buffer by hand with an error path that leaked.</li>
-        <li><strong>A sparse chapter list now loses to a complete one.</strong> Books converted by Amazon and Calibre often ship a modern navigation document listing only parts and front matter next to an older-style index carrying every chapter. The reader took the modern one whenever it parsed at all, so those books opened with a nearly empty contents screen. A navigation document covering less than half the book's sections is now treated as suspect, the older index is given a chance, and whichever lists more chapters is kept — with the first one re-read if the second turns out no better. The entry counter is reset when a pass restarts, so a rerun cannot add its total on top of the discarded one.</li>
-        <li><strong>Footnote links longer than 96 characters are no longer truncated.</strong> Calibre generates targets of the shape <code>Author-Title_split_042.html#_ftn7</code>, which after URL encoding runs to about 150 characters, so the address was cut and the footnote could not be followed. This is the second time the limit has been raised for the same reason. It is not free: this record is written into every page stored on the card, so the page cache format changes and every book re-indexes once, and each footnote actually present on a loaded page costs 160 bytes more than before, capped at sixteen per page. The upstream number was kept rather than a tighter one of our own, because diverging here would guarantee a conflict the next time upstream is merged.</li>
-        <li><strong>The home screen's Back button is configurable.</strong> Back had no navigation target on the home screen, so it was quietly wired to open the most recently read book — useful once you knew, startling until then, and impossible to turn off. It now reads a Home Back Button setting under Controls with three choices: None, Resume, and Recent Books. The button hint at the bottom of the screen follows the setting instead of being hardcoded, and None draws no hint box at all rather than an empty one. Resume remains the default so no existing behaviour changes on update.</li>
-        <li><strong>Roughly 1.5 KB of permanently resident memory recovered.</strong> The bidirectional text code, which handles right-to-left scripts, has two entry points that each kept their own private reordering buffer sized to the maximum line length. Neither calls the other and a mutex already prevents them running at once, so one buffer serves both. The saving is measured rather than claimed: static RAM on the build fell from 52,460 to 50,940 bytes.</li>
-        <li><strong>The XML parser stops retaining parse context.</strong> Expat can hold a rolling window of recently consumed input so that an application may ask what surrounded an error. This firmware never asks — nothing in it calls that function, which was verified before the change — so the window was a kilobyte of heap per live parser bought for nothing.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.3.1</summary>
-      <ul>
-        <li><strong>Chapter titles stop taking paragraph number 1.</strong> Version 0.3.0 announced this fix. The fix was written, shipped, and could never once have run &mdash; which is worth stating plainly, because it was announced as done. Turning Paragraph Numbers on still put the 1 on the chapter title and started the real text at 2. The cause was an ordering mistake rather than a missing rule. A block of text is not laid out when it is read; it is laid out later, at the moment the next element opens, because only then is it known to be finished. The mark saying "this block is a heading" was kept on the parser, and the same routine that opens the next element clears that mark before flushing the previous block &mdash; so the mark describing the heading was reliably already gone at the one instant it was consulted. The mark now lives on the block itself, where it cannot come adrift from what it describes. That also repairs a case which could never have worked before: a two-line chapter title split by a line break is two blocks, and only the first was ever a candidate for skipping, so the second half of such a title took a number of its own. Both halves are skipped now. Because paragraph numbers are stored in the page-layout cache, every book re-indexes once on first open after this update; that one open is slower than usual and reading positions are kept.</li>
-      </ul>
-      </details>
-      <details class="relnote">
-        <summary>lector.c 0.3.0</summary>
-      <ul>
-        <li><strong>The interface is one text size.</strong> Three sizes were in use across the chrome with no rule about which went where. The battery percentage was the smallest of the three, sitting on the home screen's top row beside the version string and the page counter, which were both a step larger &mdash; and every piece of code that reserved space for that percentage had already been measuring it at the larger size, so the layout maths and the drawing disagreed. Screen titles, sub-headers, tab labels, the option chooser's heading and the value slider were a step larger again, which on a pixel font reads as bold. All of it now draws at the size the home screen uses. Two theme flags were removed in the process; one of them chose between bold and bold, and had done nothing since it was written.</li>
-        <li><strong>The battery cluster has one definition.</strong> Its width &mdash; icon, gap, and a full-width "100%" &mdash; was written out separately in four places: the header's own clear rectangle, the home screen's clock placement, and the title reserves on the book info and reader menu screens. They are now one function, so they cannot drift apart again. The clear rectangle in particular was a hardcoded eighty pixels that was too narrow for the percentage in a taller font and began below the text's glyph tops, which could leave fragments of the previous reading behind on a partial redraw. The icon's vertical position is now derived from the font's line box rather than a fixed offset, so it centres correctly in the taller font used for Arabic and Hebrew as well.</li>
-        <li><strong>The top banner is thinner.</strong> Its padding dropped from ten pixels to six, taking the band from forty-five pixels to thirty-seven. One number controls it, and the wake banners and every message pop-up read that number, so they cannot diverge. The progress bar that some pop-ups carry now finds its slot from the band's own geometry instead of a tuned constant, so it will not need re-tuning the next time the band changes.</li>
-        <li><strong>The home screen's list indicators are centred with the books.</strong> The "N more above" and "N more below" chips were each pinned to their end of the list area while the rows were centred in the space between. With a short list that meant a chip pressed against the header, the books floating in the middle, and the reserved-but-unused band at the other end showing as a large empty gap. The chips and the rows are now centred together as a single block, with each chip hugging the rows. How many books fit on screen is unchanged.</li>
-        <li><strong>Session Pages joins the on-device status bar screen.</strong> The count of pages turned this sitting had a setting, was drawn by the status bar, and appeared in the web settings page &mdash; but the row was never added to the device's own Customise Status Bar list, so there was no way to place it without a browser. It is there now, with the same anchor picker as every other item.</li>
-        <li><strong>Paragraph Numbers, Paperback Look and Paperback Status are now global settings.</strong> All three were reachable only from the in-book menu, which meant every new book started from the built-in default no matter what you had chosen for the last twenty. They now live under Settings &rarr; Reader and seed what a freshly opened book starts with. A book that already carries its own settings keeps them, and the in-book menu still overrides any of them for a single book. Paperback Look had a hand-written pair of save and load routines because it was outside the settings list; those are gone now that it is inside it.</li>
-        <li><strong>Wrapped book titles line up with the first line.</strong> A title too long for one line ran its continuation back to the left margin, underneath the percentage chip, so the block had a ragged left edge that changed depending on how long the title was. Every line now starts at the same place as the first line's text.</li>
-        <li><strong>Sleep-screen ghosting: cause found, fix restored.</strong> This was being chased in the wrong place. Locking already drove the whole panel to black and back to white before painting the sleep image, and making that wipe stronger still did not help. Comparing the two source trees settles why: the older Lector, which never ghosted, does a <em>weaker</em> wipe than this one &mdash; a single pass. So the wipe was never the missing piece. What the older Lector also had, and what the rebuild had dropped, is a cap on how many quick differential screen updates may run consecutively: every thirteenth is promoted to a clean pass, regardless of the Refresh Frequency setting. Without that cap an unbounded run of quick updates accumulates, and a page held still for minutes traps charge deep enough that no amount of inverting at lock can undo it &mdash; which is exactly why locking after a cold boot looked clean while locking after a session did not. The cap is back, with the four tests that came with it, and the lock's wipe is back to the single pass the older Lector used. The cost is one flash per thirteen page turns.</li>
-        <li><strong>The in-book menu is divided into sections.</strong> Roughly thirty rows ran in one undivided list whose order had accumulated rather than been decided. They now sit under five headings: Navigate for anything that moves the reading position, This Book for what the book says about itself and what you take out of it, Look for anything that changes how the page is drawn, Sleep Screen for wallpaper triage, and Device for the rest. Headings are drawn with a rule running out to the edge, are never highlighted, and Up/Down steps over them rather than stopping on a dead row.</li>
-      </ul>
-      </details>
-    </div>
   </section>
 
   <footer>Made for the <a href="https://github.com/diogo7dias/lector" target="_blank" rel="noopener">Lector</a>
@@ -2329,37 +1705,9 @@ function initFlasher(){
   fetch("flash/firmware/latest/bootloader.bin",{method:"HEAD"})
     .then(r=>{if(!r.ok) throw 0;})
     .catch(()=>{document.getElementById("flashRescueMissing").hidden=false;});
-  // The experimental build is published separately from the stable one, so the
-  // section hides itself whenever that folder is absent rather than offering a
-  // button that would fail on click.
-  fetch("flash/experimental-version.txt",{cache:"no-cache"})
-    .then(r=>r.ok?r.text():Promise.reject(r.status))
-    .then(t=>{
-      const ev=t.trim()||"?";
-      document.getElementById("flashExperimentalVersion").textContent=ev;
-      const evInline=document.getElementById("flashExperimentalVersionInline");
-      if(evInline) evInline.textContent=ev;
-      // The panel ships hidden and is revealed only once a build is actually published,
-      // so an empty channel shows nothing rather than a button that would fail on click.
-      // Without this it stayed hidden forever and the build was unreachable.
-      document.getElementById("experimentalPanel").hidden=false;
-    })
-    .catch(()=>{
-      document.getElementById("flashExperimentalVersion").textContent="not published";
-      document.getElementById("flashExperimentalMissing").hidden=false;
-      document.getElementById("btnExperimental").disabled=true;
-    });
   if(!("serial" in navigator)){ document.getElementById("flashUnsupported").hidden=false; }
   // Update serves the current Lector build (the C++ core + Rust helpers).
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
-  document.getElementById("btnExperimental").addEventListener("click",()=>{
-    if(confirm("This build has not been tested on a device. It replaces your unlock footer with wake timing "+
-               "numbers. That is deliberate and only "+
-               "happens in this build; the stable build never shows them. It also carries the newer display SDK "+
-               "and a faster unlock. Your books keep their layout: nothing is rebuilt, and reading positions, "+
-               "quotes and per-book settings are kept. You can go back at any time with the Update button. "+
-               "Continue?")) runFlash("experimental");
-  });
   document.getElementById("btnRescue").addEventListener("click",()=>{
     if(confirm("Full install / rescue flash ERASES the entire device, including any books and settings in flash. "+
                "This installs Lector on a new device, or revives one that will not boot. "+
@@ -2400,8 +1748,7 @@ async function runFlash(mode){
   // scrolling past two other sections to find out what was happening. The node is
   // MOVED, not copied, so there is still exactly one progress box and no second copy
   // of its state to keep in step.
-  const anchorBtn=document.getElementById(
-    erase ? "btnRescue" : mode==="experimental" ? "btnExperimental" : "btnUpdate");
+  const anchorBtn=document.getElementById(erase ? "btnRescue" : "btnUpdate");
   const anchor=anchorBtn && anchorBtn.closest(".actions");
   if(anchor && anchor.nextElementSibling!==wrap) anchor.after(wrap);
 
@@ -2414,9 +1761,7 @@ async function runFlash(mode){
   // Load the parts named by the manifest (paths are relative to /flash/).
   let parts;
   try{
-    const manifestPath = erase ? "flash/manifest-full.json"
-                       : mode==="experimental" ? "flash/manifest-experimental.json"
-                       : "flash/manifest-update.json";
+    const manifestPath = erase ? "flash/manifest-full.json" : "flash/manifest-update.json";
     const manifest=await (await fetch(manifestPath,{cache:"no-cache"})).json();
     parts=[];
     for(const p of manifest.builds[0].parts){
@@ -2453,7 +1798,7 @@ async function runFlash(mode){
       reportProgress:(idx,written,total)=>{
         const pct=Math.round((written/total)*100);
         setPct(pct);
-        const label = erase ? "Full flash" : mode==="experimental" ? "Experimental" : "Update";
+        const label = erase ? "Full flash" : "Update";
         setStatus(label+" — part "+(idx+1)+"/"+parts.length+" — "+pct+"%");
       },
     });
@@ -2486,7 +1831,6 @@ async function runFlash(mode){
 function setButtonsDisabled(d){
   const u=document.getElementById("btnUpdate"); if(u) u.disabled=d;
   const r=document.getElementById("btnRescue"); if(r) r.disabled=d;
-  const e=document.getElementById("btnExperimental"); if(e) e.disabled=d;
 }
 
 // Deep link: /#flash (or a redirect from /flash/) opens the Flasher tab directly.

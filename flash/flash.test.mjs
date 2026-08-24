@@ -138,40 +138,31 @@ test("experimental manifest keeps user data and is fully separate from the stabl
   for (const p of parts) assert.ok(!p.path.includes("firmware/latest/"), p.path);
 });
 
-test("the experimental button is wired, confirmed, and warns it is untested", () => {
-  assert.match(html, /id="btnExperimental"/);
-  assert.match(html, /runFlash\("experimental"\)/);
-  assert.match(html, /manifest-experimental\.json/);
-  // It must sit behind a confirm(), like the erase flash does.
-  const at = html.indexOf('getElementById("btnExperimental").addEventListener');
-  assert.notEqual(at, -1, "experimental click handler not found");
-  assert.match(html.slice(at, at + 600), /confirm\(/);
-  // Durable safety claims, checked by meaning rather than one exact sentence so
-  // rewording the section does not quietly drop the warning: the confirm must say
-  // the build is untested and must name what it changes, and the page must offer a
-  // way back. The specific risk sentence is NOT asserted here — it belongs to
-  // whichever build is on the channel, and an assertion on last build's wording
-  // pushes the next one into repeating a claim that is not true of it.
-  assert.match(html, /not been tested on a device/i);
-  assert.match(html, /It changes /i);
-  assert.match(html, /To go back, press <strong>Update my reader<\/strong>/);
+test("the page offers exactly one stable flash plus the erase rescue", () => {
+  // The experimental channel is not published here any more; untested builds go out
+  // as a USB test kit instead. Its markup, handler and manifest fetch are all gone,
+  // so nothing on the page can reach a build that was never tested on a device.
+  assert.doesNotMatch(html, /btnExperimental/);
+  assert.doesNotMatch(html, /experimentalPanel/);
+  assert.doesNotMatch(html, /manifest-experimental/);
+  assert.doesNotMatch(html, /experimental-version\.txt/);
+  assert.match(html, /id="btnUpdate"/);
+  assert.match(html, /id="btnRescue"/);
 });
 
-test("the experimental panel is revealed when a build is published", () => {
-  // The panel ships hidden in the markup. Something must un-hide it on a successful
-  // experimental-version.txt fetch, or the button is unreachable no matter what is
-  // published -- which is exactly what happened once, silently, because the panel
-  // text was kept current while nothing ever showed it.
-  assert.match(html, /id="experimentalPanel" hidden/);
-  const at = html.indexOf('experimental-version.txt');
-  assert.notEqual(at, -1, "experimental version fetch not found");
-  const block = html.slice(at, at + 700);
-  assert.match(block, /getElementById\("experimentalPanel"\)\.hidden\s*=\s*false/);
-});
-
-test("a busy flash disables the experimental button too", () => {
+test("a busy flash disables both flash buttons", () => {
   const fn = html.slice(html.indexOf("function setButtonsDisabled"));
-  assert.match(fn.slice(0, 400), /btnExperimental/);
+  assert.match(fn.slice(0, 400), /btnUpdate/);
+  assert.match(fn.slice(0, 400), /btnRescue/);
+});
+
+test("the SD card download points at the published app image", () => {
+  // Same file the Update button writes, served from this site rather than linked to a
+  // release asset, so the download can never disagree with the button above it.
+  assert.match(html, /id="btnDownloadBin"[^>]*/);
+  assert.match(html, /href="flash\/firmware\/latest\/firmware\.bin"/);
+  assert.ok(existsSync(new URL("./firmware/latest/firmware.bin", import.meta.url)),
+            "the download link has no file behind it");
 });
 
 test("experimental-version.txt is an experimental lector version string", { skip: !hasExperimental }, () => {

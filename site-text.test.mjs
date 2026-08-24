@@ -30,56 +30,54 @@ test("no version is hardcoded into the flasher prose", () => {
   assert.match(html, /id="flashVersion"/, "the headline lost the element that fills it from version.txt");
 });
 
-test("the What's new block describes the build being served", () => {
-  const match = html.match(/What's new — (lector \d+\.\d+\.\d+):/);
-  assert.ok(match, "no What's new heading found in the flasher panel");
+test("the release summary names the build being served", () => {
+  // The page describes exactly one release: the one it serves. It once claimed
+  // 0.11.1 while serving 0.24.0, which is why this is asserted rather than trusted.
+  const match = html.match(/What (lector \d+\.\d+\.\d+) does/);
+  assert.ok(match, "no release summary heading found in the flasher panel");
   assert.equal(
     match[1],
     publishedVersion,
-    `the What's new block describes ${match[1]} while the site serves ${publishedVersion}`,
+    `the summary describes ${match[1]} while the site serves ${publishedVersion}`,
   );
 });
 
-test("the release history opens with the build being served", () => {
-  const summaries = [...html.matchAll(/<summary>(lector \d+\.\d+\.\d+)<\/summary>/g)].map((m) => m[1]);
-  assert.ok(summaries.length > 0, "the release history has no entries");
-  assert.equal(
-    summaries[0],
-    publishedVersion,
-    `the release history starts at ${summaries[0]} while the site serves ${publishedVersion}`,
-  );
+test("the on-device version claim matches what is served", () => {
+  const match = html.match(/Reports version <strong>(lector \d+\.\d+\.\d+)<\/strong> on device/);
+  assert.ok(match, "the panel no longer says which version the reader will report");
+  assert.equal(match[1], publishedVersion);
 });
 
-test("the release history has no gaps in its minor versions", () => {
-  // A missing entry is how six releases went unrecorded. Patch numbers can be
-  // skipped, since a patch is sometimes never published, but a missing minor
-  // means a whole release went undescribed.
-  const minors = [
-    ...new Set(
-      [...html.matchAll(/<summary>lector (\d+)\.(\d+)\.\d+<\/summary>/g)].map((m) => `${m[1]}.${m[2]}`),
-    ),
-  ];
-  const asNumbers = minors.map((v) => v.split(".").map(Number));
-  const [publishedMajor, publishedMinor] = numberOf(publishedVersion).split(".").map(Number);
-
-  for (let minor = publishedMinor; minor >= 0; minor--) {
-    const present = asNumbers.some(([major, m]) => major === publishedMajor && m === minor);
-    // Stop at the oldest minor the history actually goes back to, rather than
-    // demanding entries from before this panel existed.
-    const olderExists = asNumbers.some(([major, m]) => major === publishedMajor && m < minor);
-    if (!present && olderExists) {
-      assert.fail(`the release history skips lector ${publishedMajor}.${minor}.x`);
-    }
-  }
-});
-
-test("the experimental section does not describe a build by hand", () => {
-  // A hand-written "What to test in lector.exp.N" list outlived the build it
-  // described, because that channel is republished far more often than this page.
-  assert.doesNotMatch(
+test("no earlier release is described on the page", () => {
+  // Every older release lives on the GitHub releases page. A history kept by hand
+  // here went six releases stale without anyone noticing.
+  const others = [...html.matchAll(/lector (\d+\.\d+\.\d+)/g)]
+    .map((m) => m[1])
+    .filter((v) => v !== numberOf(publishedVersion));
+  assert.deepEqual(others, [], `the page still describes ${others.join(", ")}`);
+  assert.match(
     html,
-    /What to test in lector\.exp\.\d+/,
-    "the experimental panel names a build literally; point at its release notes instead",
+    /github\.com\/diogo7dias\/lector\/releases/,
+    "nothing points readers at the releases page for older notes",
   );
-  assert.match(html, /id="flashExperimentalVersion"/, "the experimental panel lost its version element");
+});
+
+test("the experimental channel is not offered", () => {
+  // Experimental builds are handed over as a test kit now, not published here.
+  assert.doesNotMatch(html, /btnExperimental/, "the experimental button is back on the page");
+  assert.doesNotMatch(html, /manifest-experimental/, "the page still fetches the experimental manifest");
+});
+
+test("the SD card download serves the app image and says what it cannot do", () => {
+  assert.match(html, /id="btnDownloadBin"/, "the SD download button is gone");
+  assert.match(
+    html,
+    /href="flash\/firmware\/latest\/firmware\.bin"/,
+    "the download must serve the same app image the Update button writes",
+  );
+  assert.match(html, /download="lector-firmware\.bin"/, "the link does not download, it navigates");
+  // The SD picker is part of Lector, so it cannot install onto a stock reader or
+  // revive a dead one. Promising otherwise sends people to the wrong rescue.
+  assert.match(html, /already running Lector/i);
+  assert.match(html, /cannot install onto a stock reader/i);
 });
