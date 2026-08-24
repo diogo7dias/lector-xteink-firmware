@@ -46,3 +46,33 @@ test("gallery loads only one small batch and supports mixed master sizes", () =>
   assert.match(html, /aria-live="polite"/);
   assert.doesNotMatch(html, /for\(const entry of list\)/);
 });
+
+// Downloading all 6,600 wallpapers one card at a time is not a real option, and zipping them in
+// the browser would mean 6,600 fetches and 672 MB in memory. The set is prebuilt by
+// build-gallery-zip.mjs in the wallpapers repo and attached to a GitHub release, so the button
+// here is a plain link to that asset.
+const ZIP_URL = "https://github.com/diogo7dias/lector-wallpapers/releases/download/gallery-latest/lector-wallpapers-gallery.zip";
+
+test("the gallery offers the whole set as one prebuilt zip", () => {
+  assert.match(html, /id="gdlAll"/);
+  assert.ok(html.includes(`href="${ZIP_URL}"`), "the button must point at the release asset");
+  // A release asset is cross-origin, where the download attribute is ignored; GitHub already
+  // serves the file as an attachment.
+  const zipTag = html.match(/<a[^>]*id="gdlAll"[\s\S]*?>/)[0];
+  assert.doesNotMatch(zipTag, /\sdownload[\s=>]/);
+  // The size is stated up front: 176 MB is not a click to make by accident on mobile data.
+  assert.match(html, /const GALLERY_ZIP_SIZE="176 MB";/);
+});
+
+test("the zip button states the real wallpaper count once the manifest is in", () => {
+  // Hardcoding the count would go stale on the next import; the manifest already knows it.
+  assert.match(html, /function updateGalleryZipNote\(\)/);
+  assert.match(html, /galleryEntries\.length\.toLocaleString\(\)/);
+  assert.match(html, /GALLERY_ZIP_SIZE/g);
+  // Called after the manifest loads, not before, or it would advertise "0 wallpapers".
+  assert.match(html, /galleryEntries=\(manifest && manifest\.wallpapers\) \|\| \[\];[\s\S]{0,200}updateGalleryZipNote\(\);/);
+  // And once at load, so the offer still stands if the manifest never arrives.
+  assert.match(html, /^updateGalleryZipNote\(\);$/m);
+  // galleryEntries is a let: calling above its declaration throws and takes the page with it.
+  assert.ok(html.indexOf("let galleryEntries=") < html.search(/^updateGalleryZipNote\(\);$/m));
+});

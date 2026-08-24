@@ -188,6 +188,11 @@
   .gsearch input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;}
   .gsearch-hint{font-family:var(--mono);font-size:11px;color:var(--sub);margin-top:7px;line-height:1.5;}
 
+  /* ---- gallery bulk download ---- */
+  .gbulk{margin-top:22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .gbulk .btn{text-decoration:none;display:inline-block;}
+  .gbulk-note{font-family:var(--mono);font-size:11px;color:var(--sub);letter-spacing:.04em;line-height:1.5;}
+
   /* ---- gallery grid ---- */
   .gstate{margin-top:22px;color:var(--sub);font-size:14px;text-align:center;padding:34px 12px;
     border:3px dashed var(--dash);border-radius:6px;background:var(--panel);}
@@ -564,6 +569,12 @@
           in your browser for <span class="k">X3</span>, <span class="k">X4</span>, or
           <span class="k">BMP</span>. Nothing leaves your machine.</p>
       </div>
+    </div>
+    <div class="gbulk">
+      <a class="btn btn-red" id="gdlAll"
+         href="https://github.com/diogo7dias/lector-wallpapers/releases/download/gallery-latest/lector-wallpapers-gallery.zip"
+         rel="noopener">Download all · ZIP</a>
+      <span class="gbulk-note" id="gdlAllNote"></span>
     </div>
     <div class="gsearch">
       <label class="gsearch-label" for="gquery">Find a number</label>
@@ -1926,11 +1937,25 @@ async function loadGallery(){
     return;
   }
   galleryEntries=(manifest && manifest.wallpapers) || [];
+  updateGalleryZipNote();
   if(!galleryEntries.length){ showState("No wallpapers shared yet."); return; }
   shuffleGallery();
   applyGalleryQuery();
   state.hidden=true;
   await renderGalleryBatch(0);
+}
+
+// The whole gallery is also served as one prebuilt zip, attached to a release of the wallpapers
+// repo. Zipping ~6,600 files in the browser would mean as many fetches and 672 MB in memory, and
+// committing the archive would drag every Pages deploy with it. The size is spelled out on the
+// button because 176 MB is not a click to make by accident on mobile data, and the count comes
+// from the manifest so the next import does not leave a stale number here.
+const GALLERY_ZIP_SIZE="176 MB";
+function updateGalleryZipNote(){
+  const note=document.getElementById("gdlAllNote");
+  note.textContent=galleryEntries.length
+    ? `All ${galleryEntries.length.toLocaleString()} wallpapers in one file · about ${GALLERY_ZIP_SIZE}`
+    : `Every wallpaper in one file · about ${GALLERY_ZIP_SIZE}`;
 }
 
 // Fisher-Yates, in place: an unbiased shuffle, unlike sort() with a random comparator.
@@ -1966,6 +1991,10 @@ function applyGalleryQuery(){
 const GALLERY_BATCH_SIZE=24;
 let galleryEntries=[], galleryView=[], galleryQuery="";
 let galleryCursor=0, galleryPageStart=0, galleryRendered=0, galleryFailures=0, galleryBusy=false;
+// Stated once up front as well: the zip is a fixed release asset, so it is worth offering even
+// when the manifest never arrives and the grid below stays empty. This call has to sit after the
+// let declarations above; earlier in the script it would hit the temporal dead zone and throw.
+updateGalleryZipNote();
 // Every render takes a ticket. A render whose ticket is no longer the current one stops
 // where it is and touches nothing: a search typed while a page is still fetching would
 // otherwise keep appending the old page's cards underneath the new one's.
