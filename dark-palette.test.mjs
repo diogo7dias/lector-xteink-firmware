@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
@@ -52,8 +52,11 @@ test("borders and shadows are drawn with their own tokens, never the text ink", 
   expectContrast("line", "paper", 1.5);
   const lineRatio = contrast(token("line"), token("text"));
   assert.ok(lineRatio >= 2, `--line was only ${lineRatio.toFixed(2)}:1 from --text, so borders still read as text ink`);
-  for (const file of ["index.html", "guide.html"]) {
-    const markup = readFileSync(new URL(`./${file}`, import.meta.url), "utf8");
+  // guide.html is generated on deploy and git-ignored, so it is absent on CI.
+  for (const file of ["index.html", "guide.html", "scripts/build-guide.mjs"]) {
+    const path = new URL(`./${file}`, import.meta.url);
+    if (!existsSync(path)) continue;
+    const markup = readFileSync(path, "utf8");
     assert.doesNotMatch(markup, /border[a-z-]*\s*:[^;{}]*var\(--ink\)/,
       `${file} paints a border with --ink; use --line`);
     assert.doesNotMatch(markup, /box-shadow\s*:[^;{}]*var\(--ink\)/,
