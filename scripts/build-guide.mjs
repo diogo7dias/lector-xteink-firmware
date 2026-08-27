@@ -248,20 +248,22 @@ const page = (body, version) => `<!doctype html>
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Black&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --paper:#ffffff; --panel:#ffffff; --ink:#111111; --text:#1a1a1a;
-    --sub:#666666; --soft:#e5e5e5; --dash:#cfcfcf; --code:#f2f2f2;
-    --red:#8a1c1c; --yellow:#ededed; --on-ink:#ffffff; --accent-ink:#111111;
-    --sans:'Archivo','Helvetica Neue',system-ui,sans-serif;
-    --serif:'Newsreader',Georgia,'Times New Roman',serif;
-    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#f7f7f7; --panel:#fcfcfc; --ink:#2e2e2e; --text:#383838;
+    --sub:#6e6e6e; --soft:#ebebeb; --dash:#d8d8d8; --code:#efefef;
+    --red:#8f3a30; --yellow:#ebebeb; --on-ink:#f7f7f7; --accent-ink:#2e2e2e;
+    --line:#d0d0d0; --shadow:#d0d0d0;
+    --sans:'IBM Plex Sans','Helvetica Neue',system-ui,sans-serif;
+    --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
   :root[data-theme="dark"]{
-    --paper:#0a0a0a; --panel:#111111; --ink:#f2f2f2; --text:#f2f2f2;
-    --sub:#a6a6a6; --soft:#2a2a2a; --dash:#3a3a3a; --code:#1a1a1a;
-    --red:#b83427; --yellow:#2a2a2a; --on-ink:#0a0a0a; --accent-ink:#f2f2f2;
+    --paper:#191919; --panel:#1e1e1e; --ink:#bcbcbc; --text:#b4b4b4;
+    --sub:#8a8a8a; --soft:#292929; --dash:#383838; --code:#232323;
+    --line:#3a3a3a; --shadow:#141414;
+    --red:#96453b; --yellow:#2e2e2e; --on-ink:#191919; --accent-ink:#bcbcbc;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -273,12 +275,12 @@ const page = (body, version) => `<!doctype html>
     font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub);font-weight:500;
     padding-bottom:8px;}
   .topline a{color:var(--sub);}
-  .rule{border-top:3px solid var(--ink);}
+  .rule{border-top:3px solid var(--line);}
   .guide{margin-top:28px;}
   .guide h1{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.1;
     letter-spacing:-.02em;color:var(--ink);margin:0 0 18px;}
   .guide h2{font-family:var(--serif);font-weight:600;font-size:28px;color:var(--ink);
-    margin:44px 0 12px;padding-top:14px;border-top:3px solid var(--ink);}
+    margin:44px 0 12px;padding-top:14px;border-top:3px solid var(--line);}
   .guide h3{font-size:19px;font-weight:800;color:var(--ink);margin:28px 0 8px;}
   .guide h4,.guide h5,.guide h6{font-size:15px;font-weight:800;color:var(--ink);margin:22px 0 6px;
     font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;}
@@ -286,21 +288,21 @@ const page = (body, version) => `<!doctype html>
   .guide a{color:var(--ink);}
   .guide li{margin:4px 0;}
   .guide code{font-family:var(--mono);font-size:13px;background:var(--code);
-    border:1px solid var(--ink);border-radius:2px;padding:1px 5px;}
-  .guide pre{background:var(--code);border:3px solid var(--ink);border-radius:6px;
-    box-shadow:4px 4px 0 0 var(--ink);padding:14px 16px;overflow-x:auto;}
+    border:1px solid var(--line);border-radius:2px;padding:1px 5px;}
+  .guide pre{background:var(--code);border:3px solid var(--line);border-radius:6px;
+    box-shadow:4px 4px 0 0 var(--shadow);padding:14px 16px;overflow-x:auto;}
   .guide pre code{border:0;background:none;padding:0;font-size:13px;line-height:1.5;}
   .guide table{border-collapse:collapse;width:100%;margin:0 0 18px;font-size:14.5px;}
-  .guide th,.guide td{border:2px solid var(--ink);padding:7px 10px;text-align:left;vertical-align:top;}
+  .guide th,.guide td{border:2px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top;}
   .guide th{background:var(--ink);color:var(--on-ink);font-size:12px;font-family:var(--mono);
     letter-spacing:.1em;text-transform:uppercase;}
-  .guide img{max-width:100%;border:3px solid var(--ink);border-radius:6px;}
-  .guide hr{border:0;border-top:3px solid var(--ink);margin:34px 0;}
+  .guide img{max-width:100%;border:3px solid var(--line);border-radius:6px;}
+  .guide hr{border:0;border-top:3px solid var(--line);margin:34px 0;}
   /* A section rule followed by its heading would otherwise draw two lines. */
   .guide hr + h2{border-top:0;padding-top:0;margin-top:0;}
   .guide blockquote{margin:0 0 18px;padding:2px 0 2px 16px;border-left:4px solid var(--dash);color:var(--sub);}
-  .guide .callout{margin:0 0 18px;padding:14px 16px 2px;border:3px solid var(--ink);border-radius:6px;
-    background:var(--panel);box-shadow:4px 4px 0 0 var(--ink);}
+  .guide .callout{margin:0 0 18px;padding:14px 16px 2px;border:3px solid var(--line);border-radius:6px;
+    background:var(--panel);box-shadow:4px 4px 0 0 var(--shadow);}
   .guide .callout-label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--sub);margin:0 0 8px;}
   .guide .callout-warning,.guide .callout-caution{border-color:var(--red);box-shadow:4px 4px 0 0 var(--red);}

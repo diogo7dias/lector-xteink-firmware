@@ -1,0 +1,383 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Lector site — dark mode options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+<style>
+/* Page shell (not part of any variant) */
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#ddd;font-family:'Archivo',system-ui,sans-serif;}
+.page{max-width:1180px;margin:0 auto;padding:32px 22px 80px;}
+.page h1{font-family:'Newsreader',Georgia,serif;font-weight:600;font-size:34px;margin:0 0 6px;color:#fff;}
+.page .lede{color:#9a9a9a;font-size:14.5px;max-width:78ch;margin:0 0 4px;line-height:1.55;}
+.page .lede code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#161616;padding:1px 5px;border-radius:3px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:26px;margin-top:30px;}
+.opt{border:1px solid #262626;border-radius:10px;overflow:hidden;background:#0c0c0c;}
+.opt > header{padding:14px 18px;border-bottom:1px solid #262626;}
+.opt h2{margin:0;font-size:16px;font-weight:800;color:#fff;letter-spacing:-.01em;}
+.opt h2 b{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;
+  color:#7d7d7d;display:block;margin-bottom:5px;}
+.opt header p{margin:7px 0 0;font-size:13px;color:#8e8e8e;line-height:1.5;}
+.swatches{display:flex;gap:5px;margin-top:11px;}
+.swatches i{width:26px;height:16px;border-radius:3px;border:1px solid #333;display:block;}
+.metrics{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6f6f6f;margin-top:9px;letter-spacing:.03em;}
+
+/* ---- shared demo chrome: every variant renders this markup, only the tokens change ---- */
+.demo{padding:24px 22px 26px;background:var(--paper);color:var(--text);line-height:1.45;}
+.demo .topline{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub);font-weight:500;
+  padding-bottom:10px;border-bottom:1px solid var(--line);}
+.demo .mast{font-family:'Newsreader',Georgia,serif;font-weight:600;font-size:27px;line-height:1;
+  letter-spacing:-.02em;color:var(--ink);margin:16px 0 0;}
+.demo .mast + p{margin:7px 0 0;color:var(--sub);font-size:13px;max-width:60ch;}
+.demo .tabs{display:inline-flex;margin-top:16px;border:3px solid var(--line);border-radius:6px;
+  overflow:hidden;background:var(--paper);box-shadow:4px 4px 0 0 var(--shadow);}
+.demo .tab{border:0;background:transparent;color:var(--ink);font-family:inherit;font-weight:800;
+  font-size:12.5px;padding:8px 15px;cursor:pointer;}
+.demo .tab:not(:last-child){border-right:3px solid var(--line);}
+.demo .tab.on{background:var(--ink);color:var(--on-ink);}
+.demo .panel{background:var(--panel);border:3px solid var(--line);box-shadow:6px 6px 0 0 var(--shadow);
+  border-radius:6px;padding:16px;margin-top:20px;}
+.demo .ctls{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.demo label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--sub);margin-bottom:7px;font-weight:500;}
+.demo .seg{display:flex;border:3px solid var(--line);border-radius:5px;overflow:hidden;background:var(--paper);}
+.demo .seg button{flex:1;border:0;background:transparent;color:var(--ink);padding:8px 4px;
+  font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;}
+.demo .seg button:not(:last-child){border-right:3px solid var(--line);}
+.demo .seg button.on{background:var(--ink);color:var(--on-ink);}
+.demo .note{margin-top:14px;padding-top:12px;border-top:1px solid var(--soft);color:var(--sub);font-size:12.5px;}
+.demo .note strong{color:var(--ink);}
+.demo .note code{font-family:'JetBrains Mono',monospace;background:var(--code);border:1px solid var(--line);
+  border-radius:2px;padding:1px 5px;font-size:11.5px;}
+.demo .drop{border:3px dashed var(--dash);border-radius:6px;padding:26px 16px;text-align:center;margin-top:18px;
+  background:var(--panel);}
+.demo .drop .big{font-family:'Newsreader',Georgia,serif;font-size:20px;font-weight:600;color:var(--ink);}
+.demo .drop .big span{font-family:inherit;font-size:13px;font-weight:600;color:var(--sub);}
+.demo .drop .sub{color:var(--sub);font-size:12px;margin-top:6px;}
+.demo .row{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap;}
+.demo .btn{border:3px solid var(--line);border-radius:6px;padding:9px 16px;font-size:13px;font-weight:800;
+  cursor:pointer;font-family:inherit;box-shadow:4px 4px 0 0 var(--shadow);}
+.demo .btn-red{background:var(--red);color:var(--on-red);}
+.demo .btn-ghost{background:transparent;color:var(--ink);}
+.demo .count{color:var(--sub);font-size:12px;font-family:'JetBrains Mono',monospace;}
+.demo .hero{position:relative;background:var(--hero-bg);color:var(--hero-text);border-radius:6px;
+  padding:20px 18px;margin-top:20px;border:3px solid var(--line);}
+.demo .hero .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--hero-label);font-weight:500;margin-bottom:8px;}
+.demo .hero h3{font-family:'Archivo Black','Archivo',sans-serif;font-weight:900;font-size:30px;line-height:.95;
+  letter-spacing:-.02em;color:var(--hero-text);margin:0;}
+.demo .hero p{color:var(--hero-sub);font-size:13px;margin:10px 0 0;}
+.demo .chip{display:inline-block;background:var(--yellow);color:var(--accent-ink);
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;padding:4px 10px;
+  border:2px solid var(--accent-ink);border-radius:999px;margin-top:14px;}
+.demo .foot{margin-top:18px;padding-top:12px;border-top:3px solid var(--line);font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--sub);letter-spacing:.06em;}
+.demo a{color:var(--ink);}
+
+/* =================== VARIANT TOKENS =================== */
+
+/* 1 — Softened Ink : same charcoal, borders and shadows stop being white */
+#v1 .demo{
+  --paper:#0f0f0f; --panel:#151515; --ink:#dcdcdc; --text:#d2d2d2; --sub:#8f8f8f;
+  --line:#3d3d3d; --shadow:#242424; --soft:#262626; --dash:#3a3a3a; --code:#1c1c1c;
+  --red:#a8382c; --on-red:#f0e8e6; --yellow:#2c2c2c; --accent-ink:#d2d2d2;
+  --on-ink:#0f0f0f; --hero-bg:#171717; --hero-text:#dcdcdc; --hero-sub:#8f8f8f; --hero-label:#8f8f8f;
+}
+/* 2 — Warm Paper : ivory on warm near-black, the printed-page feel after dark */
+#v2 .demo{
+  --paper:#13110e; --panel:#1a1713; --ink:#ddd5c6; --text:#d6cebe; --sub:#948b7c;
+  --line:#433d33; --shadow:#282219; --soft:#2b251d; --dash:#443d32; --code:#1f1b15;
+  --red:#a8483a; --on-red:#f2e6df; --yellow:#302a20; --accent-ink:#ddd5c6;
+  --on-ink:#13110e; --hero-bg:#1c1813; --hero-text:#ddd5c6; --hero-sub:#948b7c; --hero-label:#a8926b;
+}
+/* 3 — Slate : cool blue-grey, lowest glare of the six */
+#v3 .demo{
+  --paper:#101418; --panel:#161b21; --ink:#ccd4dc; --text:#c4ccd5; --sub:#87919c;
+  --line:#333d47; --shadow:#1d242b; --soft:#242c34; --dash:#39434e; --code:#1a2027;
+  --red:#a4443c; --on-red:#eee3e1; --yellow:#252d36; --accent-ink:#ccd4dc;
+  --on-ink:#101418; --hero-bg:#191f26; --hero-text:#ccd4dc; --hero-sub:#87919c; --hero-label:#7fa0bd;
+}
+/* 4 — Elevated Grey : lift the base off black, panels sit above it */
+#v4 .demo{
+  --paper:#1c1c1c; --panel:#242424; --ink:#d0d0d0; --text:#c8c8c8; --sub:#8d8d8d;
+  --line:#454545; --shadow:#111111; --soft:#333333; --dash:#4a4a4a; --code:#2b2b2b;
+  --red:#b04a3c; --on-red:#f2e7e4; --yellow:#3a3a3a; --accent-ink:#d0d0d0;
+  --on-ink:#1c1c1c; --hero-bg:#2a2a2a; --hero-text:#d0d0d0; --hero-sub:#8d8d8d; --hero-label:#8d8d8d;
+}
+/* 5 — Sepia Night : amber-warm, matches the e-reader subject matter */
+#v5 .demo{
+  --paper:#16120d; --panel:#1e1811; --ink:#d9c7a8; --text:#d1bfa1; --sub:#96856a;
+  --line:#48392a; --shadow:#251d13; --soft:#2e2417; --dash:#4a3b2a; --code:#221b12;
+  --red:#a75330; --on-red:#f4e6d9; --yellow:#33291a; --accent-ink:#d9c7a8;
+  --on-ink:#16120d; --hero-bg:#1f1811; --hero-text:#d9c7a8; --hero-sub:#96856a; --hero-label:#c08f4a;
+}
+/* 6 — Muted Mono : flattest option, borders barely there, shadows almost gone */
+#v6 .demo{
+  --paper:#191919; --panel:#1e1e1e; --ink:#bcbcbc; --text:#b4b4b4; --sub:#828282;
+  --line:#333333; --shadow:#141414; --soft:#292929; --dash:#383838; --code:#232323;
+  --red:#96453b; --on-red:#ede1de; --yellow:#2e2e2e; --accent-ink:#bcbcbc;
+  --on-ink:#191919; --hero-bg:#212121; --hero-text:#bcbcbc; --hero-sub:#828282; --hero-label:#828282;
+}
+/* 0 — the current dark mode, for reference */
+#v0 .demo{
+  --paper:#0a0a0a; --panel:#111111; --ink:#f2f2f2; --text:#f2f2f2; --sub:#a6a6a6;
+  --line:#f2f2f2; --shadow:#f2f2f2; --soft:#2a2a2a; --dash:#3a3a3a; --code:#1a1a1a;
+  --red:#b83427; --on-red:#f2f2f2; --yellow:#2a2a2a; --accent-ink:#f2f2f2;
+  --on-ink:#0a0a0a; --hero-bg:#161616; --hero-text:#f2f2f2; --hero-sub:#a6a6a6; --hero-label:#a6a6a6;
+}
+</style>
+
+<div class="page">
+  <h1>Lector site — dark mode, six alternatives</h1>
+  <p class="lede">The glare is not mainly the text. It is that <code>--ink</code> paints the text
+  <em>and</em> every 3&nbsp;px border and every hard shadow, so the page is drawn in near-white outlines.
+  All six options split that into <code>--line</code> (borders) and <code>--shadow</code>, then trim the
+  text down from <code>#f2f2f2</code>. Ratios below are text-on-paper; the current 17.6:1 is the number to beat.</p>
+
+  <div class="grid">
+  <section class="opt" id="v0">
+    <header>
+      <h2><b>CURRENT</b>What ships today</h2>
+      <p>#f2f2f2 text on #0a0a0a, and the same #f2f2f2 on every border and shadow. Shown only for comparison.</p>
+      <div class="swatches"><i style="background:#0a0a0a"></i><i style="background:#111111"></i><i style="background:#f2f2f2"></i><i style="background:#f2f2f2"></i><i style="background:#b83427"></i></div>
+      <div class="metrics">text 17.7:1 · border 17.7:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="v1">
+    <header>
+      <h2><b>OPTION 1</b>Softened Ink</h2>
+      <p>Smallest change. Same neutral charcoal, but borders drop to #3d3d3d and shadows go dark, so the outlines stop shouting. Text eases to #d2d2d2.</p>
+      <div class="swatches"><i style="background:#0f0f0f"></i><i style="background:#151515"></i><i style="background:#d2d2d2"></i><i style="background:#3d3d3d"></i><i style="background:#a8382c"></i></div>
+      <div class="metrics">text 12.7:1 · border 1.8:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="v2">
+    <header>
+      <h2><b>OPTION 2</b>Warm Paper</h2>
+      <p>Ivory on a warm near-black. Reads like newsprint under a lamp and takes the blue edge off the whites.</p>
+      <div class="swatches"><i style="background:#13110e"></i><i style="background:#1a1713"></i><i style="background:#d6cebe"></i><i style="background:#433d33"></i><i style="background:#a8483a"></i></div>
+      <div class="metrics">text 12.1:1 · border 1.8:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="v3">
+    <header>
+      <h2><b>OPTION 3</b>Slate</h2>
+      <p>Cool blue-grey base. The most restful of the six on an OLED phone at night; the red accent stays clearly an accent.</p>
+      <div class="swatches"><i style="background:#101418"></i><i style="background:#161b21"></i><i style="background:#c4ccd5"></i><i style="background:#333d47"></i><i style="background:#a4443c"></i></div>
+      <div class="metrics">text 11.4:1 · border 1.7:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="v4">
+    <header>
+      <h2><b>OPTION 4</b>Elevated Grey</h2>
+      <p>Base lifted well off black so panels sit above the page and shadows finally read as depth instead of glare.</p>
+      <div class="swatches"><i style="background:#1c1c1c"></i><i style="background:#242424"></i><i style="background:#c8c8c8"></i><i style="background:#454545"></i><i style="background:#b04a3c"></i></div>
+      <div class="metrics">text 10.2:1 · border 1.8:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="v5">
+    <header>
+      <h2><b>OPTION 5</b>Sepia Night</h2>
+      <p>Amber-warm, closest to an e-reader's own warm frontlight. Most character, least neutral.</p>
+      <div class="swatches"><i style="background:#16120d"></i><i style="background:#1e1811"></i><i style="background:#d1bfa1"></i><i style="background:#48392a"></i><i style="background:#a75330"></i></div>
+      <div class="metrics">text 10.4:1 · border 1.7:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="v6">
+    <header>
+      <h2><b>OPTION 6</b>Muted Mono</h2>
+      <p>Flattest. Borders barely present, shadows nearly gone, text down to #b4b4b4. Softest, but the brutalist edge softens with it.</p>
+      <div class="swatches"><i style="background:#191919"></i><i style="background:#1e1e1e"></i><i style="background:#b4b4b4"></i><i style="background:#333333"></i><i style="background:#96453b"></i></div>
+      <div class="metrics">text 8.5:1 · border 1.4:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>EST. 2026 · LECTOR</span></div>
+    <h2 class="mast">Lector Xteink Firmware</h2>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper.</p>
+    <div class="tabs">
+      <button class="tab on">Converter</button><button class="tab">Cleaner</button>
+      <button class="tab">Gallery</button><button class="tab">Flasher</button>
+    </div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button class="on">X4 · 480×800</button><button>X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set
+      <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-red">Download all</button>
+      <button class="btn btn-ghost">Clear</button><span class="count">4 files ready</span></div>
+    <div class="hero"><div class="label">Wallpaper gallery</div><h3>Ready-made<br>sleep screens</h3>
+      <p>Pick a picture, pick your screen, download the file.</p><span class="chip">480×800</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  </div>
+</div>
+
+
+
+

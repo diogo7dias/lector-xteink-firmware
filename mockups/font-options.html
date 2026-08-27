@@ -1,0 +1,200 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Lector site — fonts, current and two alternatives each</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Archivo+Black&family=Anton&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;600;700;800&family=IBM+Plex+Sans:wght@400;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f7f7f7;--panel:#fcfcfc;--ink:#2e2e2e;--text:#383838;--sub:#6e6e6e;
+  --line:#d0d0d0;--soft:#ebebeb;--code:#efefef;--red:#8f3a30;--on-ink:#f7f7f7;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--text);font-family:'Archivo',system-ui,sans-serif;
+  line-height:1.45;-webkit-font-smoothing:antialiased;}
+.page{max-width:1280px;margin:0 auto;padding:34px 22px 90px;}
+h1{font-family:'Archivo Black',sans-serif;font-size:30px;letter-spacing:-.02em;margin:0 0 8px;color:var(--ink);}
+.lede{color:var(--text);font-size:14px;max-width:88ch;margin:0;line-height:1.6;}
+.lede code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--code);padding:1px 5px;}
+.role{margin-top:34px;border-top:1px solid var(--line);padding-top:20px;}
+.role header h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:17px;margin:0;color:var(--ink);}
+.role header h2 code{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;
+  background:var(--code);padding:2px 7px;margin-left:8px;color:var(--sub);}
+.role header p{margin:7px 0 0;font-size:13px;color:var(--sub);max-width:90ch;line-height:1.55;}
+.picks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px;}
+.pick{border:1px solid var(--line);background:var(--panel);padding:14px 15px 15px;}
+.pick.is-current{border-color:var(--ink);}
+.pick-head{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;
+  color:var(--sub);display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:14px;}
+.pick-head b{font-weight:700;}
+.pick.is-current .pick-head b{color:var(--red);}
+.pick-head span{font-family:'Archivo',sans-serif;font-size:13px;font-weight:800;letter-spacing:0;color:var(--ink);}
+.pick-note{margin:14px 0 0;font-size:12px;color:var(--sub);line-height:1.55;
+  border-top:1px solid var(--soft);padding-top:10px;}
+.spec{min-height:150px;}
+/* specimen pieces, sized as the live site sizes them */
+.sp-title{font-size:27px;line-height:1;letter-spacing:-.02em;color:var(--ink);}
+.sp-drop{font-size:19px;color:var(--ink);margin-top:16px;}
+.sp-drop em{font-style:normal;font-family:'Archivo',sans-serif;font-size:13px;font-weight:600;color:var(--sub);}
+.sp-gtitle{font-size:17px;color:var(--ink);margin-top:14px;}
+.sp-para{font-size:13px;color:var(--text);}
+.sp-tabs{display:flex;border:1px solid var(--line);margin-top:14px;width:max-content;}
+.sp-tabs span{font-weight:800;font-size:12.5px;padding:8px 12px;border-right:1px solid var(--line);color:var(--ink);}
+.sp-tabs span:last-child{border-right:0;}
+.sp-tabs .on{background:var(--ink);color:var(--on-ink);}
+.sp-seg{display:flex;border:1px solid var(--line);margin-top:11px;width:max-content;}
+.sp-seg span{font-weight:700;font-size:12px;padding:8px 11px;border-right:1px solid var(--line);color:var(--ink);}
+.sp-seg span:last-child{border-right:0;}
+.sp-seg .on{background:var(--soft);}
+.sp-note{font-size:12.5px;color:var(--text);margin-top:12px;}
+.sp-h2{font-size:22px;color:var(--ink);letter-spacing:-.01em;}
+.sp-body{font-size:14.5px;color:var(--text);margin-top:10px;line-height:1.6;}
+.sp-body b{color:var(--ink);}
+.sp-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);font-weight:500;}
+.sp-file{font-size:12px;color:var(--text);margin-top:14px;}
+.sp-code{font-size:12px;color:var(--ink);background:var(--code);border:1px solid var(--line);
+  padding:3px 6px;margin-top:12px;display:inline-block;}
+.sp-foot{font-size:10.5px;letter-spacing:.06em;color:var(--sub);margin-top:16px;line-height:1.6;}
+@media (max-width:900px){.picks{grid-template-columns:1fr;}}
+</style>
+<div class="page">
+  <h1>Lector site — fonts, current and two alternatives each</h1>
+  <p class="lede">The site requests <b>four</b> families site-wide: <code>Archivo</code>, <code>Archivo Black</code>,
+  <code>Newsreader</code>, <code>JetBrains Mono</code>. Each page only paints three of them — the converter page never
+  renders Newsreader (the ledger skin overrides every serif rule), and the guide never renders Archivo Black.
+  Both pages download all four regardless. Below, each role is shown at the sizes the live site actually uses.</p>
+
+  <section class="role">
+    <header>
+      <h2>Display / wordmark <code>--black</code></h2>
+      <p>The page title, the “Drop images here” line, gallery card titles. Heavy, tight, does the shouting.</p>
+    </header>
+    <div class="picks">
+      <div class="pick is-current">
+        <div class="pick-head"><b>CURRENT</b><span>Archivo Black</span></div>
+        <div class="spec">
+    <div class="sp-title" style="font-family:'Archivo Black',sans-serif;font-weight:400">Lector Xteink Firmware</div>
+    <div class="sp-drop" style="font-family:'Archivo Black',sans-serif;font-weight:400">Drop images here <em>or click to choose</em></div>
+    <div class="sp-gtitle" style="font-family:'Archivo Black',sans-serif;font-weight:400">Lisbon Rooftops</div></div>
+        <p class="pick-note">Wide grotesque, very solid. Reads as a masthead but eats horizontal room on phones.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT A</b><span>Anton</span></div>
+        <div class="spec">
+    <div class="sp-title" style="font-family:'Anton',sans-serif;font-weight:400">Lector Xteink Firmware</div>
+    <div class="sp-drop" style="font-family:'Anton',sans-serif;font-weight:400">Drop images here <em>or click to choose</em></div>
+    <div class="sp-gtitle" style="font-family:'Anton',sans-serif;font-weight:400">Lisbon Rooftops</div></div>
+        <p class="pick-note">Condensed and louder per pixel. Fits long titles on a narrow screen; more poster, less ledger.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT B</b><span>Space Grotesk</span></div>
+        <div class="spec">
+    <div class="sp-title" style="font-family:'Space Grotesk',sans-serif;font-weight:700">Lector Xteink Firmware</div>
+    <div class="sp-drop" style="font-family:'Space Grotesk',sans-serif;font-weight:700">Drop images here <em>or click to choose</em></div>
+    <div class="sp-gtitle" style="font-family:'Space Grotesk',sans-serif;font-weight:700">Lisbon Rooftops</div></div>
+        <p class="pick-note">Technical grotesque with odd terminals. Quieter than the other two and closer to the firmware subject.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="role">
+    <header>
+      <h2>Body & UI sans <code>--sans</code></h2>
+      <p>Nearly everything: paragraphs, buttons, tabs, segment controls, notes. 202 elements on the converter page.</p>
+    </header>
+    <div class="picks">
+      <div class="pick is-current">
+        <div class="pick-head"><b>CURRENT</b><span>Archivo</span></div>
+        <div class="spec">
+    <div class="sp-para" style="font-family:'Archivo',sans-serif">Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</div>
+    <div class="sp-tabs" style="font-family:'Archivo',sans-serif"><span class="on">Converter</span><span>Cleaner</span><span>Gallery</span><span>Flasher</span></div>
+    <div class="sp-seg" style="font-family:'Archivo',sans-serif"><span class="on">X4 · 480×800</span><span>X3 · 528×792</span></div>
+    <div class="sp-note" style="font-family:'Archivo',sans-serif">Files must match your screen within 1 px or the device rejects them.</div></div>
+        <p class="pick-note">Neutral grotesque, wide aperture, holds up small. Pairs with Archivo Black for free.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT A</b><span>Inter</span></div>
+        <div class="spec">
+    <div class="sp-para" style="font-family:'Inter',sans-serif">Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</div>
+    <div class="sp-tabs" style="font-family:'Inter',sans-serif"><span class="on">Converter</span><span>Cleaner</span><span>Gallery</span><span>Flasher</span></div>
+    <div class="sp-seg" style="font-family:'Inter',sans-serif"><span class="on">X4 · 480×800</span><span>X3 · 528×792</span></div>
+    <div class="sp-note" style="font-family:'Inter',sans-serif">Files must match your screen within 1 px or the device rejects them.</div></div>
+        <p class="pick-note">The safest UI face there is. Slightly narrower, a touch more anonymous; excellent at 12–13 px.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT B</b><span>IBM Plex Sans</span></div>
+        <div class="spec">
+    <div class="sp-para" style="font-family:'IBM Plex Sans',sans-serif">Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</div>
+    <div class="sp-tabs" style="font-family:'IBM Plex Sans',sans-serif"><span class="on">Converter</span><span>Cleaner</span><span>Gallery</span><span>Flasher</span></div>
+    <div class="sp-seg" style="font-family:'IBM Plex Sans',sans-serif"><span class="on">X4 · 480×800</span><span>X3 · 528×792</span></div>
+    <div class="sp-note" style="font-family:'IBM Plex Sans',sans-serif">Files must match your screen within 1 px or the device rejects them.</div></div>
+        <p class="pick-note">Engineered, faintly mechanical. Matches IBM Plex Mono exactly if the mono role moves too.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="role">
+    <header>
+      <h2>Serif <code>--serif</code></h2>
+      <p>Only the firmware guide's prose renders it — 15 elements. On the converter page the ledger skin overrides every serif rule, so it downloads and never paints.</p>
+    </header>
+    <div class="picks">
+      <div class="pick is-current">
+        <div class="pick-head"><b>CURRENT</b><span>Newsreader</span></div>
+        <div class="spec">
+    <div class="sp-h2" style="font-family:'Newsreader',serif;font-weight:600">Sleep screens and the /sleep folder</div>
+    <div class="sp-body" style="font-family:'Newsreader',serif">The reader looks for wallpapers in a single folder. Copy the converted files into <b>/sleep</b>, set Sleep Screen to Custom, and the device will cycle through them each time it goes to sleep. Files that do not match the panel size are ignored rather than scaled.</div></div>
+        <p class="pick-note">Optical-size variable, newsprint flavour. Good at long measure, a little soft at small sizes.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT A</b><span>Source Serif 4</span></div>
+        <div class="spec">
+    <div class="sp-h2" style="font-family:'Source Serif 4',serif;font-weight:600">Sleep screens and the /sleep folder</div>
+    <div class="sp-body" style="font-family:'Source Serif 4',serif">The reader looks for wallpapers in a single folder. Copy the converted files into <b>/sleep</b>, set Sleep Screen to Custom, and the device will cycle through them each time it goes to sleep. Files that do not match the panel size are ignored rather than scaled.</div></div>
+        <p class="pick-note">Sturdier, more even colour on screen. The most legible of the three for a long guide page.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT B</b><span>Instrument Serif</span></div>
+        <div class="spec">
+    <div class="sp-h2" style="font-family:'Instrument Serif',serif;font-weight:600">Sleep screens and the /sleep folder</div>
+    <div class="sp-body" style="font-family:'Instrument Serif',serif">The reader looks for wallpapers in a single folder. Copy the converted files into <b>/sleep</b>, set Sleep Screen to Custom, and the device will cycle through them each time it goes to sleep. Files that do not match the panel size are ignored rather than scaled.</div></div>
+        <p class="pick-note">High contrast, editorial. Beautiful large, too fragile for body copy — display only.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="role">
+    <header>
+      <h2>Mono <code>--mono</code></h2>
+      <p>Labels, the footer, file names, sizes, version numbers, code spans. 66 elements on the converter page.</p>
+    </header>
+    <div class="picks">
+      <div class="pick is-current">
+        <div class="pick-head"><b>CURRENT</b><span>JetBrains Mono</span></div>
+        <div class="spec">
+    <div class="sp-label" style="font-family:'JetBrains Mono',monospace">DITHER STYLE · AUTO-CONTRAST · INVERT (NEG.)</div>
+    <div class="sp-file" style="font-family:'JetBrains Mono',monospace">lector-0.27.0-x4pro.bin · 480×800 · 96.4 kB</div>
+    <div class="sp-code" style="font-family:'JetBrains Mono',monospace">/sleep/rooftops-480x800.pxc</div>
+    <div class="sp-foot" style="font-family:'JetBrains Mono',monospace">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div></div>
+        <p class="pick-note">Tall x-height, very legible in uppercase letterspaced labels. Wide, so long paths wrap sooner.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT A</b><span>IBM Plex Mono</span></div>
+        <div class="spec">
+    <div class="sp-label" style="font-family:'IBM Plex Mono',monospace">DITHER STYLE · AUTO-CONTRAST · INVERT (NEG.)</div>
+    <div class="sp-file" style="font-family:'IBM Plex Mono',monospace">lector-0.27.0-x4pro.bin · 480×800 · 96.4 kB</div>
+    <div class="sp-code" style="font-family:'IBM Plex Mono',monospace">/sleep/rooftops-480x800.pxc</div>
+    <div class="sp-foot" style="font-family:'IBM Plex Mono',monospace">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div></div>
+        <p class="pick-note">Narrower with real character. Sits closer to a printed ledger than JetBrains does.</p>
+      </div>
+      <div class="pick">
+        <div class="pick-head"><b>ALT B</b><span>Space Mono</span></div>
+        <div class="spec">
+    <div class="sp-label" style="font-family:'Space Mono',monospace">DITHER STYLE · AUTO-CONTRAST · INVERT (NEG.)</div>
+    <div class="sp-file" style="font-family:'Space Mono',monospace">lector-0.27.0-x4pro.bin · 480×800 · 96.4 kB</div>
+    <div class="sp-code" style="font-family:'Space Mono',monospace">/sleep/rooftops-480x800.pxc</div>
+    <div class="sp-foot" style="font-family:'Space Mono',monospace">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div></div>
+        <p class="pick-note">Quirky, retro-technical. Great for the footer, tiring for anything you read twice.</p>
+      </div>
+    </div>
+  </section>
+</div>

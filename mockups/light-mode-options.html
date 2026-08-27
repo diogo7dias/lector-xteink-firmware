@@ -1,0 +1,293 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Lector site — light mode options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800;900&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0b0b;color:#ddd;font-family:'Archivo',system-ui,sans-serif;}
+.page{max-width:1220px;margin:0 auto;padding:32px 22px 80px;}
+.page h1{font-family:'Archivo Black','Archivo',sans-serif;font-size:31px;margin:0 0 8px;color:#fff;letter-spacing:-.02em;}
+.page .lede{color:#9a9a9a;font-size:14px;max-width:82ch;margin:0;line-height:1.6;}
+.page .lede code{font-family:'JetBrains Mono',monospace;font-size:12.5px;background:#191919;padding:1px 5px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(510px,1fr));gap:24px;margin-top:28px;}
+.opt{border:1px solid #262626;overflow:hidden;background:#0f0f0f;}
+.opt > header{padding:14px 18px;border-bottom:1px solid #262626;}
+.opt h2{margin:0;font-size:16px;font-weight:800;color:#fff;}
+.opt h2 b{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.14em;
+  color:#7d7d7d;display:block;margin-bottom:5px;}
+.opt header p{margin:7px 0 0;font-size:13px;color:#8e8e8e;line-height:1.55;}
+.swatches{display:flex;gap:5px;margin-top:11px;}
+.swatches i{width:26px;height:16px;border:1px solid #333;display:block;}
+.metrics{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6f6f6f;margin-top:9px;letter-spacing:.03em;}
+
+/* ---- demo chrome: matches the live ledger skin — 1px hairlines, square, no shadows ---- */
+.demo{padding:22px 20px 24px;background:var(--paper);color:var(--text);line-height:1.45;}
+.demo .topline{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub);font-weight:500;}
+.demo .rule-thin{border-top:1px solid var(--line);margin:9px 0 0;}
+.demo .mast{font-family:'Archivo Black','Archivo',sans-serif;font-weight:900;font-size:30px;line-height:1;
+  letter-spacing:-.02em;color:var(--ink);margin:15px 0 0;}
+.demo .mast + p{margin:8px 0 0;color:var(--text);font-size:13px;max-width:58ch;}
+.demo .rule{border-top:1px solid var(--line);margin-top:16px;}
+.demo .tabs{display:inline-flex;margin-top:16px;border:1px solid var(--line);background:var(--paper);}
+.demo .tab{border:0;background:transparent;color:var(--ink);font-family:inherit;font-weight:800;
+  font-size:12.5px;padding:9px 16px;cursor:pointer;}
+.demo .tab:not(:last-child){border-right:1px solid var(--line);}
+.demo .tab.on{background:var(--ink);color:var(--on-ink);}
+.demo .panel{background:var(--panel);border:1px solid var(--line);padding:15px;margin-top:18px;}
+.demo .ctls{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;}
+.demo label{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--sub);margin-bottom:6px;font-weight:500;}
+.demo .seg{display:flex;border:1px solid var(--line);background:var(--paper);}
+.demo .seg button{flex:1;border:0;background:transparent;color:var(--ink);padding:8px 4px;
+  font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;}
+.demo .seg button:not(:last-child){border-right:1px solid var(--line);}
+.demo .seg button.on{background:var(--soft);color:var(--ink);}
+.demo select{width:100%;padding:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  font-family:inherit;font-weight:600;font-size:12.5px;}
+.demo .note{margin-top:13px;padding-top:12px;border-top:1px solid var(--soft);color:var(--text);font-size:12.5px;}
+.demo .note strong{color:var(--ink);}
+.demo .note code{font-family:'JetBrains Mono',monospace;background:var(--code);border:1px solid var(--line);
+  padding:1px 5px;font-size:11.5px;}
+.demo .drop{border:1px dashed var(--dash);padding:26px 16px;text-align:center;margin-top:16px;background:var(--panel);}
+.demo .drop .big{font-family:'Archivo Black','Archivo',sans-serif;font-size:20px;color:var(--ink);}
+.demo .drop .big span{font-family:inherit;font-weight:600;font-size:13px;color:var(--sub);}
+.demo .drop .sub{color:var(--sub);font-size:12px;margin-top:6px;}
+.demo .row{display:flex;gap:11px;align-items:center;margin-top:16px;}
+.demo .btn{border:1px solid var(--line);padding:9px 16px;font-size:13px;font-weight:800;
+  cursor:pointer;font-family:inherit;}
+.demo .btn-primary{background:var(--ink);color:var(--on-ink);}
+.demo .btn-danger{background:transparent;color:var(--red);border-color:var(--red);}
+.demo .count{color:var(--sub);font-size:12px;font-family:'JetBrains Mono',monospace;}
+.demo .foot{margin-top:18px;padding-top:12px;border-top:1px solid var(--line);
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--sub);letter-spacing:.06em;text-align:center;}
+.demo a{color:var(--ink);}
+</style>
+<div class="page">
+  <h1>Lector site — light mode, six alternatives</h1>
+  <p class="lede">Same idea as the dark mode you picked: pull the two ends toward each other instead of
+  pinning them at <code>#ffffff</code> and <code>#111111</code>, and let <code>--line</code> carry the hairlines
+  so borders stop reading as text. Chrome below is the real ledger skin — 1&nbsp;px hairlines, square corners,
+  no shadows. Ratios are text-on-paper; today's light mode is 16.1:1.</p>
+  <div class="grid">
+  <section class="opt" id="l0" style="--paper:#ffffff;--panel:#ffffff;--ink:#111111;--text:#1a1a1a;--sub:#666666;--line:#111111;--soft:#e5e5e5;--dash:#cfcfcf;--code:#f2f2f2;--red:#8a1c1c;--on-ink:#ffffff">
+    <header>
+      <h2><b>CURRENT</b>What ships today</h2>
+      <p>Pure #ffffff paper, #1a1a1a text, and every hairline at solid #111111. Shown only for comparison.</p>
+      <div class="swatches"><i style="background:#ffffff"></i><i style="background:#ffffff"></i><i style="background:#111111"></i><i style="background:#111111"></i><i style="background:#8a1c1c"></i></div>
+      <div class="metrics">text 17.4:1 · sub 5.7:1 · hairline 18.88:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="l1" style="--paper:#f7f7f7;--panel:#fcfcfc;--ink:#2e2e2e;--text:#383838;--sub:#6e6e6e;--line:#d0d0d0;--soft:#ebebeb;--dash:#d8d8d8;--code:#efefef;--red:#8f3a30;--on-ink:#f7f7f7">
+    <header>
+      <h2><b>OPTION 1</b>Softened Ink Light</h2>
+      <p>The direct mirror of the dark mode you picked. Paper eased off pure white, ink down to #2e2e2e, hairlines at #d0d0d0. Nothing else moves.</p>
+      <div class="swatches"><i style="background:#f7f7f7"></i><i style="background:#fcfcfc"></i><i style="background:#2e2e2e"></i><i style="background:#d0d0d0"></i><i style="background:#8f3a30"></i></div>
+      <div class="metrics">text 10.9:1 · sub 4.8:1 · hairline 1.44:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="l2" style="--paper:#faf7f0;--panel:#fefcf7;--ink:#332f28;--text:#3d382f;--sub:#797264;--line:#ddd6c8;--soft:#efe9dc;--dash:#dcd4c4;--code:#f2ede1;--red:#8d3e2f;--on-ink:#faf7f0">
+    <header>
+      <h2><b>OPTION 2</b>Warm Paper</h2>
+      <p>Off-white with a paper warmth, ink a warm near-black. The daytime twin of the Warm Paper dark option.</p>
+      <div class="swatches"><i style="background:#faf7f0"></i><i style="background:#fefcf7"></i><i style="background:#332f28"></i><i style="background:#ddd6c8"></i><i style="background:#8d3e2f"></i></div>
+      <div class="metrics">text 10.9:1 · sub 4.5:1 · hairline 1.35:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="l3" style="--paper:#f4f6f8;--panel:#fbfcfd;--ink:#2b333c;--text:#343d46;--sub:#6b757f;--line:#ccd4dc;--soft:#e6ebf0;--dash:#d3dae1;--code:#ecf0f4;--red:#8a3a36;--on-ink:#f4f6f8">
+    <header>
+      <h2><b>OPTION 3</b>Slate Light</h2>
+      <p>Cool blue-grey paper, ink with a slate cast. Reads calm on a bright screen and keeps the red clearly an accent.</p>
+      <div class="swatches"><i style="background:#f4f6f8"></i><i style="background:#fbfcfd"></i><i style="background:#2b333c"></i><i style="background:#ccd4dc"></i><i style="background:#8a3a36"></i></div>
+      <div class="metrics">text 10.2:1 · sub 4.3:1 · hairline 1.38:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="l4" style="--paper:#ececec;--panel:#ffffff;--ink:#2b2b2b;--text:#353535;--sub:#6b6b6b;--line:#d6d6d6;--soft:#e2e2e2;--dash:#cdcdcd;--code:#f4f4f4;--red:#8f3a30;--on-ink:#ffffff">
+    <header>
+      <h2><b>OPTION 4</b>Recessed Grey</h2>
+      <p>Page grey, panels pure white on top. Depth comes from the panel sitting above the page, so the hairlines can be very faint.</p>
+      <div class="swatches"><i style="background:#ececec"></i><i style="background:#ffffff"></i><i style="background:#2b2b2b"></i><i style="background:#d6d6d6"></i><i style="background:#8f3a30"></i></div>
+      <div class="metrics">text 10.4:1 · sub 4.5:1 · hairline 1.23:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="l5" style="--paper:#f6efe0;--panel:#fbf6ea;--ink:#3a3125;--text:#453b2c;--sub:#7e7360;--line:#ddd0b6;--soft:#ece2cd;--dash:#d8caae;--code:#f0e7d3;--red:#8c4326;--on-ink:#f6efe0">
+    <header>
+      <h2><b>OPTION 5</b>Sepia Day</h2>
+      <p>Full sepia, closest to a paperback page. Most character of the six, least neutral for screenshots.</p>
+      <div class="swatches"><i style="background:#f6efe0"></i><i style="background:#fbf6ea"></i><i style="background:#3a3125"></i><i style="background:#ddd0b6"></i><i style="background:#8c4326"></i></div>
+      <div class="metrics">text 9.6:1 · sub 4.1:1 · hairline 1.33:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  <section class="opt" id="l6" style="--paper:#ffffff;--panel:#ffffff;--ink:#3a3a3a;--text:#424242;--sub:#757575;--line:#dcdcdc;--soft:#eeeeee;--dash:#dadada;--code:#f5f5f5;--red:#93392f;--on-ink:#ffffff">
+    <header>
+      <h2><b>OPTION 6</b>White Paper, Soft Ink</h2>
+      <p>Keeps the pure white page — screenshots and printing stay clean — and only softens the ink to #3a3a3a and the hairlines to #dcdcdc.</p>
+      <div class="swatches"><i style="background:#ffffff"></i><i style="background:#ffffff"></i><i style="background:#3a3a3a"></i><i style="background:#dcdcdc"></i><i style="background:#93392f"></i></div>
+      <div class="metrics">text 10.0:1 · sub 4.6:1 · hairline 1.37:1</div>
+    </header>
+    <div class="demo">
+    <div class="topline"><span>LOCAL ONLY — NOTHING UPLOADED</span><span>FIRMWARE GUIDE · EST. 2026 · LECTOR</span></div>
+    <div class="rule-thin"></div>
+    <h3 class="mast">Lector Xteink Firmware</h3>
+    <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper — all in your browser, nothing uploaded.</p>
+    <div class="rule"></div>
+    <div class="tabs"><button class="tab on">Converter</button><button class="tab">Cleaner</button><button class="tab">Gallery</button><button class="tab">Flasher</button></div>
+    <div class="panel">
+      <div class="ctls">
+        <div><label>Screen</label><div class="seg"><button>X4 · 480×800</button><button class="on">X3 · 528×792</button></div></div>
+        <div><label>Format</label><div class="seg"><button class="on">PXC</button><button>BMP</button></div></div>
+        <div><label>Fit</label><select><option>Stretch (fill, distort)</option></select></div>
+        <div><label>Dither style</label><div class="seg"><button>Classic</button><button class="on">Solid</button></div></div>
+        <div><label>Auto-contrast</label><div class="seg"><button class="on">On</button><button>Off</button></div></div>
+        <div><label>Invert (neg.)</label><div class="seg"><button class="on">Off</button><button>On</button></div></div>
+      </div>
+      <p class="note">Files must match your screen within 1 px or the device rejects them. On device: set <strong>Sleep Screen = Custom</strong>, then drop the files in <code>/sleep</code>.</p>
+    </div>
+    <div class="drop"><div class="big">Drop images here <span>or click to choose</span></div>
+      <div class="sub">PNG · JPG · WebP · GIF · BMP · PXC</div></div>
+    <div class="row"><button class="btn btn-primary">Update firmware</button><button class="btn btn-danger">Erase &amp; rescue</button><span class="count">4 files ready</span></div>
+    <div class="foot">MADE FOR THE LECTOR / CROSSPOINT E-READER · SINGLE-FILE, OFFLINE-CAPABLE.</div>
+  </div>
+  </section>
+  </div>
+</div>
