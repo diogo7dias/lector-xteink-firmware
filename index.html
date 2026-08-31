@@ -625,44 +625,41 @@
         <strong>full install</strong> below instead — Update alone will not work on a stock device.
       </div>
 
-      <div class="note"><strong>What lector 0.27.0 does</strong>
+      <div class="note"><strong>What lector 0.29.5 does</strong>
 
         <p><strong>New</strong></p>
         <ul>
-          <li><strong>Share Wi-Fi and OPDS logins with another reader.</strong> Settings, System, Share WiFi and
-            OPDS sends them over the Nearby radio, so a second reader does not have to be typed in by hand. The
-            other reader receives it from File Transfer, Nearby Reader. Both ask first: the bundle carries the
-            passwords in the clear over a radio that is not encrypted, and both readers delete it straight after.</li>
-          <li><strong>Pages to Paragraph, a new status bar item.</strong> Shows <code>&gt;P.0</code> on most pages,
-            meaning the paragraph you are in ends before the next one starts. <code>&gt;P.2</code> means it runs two
-            more pages.</li>
-          <li><strong>Never is back as a Refresh Frequency.</strong> It turns off the page-counted refresh only. The
-            panel is still cleaned when enough ink has moved to need it, so a long session does not end up smeared.</li>
+          <li><strong>Home is one list.</strong> Pressing Down past the last book walks straight into Browse, OPDS,
+            Transfer and Settings.</li>
+          <li><strong>Long quotes wrap.</strong> A quote longer than a row is shown in full over several lines, with
+            its chapter against the right edge.</li>
+          <li><strong>Install Other Firmware.</strong> Settings, System installs whatever the update server offers,
+            whatever its version. On a reader whose USB flashing the vendor locked, that is the way back off Lector.
+            Check for updates still offers newer stable releases only.</li>
         </ul>
 
         <p><strong>Fixed</strong></p>
         <ul>
-          <li><strong>Font downloads finish.</strong> A font file arrives over TLS from a server that sends 16 KB
-            records, and the reader ran a few kilobytes short of the memory that needs, every time. It now borrows
-            the framebuffer for the length of the transfer. The progress bar holds still while a file is in flight;
-            that is the price of the file arriving at all.</li>
-          <li><strong>A download that was making progress no longer gives up.</strong> A transfer stopping part way
-            used to spend its attempts and quit while it was still moving forward, and a partial was thrown away
-            whenever the server answered a resumed request with the whole file.</li>
-          <li><strong>OPDS says when the server refused the login,</strong> instead of "Failed to fetch feed", which
-            reads as a connection problem and sends you looking in the wrong place. The catalog that ships with the
-            reader has no password set, so it needs yours.</li>
+          <li><strong>A tap on a button hint works everywhere.</strong> The hint band sent a press without the release
+            that follows it, so any screen that tells a press from a hold saw nothing. Tapping Open on a highlighted
+            folder did nothing.</li>
+          <li><strong>The on-screen keyboard answers to touch.</strong> Its keys were drawn with hit areas nothing was
+            listening to, so on the X4 Pro only the buttons typed. Holding a key types its alternate character.</li>
+          <li><strong>A firmware installed over Wi-Fi stays installed,</strong> and the download no longer fails for
+            want of memory. The recovery chord also works with no SD card mounted.</li>
         </ul>
 
         <p><strong>Changed</strong></p>
         <ul>
-          <li><strong>The Caret selection style lost its underline</strong> and sits beside the row's first line, so
-            a row that wraps is marked where reading starts. Brackets are finer.</li>
-          <li><strong>The status bar's progress bar reaches the edge of the screen</strong> instead of stopping short
-            of the bezel.</li>
+          <li><strong>Every screen draws through the same theme.</strong> The last screens that painted themselves
+            moved onto the shared bases, so type sizes, row heights, headers and button hints can no longer drift
+            apart from screen to screen.</li>
+          <li><strong>The X3 and the X4 keep their old settings list.</strong> One column of full-width rows, name on
+            the left, value on the right. The touch shapes, the draggable slider and the settings cells drawn as
+            buttons, stay on the X4 Pro, the one device with a panel to tap.</li>
         </ul>
 
-        <p class="note">Reports version <strong>lector 0.27.0</strong> on device. Earlier releases are on the
+        <p class="note">Reports version <strong>lector 0.29.5</strong> on device. Earlier releases are on the
           <a href="https://github.com/diogo7dias/lector/releases" target="_blank" rel="noopener">releases page</a>.</p>
       </div>
 
