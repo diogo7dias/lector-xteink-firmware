@@ -387,7 +387,7 @@
     <div class="masthead">
       <div style="flex:1;min-width:0">
         <h1>Lector Xteink Firmware</h1>
-        <p>Flash Lector firmware to your Xteink X3 / X4 reader, and turn any image into a sleep wallpaper —
+        <p>Flash Lector firmware to your Xteink X3, X4, or X4 Pro, and turn any image into a sleep wallpaper —
            all in your browser, nothing uploaded. Use the <strong>Flasher</strong> tab to install firmware and
            the <strong>Converter</strong> tab for wallpapers.</p>
         <p>Source code, release notes and downloadable builds:
@@ -606,60 +606,48 @@
         a <strong>full install</strong> erases them.</div>
 
       <h3>Lector</h3>
-      <p>Lector firmware for your Xteink X3 / X4, re-based onto the upstream CrossPoint reader with a thin
-        layer of reading niceties on top. The build on this site is <strong id="flashVersionInline">…</strong>. Use
-        <strong>Update my reader</strong> if your reader already runs Lector, the
-        <strong>full install</strong> further down if it does not, and the
-        <strong>SD card download</strong> if it cannot be flashed over USB.</p>
+      <p>Lector firmware for the Xteink X3, X4, and X4 Pro. The build on this site is
+        <strong id="flashVersionInline">…</strong>.</p>
 
       <div class="verline">Current build on this site</div>
       <div class="verval"><span id="flashVersion">…</span></div>
 
-      <div class="actions">
-        <button class="btn btn-red" id="btnUpdate" type="button">Update my reader</button>
+      <div class="ctl">
+        <label>Which reader?</label>
+        <div class="seg" id="flashDevice" role="group" aria-label="Which reader">
+          <button type="button" data-chip="ESP32-C3" class="on">X3 / X4</button>
+          <button type="button" data-chip="ESP32-S3">X4 Pro</button>
+        </div>
       </div>
-      <div class="note"><strong>Update</strong> writes only the app and resets the boot selector. Your books,
-        settings, and Wi-Fi are <strong>kept</strong> — nothing is erased. Your reader must <strong>already be
-        running Lector</strong>. Takes about 30–60 seconds.
-        <br><strong>New device?</strong> If your reader does not have Lector yet, use the
-        <strong>full install</strong> below instead — Update alone will not work on a stock device.
-      </div>
+      <p class="note" id="flashDeviceHint">X3 and X4 share one image (ESP32-C3). The X4 Pro is a different chip
+        (ESP32-S3). Pick the reader first — a mismatch is refused before anything is written.</p>
 
-      <div class="note"><strong>What lector 0.29.5 does</strong>
+      <div class="actions">
+        <button class="btn btn-red" id="btnUpdate" type="button">Update my X3 / X4</button>
+      </div>
+      <div class="note"><strong>Update my X3 / X4</strong> (or <strong>Update my X4 Pro</strong>) — already
+        running Lector. Writes only the app. Books, settings, and Wi-Fi are <strong>kept</strong>. Your reader
+        must <strong>already be running Lector</strong>.
+        <br><strong>Full install / rescue</strong> — new, stock, or dead reader. Erases the chip, then writes
+        bootloader + app.
+        <br><strong>SD card download</strong> — no USB, or a USB-locked unit. Already running Lector only.</div>
+
+      <div class="note"><strong>What lector 0.31.0 does</strong>
 
         <p><strong>New</strong></p>
         <ul>
-          <li><strong>Home is one list.</strong> Pressing Down past the last book walks straight into Browse, OPDS,
-            Transfer and Settings.</li>
-          <li><strong>Long quotes wrap.</strong> A quote longer than a row is shown in full over several lines, with
-            its chapter against the right edge.</li>
-          <li><strong>Install Other Firmware.</strong> Settings, System installs whatever the update server offers,
-            whatever its version. On a reader whose USB flashing the vendor locked, that is the way back off Lector.
-            Check for updates still offers newer stable releases only.</li>
+          <li><strong>Reading Stats can be bound to a button.</strong> Settings, Controls, Buttons — any key, click /
+            double / hold, in a book or outside.</li>
         </ul>
 
         <p><strong>Fixed</strong></p>
         <ul>
-          <li><strong>A tap on a button hint works everywhere.</strong> The hint band sent a press without the release
-            that follows it, so any screen that tells a press from a hold saw nothing. Tapping Open on a highlighted
-            folder did nothing.</li>
-          <li><strong>The on-screen keyboard answers to touch.</strong> Its keys were drawn with hit areas nothing was
-            listening to, so on the X4 Pro only the buttons typed. Holding a key types its alternate character.</li>
-          <li><strong>A firmware installed over Wi-Fi stays installed,</strong> and the download no longer fails for
-            want of memory. The recovery chord also works with no SD card mounted.</li>
+          <li><strong>Check for Updates stays on this fork.</strong> A dropped GitHub fetch no longer offers upstream
+            CrossPoint as a newer Lector.</li>
+          <li><strong>Flash diagnostics on the card keep every record</strong> instead of wiping the last failure.</li>
         </ul>
 
-        <p><strong>Changed</strong></p>
-        <ul>
-          <li><strong>Every screen draws through the same theme.</strong> The last screens that painted themselves
-            moved onto the shared bases, so type sizes, row heights, headers and button hints can no longer drift
-            apart from screen to screen.</li>
-          <li><strong>The X3 and the X4 keep their old settings list.</strong> One column of full-width rows, name on
-            the left, value on the right. The touch shapes, the draggable slider and the settings cells drawn as
-            buttons, stay on the X4 Pro, the one device with a panel to tap.</li>
-        </ul>
-
-        <p class="note">Reports version <strong>lector 0.29.5</strong> on device. Earlier releases are on the
+        <p class="note">Reports version <strong>lector 0.31.0</strong> on device. Earlier releases are on the
           <a href="https://github.com/diogo7dias/lector/releases" target="_blank" rel="noopener">releases page</a>.</p>
       </div>
 
@@ -671,7 +659,9 @@
         install below, over USB.
         <div class="actions">
           <a class="btn btn-ghost" id="btnDownloadBin" href="flash/firmware/latest/firmware.bin"
-             download="lector-firmware.bin">Download firmware.bin for the SD card</a>
+             download="lector-firmware.bin">Download firmware.bin — X3 / X4 SD card</a>
+          <a class="btn btn-ghost" id="btnDownloadBinX4Pro" href="flash/firmware/latest/firmware-x4pro.bin"
+             download="lector-firmware-x4pro.bin">Download firmware-x4pro.bin — X4 Pro SD card</a>
         </div>
       </div>
 
@@ -685,7 +675,7 @@
           On a brand-new reader there is nothing of yours to lose. On a reader you have used, its books and settings
           stored in flash are erased. Book files on the SD card are not touched.</div>
         <div class="actions">
-          <button class="btn btn-ghost" id="btnRescue" type="button">Full install / rescue flash (erases device)</button>
+          <button class="btn btn-ghost" id="btnRescue" type="button">Full install / rescue — X3 / X4 (erases device)</button>
         </div>
         <p id="flashRescueMissing" class="fallback" hidden>Install files are not published yet — they land with the
           next Lector release. The Update button above works now.</p>
@@ -704,10 +694,10 @@
       <ol class="steps">
         <li>Use <strong>Chrome</strong> or <strong>Edge</strong> on a computer — you are already here (Web Serial only).</li>
         <li>Plug the reader into a USB port with a <strong>data</strong> cable.</li>
-        <li>Click <strong>Update my reader</strong> (already running Lector) or <strong>Full install / rescue
-          flash</strong> (a new or dead device), and pick the reader's serial port when asked.</li>
+        <li>Pick <strong>X3 / X4</strong> or <strong>X4 Pro</strong>, then <strong>Update</strong> (already running
+          Lector) or <strong>Full install / rescue</strong> (new or dead). Pick the serial port when asked.</li>
         <li>Wait for the flash to finish, then reboot the reader by hand: press <strong>Reset</strong>, then
-          <strong>Power</strong>. The X3 / X4 do not auto-reboot over USB.</li>
+          <strong>Power</strong>. These readers do not auto-reboot over USB.</li>
       </ol>
       <div class="note">Nothing is uploaded to a server. The firmware is served from this site and written to the
         device entirely inside your browser via <strong>esptool-js</strong> (the same engine the official ESP
@@ -716,17 +706,17 @@
 
     <details>
       <summary>How this works</summary>
-      <p>Your Lector reader runs on an <strong>ESP32-C3</strong> chip. This talks to the chip over the USB serial
-        port using the browser's Web Serial API.</p>
+      <p>X3 and X4 run an <strong>ESP32-C3</strong>. The X4 Pro runs an <strong>ESP32-S3</strong>. This talks to
+        the chip over USB serial using the browser's Web Serial API. The wrong image is refused before a write.</p>
       <ul>
-        <li><strong>Update</strong> writes <code>boot_app0.bin</code> (OTA data, <code>0xe000</code>) and
-          <code>firmware.bin</code> (app, <code>0x10000</code>) <strong>without erasing</strong> — so NVS
-          settings and the book storage survive. This is the normal, data-preserving update.</li>
-        <li><strong>Full install / rescue</strong> erases the chip, then writes the bootloader (<code>0x0</code>),
-          partition table (<code>0x8000</code>), OTA data (<code>0xe000</code>), and app (<code>0x10000</code>). This
-          is what a device without Lector needs — a stock reader has a different partition table, so an app-only
-          Update would not boot.</li>
-        <li>One firmware serves <strong>both X3 and X4</strong>; the running code detects the model at boot.</li>
+        <li><strong>Update</strong> writes <code>boot_app0.bin</code> (OTA data, <code>0xe000</code>) and the
+          matching app (<code>firmware.bin</code> or <code>firmware-x4pro.bin</code> at <code>0x10000</code>)
+          <strong>without erasing</strong> — so NVS settings and book storage survive.</li>
+        <li><strong>Full install / rescue</strong> erases the chip, then writes that chip's bootloader
+          (<code>0x0</code>), partition table (<code>0x8000</code>), OTA data (<code>0xe000</code>), and app
+          (<code>0x10000</code>). A stock reader has a different partition table, so an app-only Update would
+          not boot.</li>
+        <li>One C3 image serves <strong>both X3 and X4</strong>. The X4 Pro needs its own S3 image.</li>
       </ul>
     </details>
 
@@ -1698,6 +1688,22 @@ const FLASH_ENGINE="https://unpkg.com/esptool-js@0.5.7/bundle.js";
 let esptoolMod=null;
 const flashState={busy:false};
 
+function selectedChip(){
+  const on=document.querySelector("#flashDevice button.on");
+  return on ? on.dataset.chip : "ESP32-C3";
+}
+
+function applyFlashDevice(){
+  const chip=selectedChip();
+  const x4pro=chip==="ESP32-S3";
+  const u=document.getElementById("btnUpdate");
+  const r=document.getElementById("btnRescue");
+  if(u) u.textContent=x4pro ? "Update my X4 Pro" : "Update my X3 / X4";
+  if(r) r.textContent=x4pro
+    ? "Full install / rescue — X4 Pro (erases device)"
+    : "Full install / rescue — X3 / X4 (erases device)";
+}
+
 function initFlasher(){
   fetch("flash/version.txt",{cache:"no-cache"})
     .then(r=>r.ok?r.text():Promise.reject(r.status))
@@ -1716,7 +1722,15 @@ function initFlasher(){
     .then(r=>{if(!r.ok) throw 0;})
     .catch(()=>{document.getElementById("flashRescueMissing").hidden=false;});
   if(!("serial" in navigator)){ document.getElementById("flashUnsupported").hidden=false; }
-  // Update serves the current Lector build (the C++ core + Rust helpers).
+  const deviceSeg=document.getElementById("flashDevice");
+  if(deviceSeg){
+    deviceSeg.addEventListener("click", e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      deviceSeg.querySelectorAll("button").forEach(x=>x.classList.toggle("on", x===b));
+      applyFlashDevice();
+    });
+  }
+  applyFlashDevice();
   document.getElementById("btnUpdate").addEventListener("click",()=>runFlash("update"));
   document.getElementById("btnRescue").addEventListener("click",()=>{
     if(confirm("Full install / rescue flash ERASES the entire device, including any books and settings in flash. "+
@@ -1773,8 +1787,11 @@ async function runFlash(mode){
   try{
     const manifestPath = erase ? "flash/manifest-full.json" : "flash/manifest-update.json";
     const manifest=await (await fetch(manifestPath,{cache:"no-cache"})).json();
+    const wanted=selectedChip();
+    const build=(manifest.builds||[]).find(b=>b.chipFamily===wanted);
+    if(!build) throw new Error("no image for "+wanted);
     parts=[];
-    for(const p of manifest.builds[0].parts){
+    for(const p of build.parts){
       log("load "+p.path);
       const u8=await fetchBinary("flash/"+p.path);
       parts.push({ data:bytesToBinaryString(u8), address:p.offset });
@@ -1799,6 +1816,11 @@ async function runFlash(mode){
     setStatus("Connecting to the reader…");
     const chip=await loader.main();
     log("Detected chip: "+chip);
+    const wanted=selectedChip();
+    const detected=String(chip||"");
+    if(!detected.includes(wanted)){
+      throw new Error("This port is "+detected+", but "+wanted+" was selected. Pick the other reader and try again. Nothing was written.");
+    }
     setStatus(erase?"Erasing and writing (full flash)…":"Writing update (no erase)…");
     await loader.writeFlash({
       fileArray:parts,

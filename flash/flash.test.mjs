@@ -17,9 +17,10 @@ const OFFSET = { bootloader: 0, partitions: 0x8000, boot_app0: 0xe000, app: 0x10
 
 test("update manifest keeps user data: no erase, no bootloader/partition write", () => {
   assert.equal(update.erase, false);
-  const parts = update.builds[0].parts;
-  assert.equal(update.builds[0].chipFamily, "ESP32-C3");
-  const byPath = Object.fromEntries(parts.map((p) => [p.path, p.offset]));
+  const c3 = update.builds.find((b) => b.chipFamily === "ESP32-C3");
+  const s3 = update.builds.find((b) => b.chipFamily === "ESP32-S3");
+  assert.ok(c3 && s3, "update must name both chips");
+  const byPath = Object.fromEntries(c3.parts.map((p) => [p.path, p.offset]));
   // Only OTA-data reset + app. Never the bootloader or partition table (those
   // would require a full erase / can brick a live device).
   assert.deepEqual(Object.keys(byPath).sort(), [
@@ -28,22 +29,32 @@ test("update manifest keeps user data: no erase, no bootloader/partition write",
   ]);
   assert.equal(byPath["firmware/latest/boot_app0.bin"], OFFSET.boot_app0);
   assert.equal(byPath["firmware/latest/firmware.bin"], OFFSET.app);
+  const s3Paths = s3.parts.map((p) => p.path).sort();
+  assert.deepEqual(s3Paths, [
+    "firmware/latest/boot_app0.bin",
+    "firmware/latest/firmware-x4pro.bin",
+  ]);
 });
 
 test("full manifest reflashes all four parts at the correct offsets, erase first", () => {
   assert.equal(full.erase, true);
-  const parts = full.builds[0].parts;
-  assert.equal(full.builds[0].chipFamily, "ESP32-C3");
-  assert.equal(parts.length, 4);
-  const byPath = Object.fromEntries(parts.map((p) => [p.path, p.offset]));
+  const c3 = full.builds.find((b) => b.chipFamily === "ESP32-C3");
+  const s3 = full.builds.find((b) => b.chipFamily === "ESP32-S3");
+  assert.ok(c3 && s3, "full install must name both chips");
+  assert.equal(c3.parts.length, 4);
+  const byPath = Object.fromEntries(c3.parts.map((p) => [p.path, p.offset]));
   assert.equal(byPath["firmware/latest/bootloader.bin"], OFFSET.bootloader);
   assert.equal(byPath["firmware/latest/partitions.bin"], OFFSET.partitions);
   assert.equal(byPath["firmware/latest/boot_app0.bin"], OFFSET.boot_app0);
   assert.equal(byPath["firmware/latest/firmware.bin"], OFFSET.app);
   assert.deepEqual(
-    parts.map((p) => p.offset).sort((a, b) => a - b),
+    c3.parts.map((p) => p.offset).sort((a, b) => a - b),
     [0, 32768, 57344, 65536],
   );
+  const s3ByPath = Object.fromEntries(s3.parts.map((p) => [p.path, p.offset]));
+  assert.equal(s3ByPath["firmware/latest/bootloader-x4pro.bin"], OFFSET.bootloader);
+  assert.equal(s3ByPath["firmware/latest/partitions-x4pro.bin"], OFFSET.partitions);
+  assert.equal(s3ByPath["firmware/latest/firmware-x4pro.bin"], OFFSET.app);
 });
 
 test("only full installs erase; every Update mode keeps data", () => {
@@ -74,6 +85,10 @@ test("page exposes the Flasher tab wired to esptool-js", () => {
   assert.match(html, /esptool-js@0\.5\.7\/bundle\.js/);
   assert.match(html, /id="btnUpdate"/);
   assert.match(html, /id="btnRescue"/);
+  assert.match(html, /id="flashDevice"/);
+  assert.match(html, /data-chip="ESP32-C3"/);
+  assert.match(html, /data-chip="ESP32-S3"/);
+  assert.match(html, /Nothing was written/);
   assert.match(html, /flash\/manifest-update\.json/);
   assert.match(html, /flash\/manifest-full\.json/);
 });
@@ -161,8 +176,12 @@ test("the SD card download points at the published app image", () => {
   // release asset, so the download can never disagree with the button above it.
   assert.match(html, /id="btnDownloadBin"[^>]*/);
   assert.match(html, /href="flash\/firmware\/latest\/firmware\.bin"/);
+  assert.match(html, /id="btnDownloadBinX4Pro"/);
+  assert.match(html, /href="flash\/firmware\/latest\/firmware-x4pro\.bin"/);
   assert.ok(existsSync(new URL("./firmware/latest/firmware.bin", import.meta.url)),
             "the download link has no file behind it");
+  assert.ok(existsSync(new URL("./firmware/latest/firmware-x4pro.bin", import.meta.url)),
+            "the X4 Pro download has no file behind it");
 });
 
 test("experimental-version.txt is an experimental lector version string", { skip: !hasExperimental }, () => {

@@ -75,7 +75,12 @@ test("the SD card download serves the app image and says what it cannot do", () 
     /href="flash\/firmware\/latest\/firmware\.bin"/,
     "the download must serve the same app image the Update button writes",
   );
-  assert.match(html, /download="lector-firmware\.bin"/, "the link does not download, it navigates");
+  assert.match(html, /id="btnDownloadBinX4Pro"/);
+  assert.match(
+    html,
+    /href="flash\/firmware\/latest\/firmware-x4pro\.bin"/,
+    "X4 Pro SD download must serve firmware-x4pro.bin",
+  );
   // The SD picker is part of Lector, so it cannot install onto a stock reader or
   // revive a dead one. Promising otherwise sends people to the wrong rescue.
   assert.match(html, /already running Lector/i);

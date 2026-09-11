@@ -15,6 +15,19 @@
           "offset": 65536
         }
       ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "firmware/latest/boot_app0.bin",
+          "offset": 57344
+        },
+        {
+          "path": "firmware/latest/firmware-x4pro.bin",
+          "offset": 65536
+        }
+      ]
     }
   ]
 }
