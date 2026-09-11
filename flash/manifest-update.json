@@ -1,6 +1,6 @@
 {
   "name": "Lector",
-  "version": "lector 0.30.3",
+  "version": "lector 0.31.0",
   "erase": false,
   "builds": [
     {
