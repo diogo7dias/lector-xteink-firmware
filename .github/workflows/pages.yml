@@ -50,8 +50,9 @@ jobs:
       # the guide is stamped for a different version than flash/version.txt serves.
       - name: Build the firmware guide
         run: |
+          RELEASE_TAG="$(sed 's/^lector /lector-/' flash/version.txt)"
           curl -fsSL -o USER_GUIDE.md \
-            https://raw.githubusercontent.com/diogo7dias/lector/main/USER_GUIDE.md
+            "https://raw.githubusercontent.com/diogo7dias/lector/${RELEASE_TAG}/USER_GUIDE.md"
           node scripts/build-guide.mjs USER_GUIDE.md guide.html
           rm USER_GUIDE.md
 
