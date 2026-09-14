@@ -1,6 +1,6 @@
 {
   "name": "Lector (full rescue)",
-  "version": "lector 0.31.5",
+  "version": "lector 0.31.6",
   "erase": true,
   "builds": [
     {
