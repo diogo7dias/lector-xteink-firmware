@@ -2,15 +2,15 @@
   "schema_version": 1,
   "releases": [
     {
-      "id": "lector-0.31.26",
+      "id": "lector-0.31.27",
       "channel": "stable",
-      "name": "lector 0.31.26",
-      "version": "0.31.26",
-      "released_at": "2026-09-20T14:30:33Z",
-      "notes": "https://github.com/diogo7dias/lector/releases/tag/lector-0.31.26",
+      "name": "lector 0.31.27",
+      "version": "0.31.27",
+      "released_at": "2026-09-20T16:15:41Z",
+      "notes": "https://github.com/diogo7dias/lector/releases/tag/lector-0.31.27",
       "firmware_url": "https://diogo7dias.github.io/lector-xteink-firmware/flash/firmware/latest/firmware.bin",
-      "firmware_sha256": "894ddb45f6b1aa51473fe26171de3a710019ec7fab1aa177c2fcfda19aa165ea",
-      "size": 4126608,
+      "firmware_sha256": "60ebb1910d1aa82851f69a0d2571fa04045884a127a52a09750ab5834d79058a",
+      "size": 4101440,
       "supported_devices": [
         "x3",
         "x4"
